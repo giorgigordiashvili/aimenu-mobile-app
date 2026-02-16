@@ -1,6 +1,7 @@
 import { Text, StyleSheet, View } from "react-native";
 import { colors } from "./src/theme/colors";
 import { typography } from "./src/theme/typography";
+import { Button } from "./src/components/Button/Button";
 
 export default function MyComponent() {
   return (
@@ -10,6 +11,19 @@ export default function MyComponent() {
       >
         Hello, world!
       </Text>
+      <Button title="Primary" size="sm" onPress={() => {}} />
+      <Button title="Primary" size="md" onPress={() => {}} />
+      <Button title="Primary" size="lg" onPress={() => {}} />
+
+      <Button
+        title="Secondary"
+        size="sm"
+        variant="secondary"
+        onPress={() => {}}
+      />
+      <Button title="Outline" size="sm" variant="outline" onPress={() => {}} />
+      <Button title="Ghost" size="sm" variant="ghost" onPress={() => {}} />
+      <Button title="Danger" size="sm" variant="danger" onPress={() => {}} />
     </View>
   );
 }
@@ -19,6 +33,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
   },
 });
