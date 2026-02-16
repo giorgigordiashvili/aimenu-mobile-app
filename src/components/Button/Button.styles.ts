@@ -23,7 +23,7 @@ export const sizeStyles = {
 export const variantStyles = {
   primary: {
     container: {
-      backgroundColor: colors.dark,
+      backgroundColor: colors.primary,
       borderRadius: borderRadius.md,
     },
     text: {
