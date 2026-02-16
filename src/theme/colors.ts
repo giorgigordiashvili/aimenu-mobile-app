@@ -7,12 +7,11 @@ export const colors = {
   // Neutral
   white: "#FFFFFF",
   black: "#000000",
-  state100: "#F1F5F9", // Lightest background
   dark: "#0F172B", // Headings, primary text
   darkGrey: "#314158", // Subheadings, secondary text
+  state100: "#F1F5F9", // Lightest background
   light: "#E2E8F0", // Borders, dividers
   grey: "#EBEBEB", // Button backgrounds, disabled states
-  background: "#FFFFFF",
   state50: "#F8FAFC", // Card backgrounds
   yellow: "#F0B100", // Ratings, stars
   success: "#00A63E", // Success messages, indicators
