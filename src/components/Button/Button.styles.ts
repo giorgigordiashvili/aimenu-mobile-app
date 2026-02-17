@@ -7,16 +7,19 @@ export const sizeStyles = {
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
     height: 36,
+    typography: typography.buttonSm,
   },
   md: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     height: 44,
+    typography: typography.button,
   },
   lg: {
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     height: 52,
+    typography: typography.buttonLg,
   },
 };
 
@@ -73,6 +76,27 @@ export const variantStyles = {
     },
     text: {
       color: colors.white,
+      ...typography.button,
+    },
+  },
+
+  success: {
+    container: {
+      backgroundColor: colors.greenButtonBackground,
+      borderRadius: borderRadius.md,
+    },
+    text: {
+      color: colors.white,
+      ...typography.buttonLg,
+    },
+  },
+  dangerSoft: {
+    container: {
+      backgroundColor: colors.dangerSoftBackground,
+      borderRadius: borderRadius.md,
+    },
+    text: {
+      color: colors.dangerSoftText,
       ...typography.button,
     },
   },
