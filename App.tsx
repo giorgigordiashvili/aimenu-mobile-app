@@ -1,4 +1,5 @@
 import { Text, StyleSheet, View } from "react-native";
+import { TextInput } from "./src/components/ui/TextInput";
 import { colors } from "./src/theme/colors";
 import { typography } from "./src/theme/typography";
 import { Button } from "./src/components/Button/Button";
@@ -6,14 +7,24 @@ import { Button } from "./src/components/Button/Button";
 export default function MyComponent() {
   return (
     <View style={styles.container}>
-      <Text
-        style={[typography.h1, { color: colors.primary, textAlign: "center" }]}
-      >
-        Hello, world!
-      </Text>
+      <TextInput
+        label="Email"
+        placeholder="Enter your email"
+        hint="We will never share your email"
+      />
+
+      <TextInput
+        label="Password"
+        placeholder="Enter password"
+        error="Password is required"
+      />
+
+      <TextInput
+        label="Disabled Field"
+        placeholder="Can't type here"
+        disabled
+      />
       <Button title="Primary" size="sm" onPress={() => {}} />
-      <Button title="Primary" size="md" onPress={() => {}} />
-      <Button title="Primary" size="lg" onPress={() => {}} />
 
       <Button
         title="Secondary"
@@ -38,6 +49,7 @@ export default function MyComponent() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    gap: 16,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.white,
