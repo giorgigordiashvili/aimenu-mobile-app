@@ -12,7 +12,9 @@ export const typography: Record<string, TextStyle> = {
   textLg: { fontSize: 18, fontWeight: "400", lineHeight: 28 },
   textXl: { fontSize: 20, fontWeight: "400", lineHeight: 28 },
   text2xl: { fontSize: 24, fontWeight: "400", lineHeight: 32 },
-  button: { fontSize: 16, fontWeight: "600", lineHeight: 20 },
+  buttonLg: { fontSize: 16, fontWeight: "600", lineHeight: 24 },
+  buttonSm: { fontSize: 12, fontWeight: "500", lineHeight: 16 },
+  button: { fontSize: 14, fontWeight: "500", lineHeight: 20 },
 };
 
 // Define font weights separately

@@ -16,7 +16,9 @@ export type ButtonVariant =
   | "secondary"
   | "outline"
   | "ghost"
-  | "danger";
+  | "danger"
+  | "dangerSoft"
+  | "success";
 
 export type ButtonSize = "sm" | "md" | "lg";
 
@@ -72,7 +74,9 @@ export const Button: React.FC<ButtonProps> = ({
         <>
           {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
 
-          <Text style={[variantStyle.text, textStyle]}>{title}</Text>
+          <Text style={[variantStyle.text, sizeStyle.typography, textStyle]}>
+            {title}
+          </Text>
 
           {rightIcon && <View style={styles.iconRight}>{rightIcon}</View>}
         </>

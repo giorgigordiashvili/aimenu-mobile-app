@@ -24,6 +24,13 @@ export default function MyComponent() {
       <Button title="Outline" size="sm" variant="outline" onPress={() => {}} />
       <Button title="Ghost" size="sm" variant="ghost" onPress={() => {}} />
       <Button title="Danger" size="sm" variant="danger" onPress={() => {}} />
+      <Button
+        title="Danger Soft"
+        size="sm"
+        variant="dangerSoft"
+        onPress={() => {}}
+      />
+      <Button title="Success" size="sm" variant="success" onPress={() => {}} />
     </View>
   );
 }
