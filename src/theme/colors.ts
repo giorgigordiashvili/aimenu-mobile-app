@@ -8,10 +8,10 @@ export const colors = {
   white: "#FFFFFF",
   black: "#000000",
   dark: "#0F172B", // Headings, primary text
-  darkGray: "#314158", // Subheadings, secondary text
+  darkGrey: "#314158", // Subheadings, secondary text
   state100: "#F1F5F9", // Lightest background
   light: "#E2E8F0", // Borders, dividers
-  gray: "#EBEBEB", // Button backgrounds, disabled states
+  grey: "#EBEBEB", // Button backgrounds, disabled states
   state50: "#F8FAFC", // Card backgrounds
   yellow: "#F0B100", // Ratings, stars
   success: "#00A63E", // Success messages, indicators
@@ -23,11 +23,9 @@ export const colors = {
   gray800: "#1C283C", // Tertiary text
   gray500: "#667084", // Secondary text (default)
   gray900: "#0E162B", // Ingredient text
-  gray200: "#90A1B9", // Disabled text
-  gray100: "#98A2B3", // Tab text
   placeholder: "#717182", // Placeholder text
   // Error
-  error1: "#E7000B", // Error messages, indicators
+  error: "#E7000B", // Error messages, indicators
   rose: "#C70036", // Error states, accents
 
   accentGreenLight: "#DCFCE7",
