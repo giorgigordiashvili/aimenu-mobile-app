@@ -208,5 +208,3 @@ const styles = StyleSheet.create({
     color: textColors.secondary,
   },
 });
-
-export default Card;
