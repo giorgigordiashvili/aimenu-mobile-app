@@ -1,47 +1,22 @@
-import { Text, StyleSheet, View } from "react-native";
-import { TextInput } from "./src/components/ui/TextInput";
+import { StyleSheet, View } from "react-native";
 import { colors } from "./src/theme/colors";
-import { typography } from "./src/theme/typography";
-import { Button } from "./src/components/Button/Button";
+import Card from "./src/components/ui/Card";
 
 export default function MyComponent() {
   return (
     <View style={styles.container}>
-      <TextInput
-        label="Email"
-        placeholder="Enter your email"
-        hint="We will never share your email"
+      <Card
+        imageUrl="https://picsum.photos/400/200"
+        title="რესტორანი ტესტი"
+        subtitle="ქართული, ევროპული"
+        rating={4.7}
+        reviewCount={128}
+        priceRange="₾₾"
+        isOpen={true}
+        isFavorite={false}
+        onPress={() => console.log("pressed")}
+        onFavoritePress={() => console.log("fav")}
       />
-
-      <TextInput
-        label="Password"
-        placeholder="Enter password"
-        error="Password is required"
-      />
-
-      <TextInput
-        label="Disabled Field"
-        placeholder="Can't type here"
-        disabled
-      />
-      <Button title="Primary" size="sm" onPress={() => {}} />
-
-      <Button
-        title="Secondary"
-        size="sm"
-        variant="secondary"
-        onPress={() => {}}
-      />
-      <Button title="Outline" size="sm" variant="outline" onPress={() => {}} />
-      <Button title="Ghost" size="sm" variant="ghost" onPress={() => {}} />
-      <Button title="Danger" size="sm" variant="danger" onPress={() => {}} />
-      <Button
-        title="Danger Soft"
-        size="sm"
-        variant="dangerSoft"
-        onPress={() => {}}
-      />
-      <Button title="Success" size="sm" variant="success" onPress={() => {}} />
     </View>
   );
 }

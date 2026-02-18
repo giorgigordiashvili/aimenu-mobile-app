@@ -8,10 +8,10 @@ export const colors = {
   white: "#FFFFFF",
   black: "#000000",
   dark: "#0F172B", // Headings, primary text
-  darkGrey: "#314158", // Subheadings, secondary text
+  darkGray: "#314158", // Subheadings, secondary text
   state100: "#F1F5F9", // Lightest background
   light: "#E2E8F0", // Borders, dividers
-  grey: "#EBEBEB", // Button backgrounds, disabled states
+  gray: "#EBEBEB", // Button backgrounds, disabled states
   state50: "#F8FAFC", // Card backgrounds
   yellow: "#F0B100", // Ratings, stars
   success: "#00A63E", // Success messages, indicators
@@ -19,10 +19,21 @@ export const colors = {
   dangerSoftText: "#FF0000", // Text on red buttons
   dangerSoftBackground: "#FDDEDE", // Background for red buttons
   info: "#0084D1", // Informational messages, accents
-
+  gray600: "#45556C", // Summary text, less prominent
+  gray800: "#1C283C", // Tertiary text
+  gray500: "#667084", // Secondary text (default)
+  gray900: "#0E162B", // Ingredient text
+  gray200: "#90A1B9", // Disabled text
+  gray100: "#98A2B3", // Tab text
+  placeholder: "#717182", // Placeholder text
   // Error
-  error: "#E7000B", // Error messages, indicators
+  error1: "#E7000B", // Error messages, indicators
   rose: "#C70036", // Error states, accents
+
+  accentGreenLight: "#DCFCE7",
+  primaryLightest: "#FEF2F2",
+  accentGreen: "#17B169",
+  error2: "#F04438",
 
   // Privacy
   privacyBackground: "#ECFCCA", // Privacy policy links, icons
