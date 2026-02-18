@@ -19,10 +19,19 @@ export const colors = {
   dangerSoftText: "#FF0000", // Text on red buttons
   dangerSoftBackground: "#FDDEDE", // Background for red buttons
   info: "#0084D1", // Informational messages, accents
-
+  gray600: "#45556C", // Summary text, less prominent
+  gray800: "#1C283C", // Tertiary text
+  gray500: "#667084", // Secondary text (default)
+  gray900: "#0E162B", // Ingredient text
+  placeholder: "#717182", // Placeholder text
   // Error
   error: "#E7000B", // Error messages, indicators
   rose: "#C70036", // Error states, accents
+
+  accentGreenLight: "#DCFCE7",
+  primaryLightest: "#FEF2F2",
+  accentGreen: "#17B169",
+  error2: "#F04438",
 
   // Privacy
   privacyBackground: "#ECFCCA", // Privacy policy links, icons
