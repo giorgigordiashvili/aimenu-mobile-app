@@ -26,7 +26,7 @@ interface CardProps {
   onFavoritePress?: () => void;
 }
 
-const Card: React.FC<CardProps> = ({
+export const Card: React.FC<CardProps> = ({
   imageUrl,
   title,
   subtitle,
