@@ -19,7 +19,7 @@ export default function SplashScreen() {
         if (!isMounted) return;
 
         const seen = await AsyncStorage.getItem("seen");
-        router.replace(seen === "true" ? "/login" : "/onboarding");
+        router.replace(seen === "true" ? "/onboarding" : "/login");
       } catch (error) {
         router.replace("/onboarding");
       }

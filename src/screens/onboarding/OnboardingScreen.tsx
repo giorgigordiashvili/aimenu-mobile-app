@@ -104,7 +104,7 @@ export default function OnboardingScreen() {
 
       {/* Button */}
       <View style={styles.buttonRow}>
-        <View style={{ flex: 1, marginRight: 16 }}>
+        <View style={styles.buttonLeft}>
           <Button
             title="გამოტოვება"
             onPress={handleSkip}
@@ -112,7 +112,7 @@ export default function OnboardingScreen() {
             fullWidth
           />
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={styles.buttonRight}>
           <Button
             title={isLastSlide ? "დაწყება" : "შემდეგი"}
             onPress={handleNext}
@@ -128,6 +128,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  buttonLeft: {
+    flex: 1,
+    marginRight: 16,
+  },
+  buttonRight: {
+    flex: 1,
   },
   slide: {
     width,
