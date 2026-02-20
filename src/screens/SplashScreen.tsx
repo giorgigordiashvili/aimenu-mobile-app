@@ -18,10 +18,11 @@ export default function SplashScreen() {
 
         if (!isMounted) return;
 
-        const seen = await AsyncStorage.getItem("seen");
-        router.replace(seen === "true" ? "/onboarding" : "/login");
+        const hasSeenOnboarding =
+          await AsyncStorage.getItem("hasSeenOnboarding");
+        router.replace(hasSeenOnboarding === "true" ? "/login" : "/onboarding");
       } catch (error) {
-        router.replace("/onboarding");
+        router.replace("/login");
       }
     };
 
