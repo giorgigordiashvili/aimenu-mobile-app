@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   label: {
-    ...typography.body,
+    ...typography.paragraph,
     color: colors.dark,
   },
   labelDisabled: {

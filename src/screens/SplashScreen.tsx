@@ -1,26 +1,37 @@
 import React, { useEffect } from "react";
 import { View, Image, StyleSheet } from "react-native";
-import { router, useRouter } from "expo-router";
-import { colors } from "../theme/colors";
+import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { colors } from "../theme";
 
 export default function SplashScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkOnboarding = async () => {
-      const seen = await AsyncStorage.getItem("hasSeenOnboarding");
+    let isMounted = true;
 
-      setTimeout(() => {
-        if (seen === "true") {
-          router.replace("/login");
-        } else {
-          router.replace("/onboarding");
-        }
-      }, 2000);
+    const init = async () => {
+      try {
+        const seen = await AsyncStorage.getItem("hasSeenOnboarding");
+
+        // Optional splash delay
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        if (!isMounted) return;
+
+        router.replace(seen === "true" ? "/login" : "/onboarding");
+      } catch (error) {
+        // Fallback in case of error
+        router.replace("/onboarding");
+      }
     };
 
-    checkOnboarding();
+    init();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (

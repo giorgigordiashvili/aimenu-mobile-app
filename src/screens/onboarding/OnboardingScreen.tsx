@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   },
   skipText: {
     color: colors.gray500,
-    ...typography.body,
+    ...typography.paragraph,
   },
   slide: {
     width,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   description: {
-    ...typography.body,
+    ...typography.paragraph,
     color: colors.gray500,
     textAlign: "center",
     marginTop: spacing.md,
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   activeDot: {
     width: 24,
-    backgroundColor: colors.primary[500],
+    backgroundColor: colors.primary,
   },
   buttonContainer: {
     paddingHorizontal: spacing.xl,

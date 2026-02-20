@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   label: {
-    ...typography.body,
+    ...typography.paragraph,
     color: colors.dark,
   },
   labelDisabled: {
