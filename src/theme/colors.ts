@@ -55,3 +55,8 @@ export const textColors = {
   privacy: colors.privacyText, // Privacy policy text
   dangerSoft: colors.dangerSoftText, // Text on red buttons
 } as const;
+
+export const shadowColors = {
+  default: "0px 20px 33.5px 0px rgba(0, 0, 0, 0.11)",
+  color: "rgba(0, 0, 0, 0.11)",
+} as const;

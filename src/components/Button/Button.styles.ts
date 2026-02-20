@@ -27,7 +27,7 @@ export const variantStyles = {
   primary: {
     container: {
       backgroundColor: colors.primary,
-      borderRadius: borderRadius.md,
+      borderRadius: borderRadius.xl,
     },
     text: {
       color: colors.white,
@@ -38,7 +38,7 @@ export const variantStyles = {
   secondary: {
     container: {
       backgroundColor: colors.grey,
-      borderRadius: borderRadius.md,
+      borderRadius: borderRadius.xl,
     },
     text: {
       color: colors.dark,

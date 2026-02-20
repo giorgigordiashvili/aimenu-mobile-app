@@ -1,7 +1,7 @@
 import { TextStyle } from "react-native";
 
 export const typography: Record<string, TextStyle> = {
-  h1: { fontSize: 24, fontWeight: "500", lineHeight: 36 },
+  h1: { fontSize: 24, fontWeight: "700", lineHeight: 36 },
   h2: { fontSize: 20, fontWeight: "500", lineHeight: 25 },
   h3: { fontSize: 18, fontWeight: "500", lineHeight: 20.25 },
   h4: { fontSize: 16, fontWeight: "500", lineHeight: 16 },
@@ -15,6 +15,7 @@ export const typography: Record<string, TextStyle> = {
   buttonLg: { fontSize: 16, fontWeight: "600", lineHeight: 24 },
   buttonSm: { fontSize: 12, fontWeight: "500", lineHeight: 16 },
   button: { fontSize: 14, fontWeight: "500", lineHeight: 20 },
+  splashTitle: { fontSize: 34, fontWeight: "bold", lineHeight: 40 },
 };
 
 // Define font weights separately
