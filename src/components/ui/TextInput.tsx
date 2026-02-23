@@ -89,12 +89,13 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md, // 8
     paddingHorizontal: spacing.md, // 16
     height: 48,
-    backgroundColor: colors.white,
+    backgroundColor: colors.state50,
   },
   input: {
     flex: 1,
     ...typography.textBase,
     color: textColors.primary,
+    textAlignVertical: "center",
   },
   icon: {
     marginHorizontal: spacing.xs,
