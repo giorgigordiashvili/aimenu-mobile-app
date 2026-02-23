@@ -32,13 +32,13 @@ export default function LoginScreen({ navigation }: any) {
     const newErrors: typeof errors = {};
 
     if (!email) {
-      newErrors.email = "Email is required";
+      newErrors.email = t("validation.emailRequired");
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Invalid email";
+      newErrors.email = t("validation.invalidEmail");
     }
 
     if (!password) {
-      newErrors.password = "Password is required";
+      newErrors.password = t("validation.passwordRequired");
     }
 
     setErrors(newErrors);
@@ -83,7 +83,7 @@ export default function LoginScreen({ navigation }: any) {
           rightIcon={
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
               <Text style={{ color: colors.primary }}>
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? t("auth.hide") : t("auth.show")}
               </Text>
             </TouchableOpacity>
           }
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: `rgba(${parseInt(colors.black.slice(1, 3), 16)},${parseInt(colors.black.slice(3, 5), 16)},${parseInt(colors.black.slice(5, 7), 16)},0.1)`, // colors.black with 10% opacity
+    backgroundColor: colors.light,
     alignSelf: "center",
   },
   dividerContainer: {
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   socialButton: {
-    width: 107,
+    flex: 1,
     borderWidth: 1,
     borderColor: colors.light,
     borderRadius: borderRadius.md,

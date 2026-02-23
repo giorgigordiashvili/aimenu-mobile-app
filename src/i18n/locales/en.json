@@ -24,9 +24,16 @@
     "loginButton": "Login",
     "or": "Or continue with",
     "noAccount": "Don't have an account?",
-    "register": "Register"
+    "register": "Register",
+    "show": "Show",
+    "hide": "Hide"
   },
   "error": {
     "passwordError": "Incorrect password"
+  },
+  "validation": {
+    "emailRequired": "Email or Phone is required",
+    "passwordRequired": "Password is required",
+    "invalidEmail": "Invalid email format"
   }
 }

@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
     flex: 1,
     ...typography.textBase,
     color: textColors.primary,
+    textAlignVertical: "center",
   },
   icon: {
     marginHorizontal: spacing.xs,

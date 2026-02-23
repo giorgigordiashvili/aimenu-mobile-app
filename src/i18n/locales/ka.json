@@ -24,9 +24,16 @@
     "loginButton": "შესვლა",
     "or": "ან გააგრძელეთ",
     "noAccount": "არ გაქვს ანგარიში?",
-    "register": "დარეგისტრირდი"
+    "register": "დარეგისტრირდი",
+    "show": "ჩვენება",
+    "hide": "დამალვა"
   },
   "error": {
     "passwordError": "პაროლი არასწორია"
+  },
+  "validation": {
+    "emailRequired": "ელ-ფოსტა ან ტელეფონი აუცილებელია",
+    "passwordRequired": "პაროლი აუცილებელია",
+    "invalidEmail": "ელ-ფოსტის ფორმატი არასწორია"
   }
 }
