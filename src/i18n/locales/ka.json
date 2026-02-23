@@ -1,0 +1,32 @@
+{
+  "splash": {
+    "welcome": "მაგიდა"
+  },
+  "onboarding": {
+    "slide1Title": "აღმოაჩინე საუკეთესო გემოები",
+    "slide1Description": "იპოვე შენი საყვარელი კერძები და რესტორნები ქალაქში.",
+    "slide2Title": "დაჯავშნე მაგიდა მარტივად",
+    "slide2Description": "აირჩიე სასურველი დრო და ადგილი სულ რამდენიმე წამში",
+    "slide3Title": "ისიამოვნე დაუვაიწყარი გარემოთი",
+    "slide3Description": "გაატარე დრო მეგობრებთან ერთად საუკეთესო გარემოში",
+    "skip": "გამოტოვება",
+    "next": "შემდეგი",
+    "getStarted": "დაწყება"
+  },
+  "auth": {
+    "login": "ავტორიზაცია",
+    "loginSubtitle": "შეიყვანეთ თქვენი მონაცემები ავტორიზაციისთვის",
+    "email": "ელ-ფოსტა ან ტელეფონი",
+    "emailPlaceholder": "example@email.com",
+    "password": "პაროლი",
+    "passwordPlaceholder": "შეიყვანეთ პაროლი",
+    "forgotPassword": "პაროლი დაგავიწყდათ?",
+    "loginButton": "შესვლა",
+    "or": "ან გააგრძელეთ",
+    "noAccount": "არ გაქვს ანგარიში?",
+    "register": "დარეგისტრირდი"
+  },
+  "error": {
+    "passwordError": "პაროლი არასწორია"
+  }
+}

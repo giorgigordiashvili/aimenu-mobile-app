@@ -1,0 +1,32 @@
+{
+  "splash": {
+    "welcome": "Magida"
+  },
+  "onboarding": {
+    "slide1Title": "Discover the Best Flavors",
+    "slide1Description": "Find your favorite dishes and restaurants in the city.",
+    "slide2Title": "Book a Table",
+    "slide2Description": "Easily book a table with just a few taps",
+    "slide3Title": "Enjoy a Cozy Atmosphere",
+    "slide3Description": "Spend time with friends in the best environment",
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get Started"
+  },
+  "auth": {
+    "login": "Login",
+    "loginSubtitle": "Sign in to your account",
+    "email": "Email or Phone",
+    "emailPlaceholder": "example@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot your password?",
+    "loginButton": "Login",
+    "or": "Or continue with",
+    "noAccount": "Don't have an account?",
+    "register": "Register"
+  },
+  "error": {
+    "passwordError": "Incorrect password"
+  }
+}
