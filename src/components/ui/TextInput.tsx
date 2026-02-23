@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md, // 8
     paddingHorizontal: spacing.md, // 16
     height: 48,
-    backgroundColor: colors.white,
+    backgroundColor: colors.state50,
   },
   input: {
     flex: 1,

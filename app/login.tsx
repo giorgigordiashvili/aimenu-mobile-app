@@ -1,9 +1,2 @@
-import { View, Text } from "react-native";
-
-export default function Login() {
-  return (
-    <View>
-      <Text>Login Screen</Text>
-    </View>
-  );
-}
+import LoginScreen from "../src/screens/auth/LoginScreen";
+export default LoginScreen;
