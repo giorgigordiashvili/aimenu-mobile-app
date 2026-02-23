@@ -16,33 +16,31 @@ import { colors, typography, spacing, borderRadius } from "../../theme";
 import { Button } from "../../components/Button";
 import { textColors } from "../../theme/colors";
 import { useTranslation } from "react-i18next";
-import { t } from "i18next";
 
 const { width } = Dimensions.get("window");
 
-const slides = [
-  {
-    id: "1",
-    title: t("onboarding.slide1Title"),
-    description: t("onboarding.slide1Description"),
-    image: require("../../assets/onboarding/slide1.png"),
-  },
-  {
-    id: "2",
-    title: t("onboarding.slide2Title"),
-    description: t("onboarding.slide2Description"),
-    image: require("../../assets/onboarding/slide2.png"),
-  },
-  {
-    id: "3",
-    title: t("onboarding.slide3Title"),
-    description: t("onboarding.slide3Description"),
-    image: require("../../assets/onboarding/slide3.png"),
-  },
-];
-
 export default function OnboardingScreen() {
   const { t } = useTranslation();
+  const slides = [
+    {
+      id: "1",
+      title: t("onboarding.slide1Title"),
+      description: t("onboarding.slide1Description"),
+      image: require("../../assets/onboarding/slide1.png"),
+    },
+    {
+      id: "2",
+      title: t("onboarding.slide2Title"),
+      description: t("onboarding.slide2Description"),
+      image: require("../../assets/onboarding/slide2.png"),
+    },
+    {
+      id: "3",
+      title: t("onboarding.slide3Title"),
+      description: t("onboarding.slide3Description"),
+      image: require("../../assets/onboarding/slide3.png"),
+    },
+  ];
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const router = useRouter();
@@ -109,7 +107,7 @@ export default function OnboardingScreen() {
       <View style={styles.buttonRow}>
         <View style={styles.buttonLeft}>
           <Button
-            title="გამოტოვება"
+            title={t("onboarding.skip")}
             onPress={handleSkip}
             variant="secondary"
             fullWidth
@@ -117,7 +115,9 @@ export default function OnboardingScreen() {
         </View>
         <View style={styles.buttonRight}>
           <Button
-            title={isLastSlide ? "დაწყება" : "შემდეგი"}
+            title={
+              isLastSlide ? t("onboarding.getStarted") : t("onboarding.next")
+            }
             onPress={handleNext}
             fullWidth
           />
