@@ -16,6 +16,7 @@ import { colors, typography, spacing, borderRadius } from "../../theme";
 import { Button } from "../../components/Button";
 import { textColors } from "../../theme/colors";
 import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "../../components/ui/LanguageSwitcher";
 
 const { width } = Dimensions.get("window");
 
@@ -70,6 +71,10 @@ export default function OnboardingScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Language Switcher */}
+      <View style={styles.languageSwitcherContainer}>
+        <LanguageSwitcher />
+      </View>
       {/* Slides */}
       <FlatList
         ref={flatListRef}
@@ -105,23 +110,31 @@ export default function OnboardingScreen() {
 
       {/* Button */}
       <View style={styles.buttonRow}>
-        <View style={styles.buttonLeft}>
+        {isLastSlide ? (
           <Button
-            title={t("onboarding.skip")}
-            onPress={handleSkip}
-            variant="secondary"
-            fullWidth
-          />
-        </View>
-        <View style={styles.buttonRight}>
-          <Button
-            title={
-              isLastSlide ? t("onboarding.getStarted") : t("onboarding.next")
-            }
+            title={t("onboarding.getStarted")}
             onPress={handleNext}
             fullWidth
           />
-        </View>
+        ) : (
+          <>
+            <View style={styles.buttonLeft}>
+              <Button
+                title={t("onboarding.skip")}
+                onPress={handleSkip}
+                variant="secondary"
+                fullWidth
+              />
+            </View>
+            <View style={styles.buttonRight}>
+              <Button
+                title={t("onboarding.next")}
+                onPress={handleNext}
+                fullWidth
+              />
+            </View>
+          </>
+        )}
       </View>
     </View>
   );
@@ -131,6 +144,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  languageSwitcherContainer: {
+    position: "absolute",
+    top: 60,
+    right: 24,
+    zIndex: 100,
   },
   buttonLeft: {
     flex: 1,
