@@ -15,7 +15,7 @@
   },
   "auth": {
     "login": "Login",
-    "loginSubtitle": "Sign in to your account",
+    "loginSubtitle": "Enter your information to log in.",
     "email": "Email or Phone",
     "emailPlaceholder": "example@email.com",
     "password": "Password",

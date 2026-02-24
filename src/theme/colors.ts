@@ -1,3 +1,5 @@
+import { LanguageSwitcher } from "../components/ui/LanguageSwitcher";
+
 export const colors = {
   // Primary
   primary: "#EC003F", // Main brand red
@@ -24,6 +26,7 @@ export const colors = {
   gray500: "#667084", // Secondary text (default)
   gray900: "#0E162B", // Ingredient text
   placeholder: "#717182", // Placeholder text
+  languageSwitcher: "#CAD5E2", // Tab text
   // Error
   error: "#E7000B", // Error messages, indicators
   rose: "#C70036", // Error states, accents

@@ -16,6 +16,7 @@ import { colors, typography, spacing, borderRadius } from "../../theme";
 import { textColors } from "../../theme/colors";
 import FbIcon from "../../assets/icons/FbIcon";
 import AppleIcon from "../../assets/icons/AppleIcon";
+import { LanguageSwitcher } from "../../components/ui/LanguageSwitcher";
 
 export default function LoginScreen({ navigation }: any) {
   const { t } = useTranslation();
@@ -57,6 +58,12 @@ export default function LoginScreen({ navigation }: any) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView contentContainerStyle={styles.container}>
+        {/* Language Switcher */}
+        <View style={styles.languageWrapper}>
+          <LanguageSwitcher />
+        </View>
+        {/* Spacer below language switcher */}
+        <View style={{ marginBottom: spacing.lg }} />
         {/* Title */}
         <Text style={styles.title}>{t("auth.login")}</Text>
         <Text style={styles.subtitle}>{t("auth.loginSubtitle")}</Text>
@@ -156,9 +163,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.white,
   },
+  languageWrapper: {
+    alignItems: "flex-end",
+    marginTop: spacing.xxxl,
+    marginBottom: 0,
+  },
   title: {
     ...typography.h1,
-    marginTop: spacing.xxxl,
     marginBottom: spacing.xs,
     textAlign: "center",
   },
