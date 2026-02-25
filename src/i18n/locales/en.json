@@ -34,6 +34,15 @@
   "validation": {
     "emailRequired": "Email or Phone is required",
     "passwordRequired": "Password is required",
-    "invalidEmail": "Invalid email format"
-  }
+    "invalidEmail": "Invalid email format",
+    "firstNameRequired": "First name is required",
+    "passwordMin": "Password must be at least 8 characters"
+  },
+  "register": "Create Account 🚀",
+  "registerSubtitle": "Fill in the form to register",
+  "firstName": "First Name, Last Name",
+  "firstNamePlaceholder": "Enter your first and last name",
+  "registerButton": "Register",
+  "hasAccount": "Already have an account?",
+  "loginLink": "Login"
 }

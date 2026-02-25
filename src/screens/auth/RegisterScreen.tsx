@@ -7,52 +7,91 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../components/Button";
-import GoogleIcon from "../../assets/icons/GoogleIcon";
 import { TextInput } from "../../components/ui/TextInput";
 import { colors, typography, spacing, borderRadius } from "../../theme";
 import { textColors } from "../../theme/colors";
-import FbIcon from "../../assets/icons/FbIcon";
-import AppleIcon from "../../assets/icons/AppleIcon";
 import { LanguageSwitcher } from "../../components/ui/LanguageSwitcher";
 import { useRouter } from "expo-router";
+import AppleIcon from "../../assets/icons/AppleIcon";
+import FbIcon from "../../assets/icons/FbIcon";
+import GoogleIcon from "../../assets/icons/GoogleIcon";
 
-export default function LoginScreen() {
-  const router = useRouter();
-
+export default function RegisterScreen() {
   const { t } = useTranslation();
 
+  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
   const [errors, setErrors] = useState<{
+    firstName?: string;
     email?: string;
     password?: string;
+    confirmPassword?: string;
   }>({});
 
   const validate = () => {
     const newErrors: typeof errors = {};
 
-    if (!email) {
-      newErrors.email = t("validation.emailRequired");
+    if (!firstName.trim()) newErrors.firstName = t("validation.required");
+
+    if (!email.trim()) {
+      newErrors.email = t("validation.required");
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = t("validation.invalidEmail");
     }
 
-    if (!password) {
-      newErrors.password = t("validation.passwordRequired");
+    if (password.length < 8) {
+      newErrors.password = t("validation.passwordMin");
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleLogin = () => {
+  const handleRegister = async () => {
     if (!validate()) return;
 
-    console.log("Login:", { email, password });
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        "https://admin.aimenu.ge/api/auth/registration/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            first_name: firstName,
+            email: email,
+            password1: password,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", JSON.stringify(data));
+        return;
+      }
+
+      Alert.alert("Success", t("auth.registerSuccess"));
+      router.push("/login");
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -66,12 +105,20 @@ export default function LoginScreen() {
           <LanguageSwitcher />
         </View>
 
-        {/* Spacer below language switcher */}
         <View style={{ marginBottom: spacing.lg }} />
-        {/* Title */}
-        <Text style={styles.title}>{t("auth.login")}</Text>
-        <Text style={styles.subtitle}>{t("auth.loginSubtitle")}</Text>
 
+        {/* Title */}
+        <Text style={styles.title}>{t("register")}</Text>
+        <Text style={styles.subtitle}>{t("registerSubtitle")}</Text>
+
+        {/* First Name */}
+        <TextInput
+          label={t("firstName")}
+          value={firstName}
+          onChangeText={setFirstName}
+          error={errors.firstName}
+          placeholder={t("firstNamePlaceholder")}
+        />
         {/* Email */}
         <TextInput
           label={t("auth.email")}
@@ -100,25 +147,21 @@ export default function LoginScreen() {
           }
         />
 
-        {/* Forgot password */}
-        <TouchableOpacity onPress={() => router.push("/forgot-password")}>
-          <Text style={styles.forgotLink}>{t("auth.forgotPassword")}</Text>
-        </TouchableOpacity>
-
-        {/* Login Button */}
+        {/* Register Button */}
         <Button
           variant="primary"
-          onPress={handleLogin}
+          onPress={handleRegister}
           style={{ marginTop: spacing.lg, width: "100%" }}
-          title={t("auth.loginButton")}
+          title={loading ? "..." : t("registerButton")}
+          disabled={loading}
         />
+
         {/* Divider */}
         <View style={styles.dividerContainer}>
           <View style={styles.dividerLine} />
           <Text style={styles.orText}>{t("auth.or")}</Text>
           <View style={styles.dividerLine} />
         </View>
-
         {/* Social Buttons */}
         <View style={styles.SocialsRow}>
           <TouchableOpacity
@@ -144,14 +187,14 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Register */}
+        {/* Bottom Link */}
         <Text style={styles.registerText}>
-          {t("auth.noAccount")}{" "}
+          {t("hasAccount")}
           <Text
             style={styles.registerLink}
-            onPress={() => router.push("/register")}
+            onPress={() => router.push("/login")}
           >
-            {t("auth.register")}
+            {t("loginLink")}
           </Text>
         </Text>
       </ScrollView>
@@ -183,11 +226,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: textColors.tertiary,
   },
-  forgotLink: {
-    ...typography.textSm,
-    marginLeft: "auto",
-    color: textColors.defaultSecondary,
-  },
   orText: {
     ...typography.textSm,
     textAlign: "center",
@@ -196,15 +234,15 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     paddingHorizontal: spacing.sm,
   },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   dividerLine: {
     flex: 1,
     height: 1,
     backgroundColor: colors.light,
     alignSelf: "center",
-  },
-  dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
   },
   SocialsRow: {
     width: "100%",
