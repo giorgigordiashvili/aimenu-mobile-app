@@ -53,6 +53,10 @@ export default function RegisterScreen() {
       newErrors.password = t("validation.passwordMin");
     }
 
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = t("validation.passwordMismatch");
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -74,6 +78,7 @@ export default function RegisterScreen() {
             first_name: firstName,
             email: email,
             password1: password,
+            password2: confirmPassword,
           }),
         },
       );
@@ -93,7 +98,6 @@ export default function RegisterScreen() {
       setLoading(false);
     }
   };
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -145,6 +149,16 @@ export default function RegisterScreen() {
               </Text>
             </TouchableOpacity>
           }
+        />
+
+        {/* Confirm Password */}
+        <TextInput
+          label={t("confirmPassword")}
+          placeholder={t("confirmPasswordPlaceholder")}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry={!showPassword}
+          error={errors.confirmPassword}
         />
 
         {/* Register Button */}
@@ -201,7 +215,6 @@ export default function RegisterScreen() {
     </KeyboardAvoidingView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -250,6 +263,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     gap: spacing.md,
+    marginBottom: spacing.md,
   },
   socialButton: {
     flex: 1,
@@ -264,6 +278,7 @@ const styles = StyleSheet.create({
     ...typography.textSm,
     textAlign: "center",
     marginTop: "auto",
+    marginBottom: spacing.md,
     color: textColors.tertiary,
   },
   registerLink: {

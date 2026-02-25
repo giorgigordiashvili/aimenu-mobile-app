@@ -65,7 +65,6 @@ export default function LoginScreen() {
         <View style={styles.languageWrapper}>
           <LanguageSwitcher />
         </View>
-
         {/* Spacer below language switcher */}
         <View style={{ marginBottom: spacing.lg }} />
         {/* Title */}
