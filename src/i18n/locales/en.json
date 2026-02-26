@@ -45,9 +45,16 @@
   "firstName": "First Name, Last Name",
   "firstNamePlaceholder": "Enter your first and last name",
   "registerButton": "Register",
-
   "confirmPassword": "Confirm Password",
   "confirmPasswordPlaceholder": "Enter your password again",
   "hasAccount": "Already have an account?",
-  "loginLink": "Login"
+  "loginLink": "Login",
+
+  "forgot": {
+    "title": "Password Recovery",
+    "description": "Enter your phone number to recover your password",
+    "inputLabel": "Phone",
+    "button": "Send Code",
+    "invalidPhone": "Invalid phone number"
+  }
 }
