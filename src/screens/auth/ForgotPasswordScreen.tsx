@@ -8,19 +8,21 @@ import { textColors } from "../../theme/colors";
 import BackArrowIcon from "../../assets/icons/BackArrowIcon";
 import { useRouter } from "expo-router";
 
-
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const validatePhone = (value: string) => /^\d{10}$/.test(value);
+  const validatePhone = (value: string) => {
+    const cleaned = value.replace(/\s/g, "");
+    return /^\d{9,12}$/.test(cleaned);
+  };
 
   const handleSubmit = async () => {
-    if (!validatePhone(email)) {
+    if (!validatePhone(phone)) {
       setError(t("forgot.invalidPhone"));
       return;
     }
@@ -28,9 +30,25 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
 
     try {
-      await api.post("/auth/password/reset/", { email });
+      const response = await fetch(
+        "https://admin.aimenu.ge/api/auth/password/reset/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ phone }),
+        },
+      );
 
-      navigation.navigate("ResetEmailSent", { email });
+      if (!response.ok) {
+        throw new Error("Request failed");
+      }
+
+      router.push({
+        pathname: "/reset-sent",
+        params: { phone },
+      });
     } catch (err) {
       Alert.alert(t("common.error"), t("forgot.resetFailed"));
     } finally {
@@ -54,9 +72,9 @@ export default function ForgotPasswordScreen() {
       <TextInput
         label={t("forgot.inputLabel")}
         placeholder="577 XX XX XX"
-        value={email}
+        value={phone}
         onChangeText={(text) => {
-          setEmail(text);
+          setPhone(text);
           setError("");
         }}
         keyboardType="phone-pad"
