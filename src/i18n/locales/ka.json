@@ -48,5 +48,13 @@
   "confirmPassword": "დაადასტურეთ პაროლი",
   "confirmPasswordPlaceholder": "შეიყვანეთ პაროლი კიდევ ერთხელ",
   "hasAccount": "უკვე გაქვს ანგარიში?",
-  "loginLink": "შედი"
+  "loginLink": "შედი",
+
+  "forgot": {
+    "title": "პაროლის აღდგენა",
+    "description": "პაროლის აღსადგენად შეიყვანეთ თქვენი ნომერი",
+    "inputLabel": "ტელეფონი",
+    "button": "კოდის გაგზავნა",
+    "invalidPhone": "ტელეფონის ნომერი არასწორია"
+  }
 }
