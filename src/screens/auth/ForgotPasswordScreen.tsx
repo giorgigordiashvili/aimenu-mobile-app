@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
 import { TextInput } from "../../components/ui/TextInput";
+import PhoneIcon from "../../assets/icons/PhoneIcon";
 import { Button } from "../../components/Button";
 import { colors, typography, spacing } from "../../theme";
 import { textColors } from "../../theme/colors";
@@ -21,39 +22,11 @@ export default function ForgotPasswordScreen() {
     return /^\d{9,12}$/.test(cleaned);
   };
 
-  const handleSubmit = async () => {
-    if (!validatePhone(phone)) {
-      setError(t("forgot.invalidPhone"));
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await fetch(
-        "https://admin.aimenu.ge/api/auth/password/reset/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ phone }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Request failed");
-      }
-
-      router.push({
-        pathname: "/reset-sent",
-        params: { phone },
-      });
-    } catch (err) {
-      Alert.alert(t("common.error"), t("forgot.resetFailed"));
-    } finally {
-      setLoading(false);
-    }
+  const handleGoToReset = () => {
+    router.push({
+      pathname: "/reset-sent",
+      params: { phone },
+    });
   };
 
   return (
@@ -68,7 +41,6 @@ export default function ForgotPasswordScreen() {
 
       <Text style={styles.title}>{t("forgot.title")}</Text>
       <Text style={styles.description}>{t("forgot.description")}</Text>
-
       <TextInput
         label={t("forgot.inputLabel")}
         placeholder="577 XX XX XX"
@@ -78,16 +50,19 @@ export default function ForgotPasswordScreen() {
           setError("");
         }}
         keyboardType="phone-pad"
-        autoCapitalize="none"
         error={error}
+        leftIcon={
+          <View>
+            <PhoneIcon />
+          </View>
+        }
       />
 
       <View style={{ flex: 1 }} />
 
       <Button
         title={t("forgot.button")}
-        onPress={handleSubmit}
-        loading={loading}
+        onPress={handleGoToReset}
         style={{ marginTop: spacing.lg }}
       />
     </View>

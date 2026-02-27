@@ -54,7 +54,6 @@ export const TextInput: React.FC<TextInputProps> = ({
         <RNTextInput
           style={[styles.input, style]}
           editable={!disabled}
-          focusable={!disabled}
           placeholderTextColor={textColors.placeholder}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
