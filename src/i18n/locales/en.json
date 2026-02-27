@@ -2,6 +2,7 @@
   "splash": {
     "welcome": "Magida"
   },
+
   "onboarding": {
     "slide1Title": "Discover the Best Flavors",
     "slide1Description": "Find your favorite dishes and restaurants in the city.",
@@ -13,6 +14,7 @@
     "next": "Next",
     "getStarted": "Get Started"
   },
+
   "auth": {
     "login": "Login",
     "loginSubtitle": "Enter your information to log in.",
@@ -28,9 +30,11 @@
     "show": "Show",
     "hide": "Hide"
   },
+
   "error": {
     "passwordError": "Incorrect password"
   },
+
   "validation": {
     "emailRequired": "Email or Phone is required",
     "passwordRequired": "Password is required",
@@ -40,6 +44,7 @@
     "confirmPasswordRequired": "Confirm password is required",
     "passwordsMustMatch": "Passwords must match"
   },
+
   "register": "Create Account 🚀",
   "registerSubtitle": "Fill in the form to register",
   "firstName": "First Name, Last Name",
@@ -55,6 +60,19 @@
     "description": "Enter your phone number to recover your password",
     "inputLabel": "Phone",
     "button": "Send Code",
-    "invalidPhone": "Invalid phone number"
+    "invalidPhone": "Invalid phone number",
+    "error": "Error",
+    "resetFailed": "Password recovery failed. Please try again."
+  },
+
+  "resetPassword": {
+    "description": "The code has been sent to the phone number you provided +995 577 48 88 96",
+    "resend": "Resend",
+    "passwordDescription": "Enter your new password",
+    "password": "Password",
+    "confirmNewPassword": "Confirm Password",
+    "invalidCode": "Invalid code. Please try again.",
+    "button": "Confirm",
+    "changePasswordButton": "Change Password"
   }
 }
