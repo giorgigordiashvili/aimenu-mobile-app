@@ -24,7 +24,7 @@ export default function ForgotPasswordScreen() {
 
   const handleGoToReset = () => {
     router.push({
-      pathname: "/reset-sent",
+      pathname: "/otp",
       params: { phone },
     });
   };

@@ -66,13 +66,18 @@
   },
 
   "resetPassword": {
-    "description": "The code has been sent to the phone number you provided +995 577 48 88 96",
-    "resend": "Resend",
+    "description": "The code has been sent to the phone number you provided ",
     "passwordDescription": "Enter your new password",
     "password": "Password",
     "confirmNewPassword": "Confirm Password",
     "invalidCode": "Invalid code. Please try again.",
-    "button": "Confirm",
     "changePasswordButton": "Change Password"
+  },
+
+  "otp": {
+    "description": "The code has been sent to the phone number you provided ",
+    "resend": "Resend",
+    "button": "Confirm",
+    "invalidCode": "Invalid code. Please try again."
   }
 }
