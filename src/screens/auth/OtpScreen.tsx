@@ -2,95 +2,72 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../components/Button";
+import { OtpInput } from "../../components/ui/OtpInput";
 import { colors, typography, spacing } from "../../theme";
 import { textColors } from "../../theme/colors";
 import BackArrowIcon from "../../assets/icons/BackArrowIcon";
+import ResendIcon from "../../assets/icons/ResendIcon";
 import { useRouter } from "expo-router";
-import { TextInput } from "../../components/ui/TextInput";
 
-export default function ResetEmailSentScreen() {
+export default function OtpScreen() {
   const { t } = useTranslation();
   const router = useRouter();
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [otp, setOtp] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
 
-  const handleSubmit = async () => {
-    if (!password || !confirmPassword) {
-      setError(t("resetPassword.emptyPassword"));
+  const handleSubmit = () => {
+    if (otp.length !== 4) {
+      setError(t("otp.invalidCode"));
       return;
     }
-    if (password !== confirmPassword) {
-      setError(t("resetPassword.passwordsDontMatch"));
-      return;
-    }
-    setLoading(true);
-    try {
-      router.push({ pathname: "/reset-sent" });
-    } catch (err) {
-      Alert.alert(t("forgot.error"), t("forgot.resetFailed"));
-    } finally {
-      setLoading(false);
-    }
+    setError("");
+    router.push({ pathname: "/reset-sent" });
+  };
+
+  const handleResend = () => {
+    setResendLoading(true);
+    setTimeout(() => {
+      setResendLoading(false);
+      // Simulate resend
+    }, 1000);
   };
 
   return (
     <View style={styles.container}>
       {/* Back */}
       <TouchableOpacity
-        onPress={() => router.push("/otp")}
+        onPress={() => router.push("/forgot")}
         style={styles.backButton}
       >
         <BackArrowIcon />
       </TouchableOpacity>
 
       <Text style={styles.title}>{t("forgot.title")}</Text>
+
       <Text style={styles.description}>
-        {t("resetPassword.passwordDescription")}
+        {t("otp.description")}{" "}
+        <Text style={styles.phoneNumber}>+995 577 48 88 96</Text>
       </Text>
 
-      <TextInput
-        label={t("resetPassword.password")}
-        placeholder="********"
-        placeholderTextColor={textColors.placeholder}
-        secureTextEntry
-        value={password}
-        onChangeText={(text) => {
-          setPassword(text);
-          setError("");
-        }}
-      />
-
-      <TextInput
-        label={t("resetPassword.confirmNewPassword")}
-        placeholder="********"
-        placeholderTextColor={textColors.placeholder}
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={(text) => {
-          setConfirmPassword(text);
-          setError("");
-        }}
-      />
-
-      {error ? (
-        <Text
-          style={{
-            color: colors.error,
-            marginBottom: spacing.md,
-            textAlign: "center",
-          }}
-        >
-          {error}
-        </Text>
-      ) : null}
+      <OtpInput value={otp} onChange={setOtp} error={!!error} />
+      {!!error && <Text style={styles.otpError}>{error}</Text>}
 
       <View style={{ flex: 1 }} />
 
+      <TouchableOpacity
+        style={styles.resendRow}
+        onPress={handleResend}
+        disabled={resendLoading}
+      >
+        <ResendIcon />
+        <Text style={styles.resendText}>{t("otp.resend")}</Text>
+      </TouchableOpacity>
+
       <Button
-        title={t("resetPassword.changePasswordButton")}
+        title={t("otp.button")}
         onPress={handleSubmit}
         loading={loading}
         style={{ marginTop: spacing.lg }}
@@ -136,5 +113,25 @@ const styles = StyleSheet.create({
     color: textColors.secondary,
     marginBottom: spacing.xxl,
     textAlign: "center",
+  },
+  phoneNumber: {
+    color: colors.dark,
+    fontWeight: "bold",
+  },
+  otpError: {
+    color: colors.error,
+    textAlign: "center",
+    marginBottom: spacing.md,
+    ...typography.textSm,
+  },
+  resendRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+  },
+  resendText: {
+    color: textColors.defaultSecondary,
+    ...typography.buttonSm,
   },
 });
