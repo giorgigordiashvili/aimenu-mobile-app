@@ -56,5 +56,11 @@
     "inputLabel": "ტელეფონი",
     "button": "კოდის გაგზავნა",
     "invalidPhone": "ტელეფონის ნომერი არასწორია"
+  },
+  "home": {
+    "greeting": "გამარჯობა, {name}!",
+    "subtitle": "სად ისადილებ დღეს?",
+    "searchPlaceholder": "სახელით ძებნა",
+    "popularTitle": "პოპულარული"
   }
 }

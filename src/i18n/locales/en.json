@@ -56,5 +56,11 @@
     "inputLabel": "Phone",
     "button": "Send Code",
     "invalidPhone": "Invalid phone number"
+  },
+  "home": {
+    "greeting": "Hello, {name}!",
+    "subtitle": "Where will you dine today?",
+    "searchPlaceholder": "Search by name",
+    "popularTitle": "Popular"
   }
 }

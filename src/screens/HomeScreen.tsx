@@ -12,14 +12,16 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import debounce from "lodash/debounce";
 
 import { Card } from "../components/ui/Card";
-import { SearchBar } from "../components/ui/SearhBar";
+import { SearchBar } from "../components/ui/SearchBar";
 import { borderRadius, colors, spacing, typography } from "../theme";
+import { useTranslation } from "react-i18next";
 
 const HomeScreen = () => {
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // category ID
+  const { t } = useTranslation();
 
   const { data: categories, isLoading: loadingCategories } = useQuery({
     queryKey: ["categories"],
@@ -108,18 +110,17 @@ const HomeScreen = () => {
 
   const restaurants = data?.pages.flatMap((page) => page.results) || [];
 
-  console.log("Categories:", categories);
-  console.log("Restaurants:", restaurants);
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>გამარჯობა, გაგი</Text>
-        <Text style={styles.subtitle}>სად ისადილებ დღეს?</Text>
+        <Text style={styles.greeting}>
+          {t("home.greeting", { name: "გაგი" })}
+        </Text>
+        <Text style={styles.subtitle}>{t("home.subtitle")}</Text>
       </View>
       <View style={styles.searchBar}>
         <SearchBar
-          placeholder="ძიება..."
+          placeholder={t("home.searchPlaceholder")}
           onChangeText={handleSearch}
           value={inputValue}
         />
