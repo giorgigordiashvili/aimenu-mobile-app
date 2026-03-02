@@ -60,6 +60,13 @@
     "description": "Enter your phone number to recover your password",
     "inputLabel": "Phone",
     "button": "Send Code",
+    "invalidPhone": "Invalid phone number"
+  },
+  "home": {
+    "greeting": "Hello, {name}!",
+    "subtitle": "Where will you dine today?",
+    "searchPlaceholder": "Search by name",
+    "popularTitle": "Popular"
     "invalidPhone": "Invalid phone number",
     "error": "Error",
     "resetFailed": "Password recovery failed. Please try again."
