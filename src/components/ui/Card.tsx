@@ -92,15 +92,19 @@ export const Card: React.FC<CardProps> = ({
         )}
 
         <View style={styles.metaRow}>
-          {rating !== undefined && (
-            <View style={styles.ratingContainer}>
-              <Text style={styles.starIcon}>⭐</Text>
-              <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
-              {reviewCount !== undefined && (
-                <Text style={styles.reviewCount}>({reviewCount})</Text>
-              )}
-            </View>
-          )}
+          {rating !== undefined &&
+            rating !== null &&
+            !isNaN(Number(rating)) && (
+              <View style={styles.ratingContainer}>
+                <Text style={styles.starIcon}>⭐</Text>
+                <Text style={styles.ratingText}>
+                  {Number(rating).toFixed(1)}
+                </Text>
+                {reviewCount !== undefined && (
+                  <Text style={styles.reviewCount}>({reviewCount})</Text>
+                )}
+              </View>
+            )}
 
           {priceRange && <Text style={styles.priceRange}>{priceRange}</Text>}
         </View>

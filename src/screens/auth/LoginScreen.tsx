@@ -21,9 +21,7 @@ import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
   const router = useRouter();
-
   const { t } = useTranslation();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -53,6 +51,7 @@ export default function LoginScreen() {
     if (!validate()) return;
 
     console.log("Login:", { email, password });
+    router.push("/home");
   };
 
   return (
