@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { TextInput } from "../../components/ui/TextInput";
 import PhoneIcon from "../../assets/icons/PhoneIcon";
 import { Button } from "../../components/Button";
-import { colors, typography, spacing } from "../../theme";
+import { colors, spacing, typography } from "../../theme";
 import { textColors } from "../../theme/colors";
 import BackArrowIcon from "../../assets/icons/BackArrowIcon";
 import { useRouter } from "expo-router";

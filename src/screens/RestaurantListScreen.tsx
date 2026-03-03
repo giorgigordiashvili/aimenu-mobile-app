@@ -8,25 +8,37 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import debounce from "lodash/debounce";
+import { useTranslation } from "react-i18next";
 
 import { Card } from "../components/ui/Card";
 import { SearchBar } from "../components/ui/SearchBar";
-import { borderRadius, colors, spacing, typography } from "../theme";
-import { useTranslation } from "react-i18next";
+import { colors, spacing, borderRadius, typography } from "../theme";
 
-const HomeScreen = () => {
+const RestaurantListScreen = () => {
   const router = useRouter();
+  const { t } = useTranslation();
+
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // category ID
-  const { t } = useTranslation();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      setSearchQuery(query);
+    }, 500),
+    [],
+  );
+
+  const handleSearch = (text: string) => {
+    setInputValue(text);
+    debouncedSearch(text);
+  };
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      // Fetch all pages to get all categories
       const categoryMap = new Map();
       let page = 1;
       let hasMore = true;
@@ -38,7 +50,6 @@ const HomeScreen = () => {
         if (!res.ok) throw new Error("Failed to fetch categories");
         const data = await res.json();
 
-        // Extract unique categories from restaurants
         data.results?.forEach((restaurant: any) => {
           if (restaurant.category && restaurant.category.id) {
             const categoryName =
@@ -52,12 +63,10 @@ const HomeScreen = () => {
           }
         });
 
-        // Check if there are more pages
         hasMore = !!data.next;
         page++;
       }
 
-      // Convert to array of objects for FlatList
       return Array.from(categoryMap.values());
     },
   });
@@ -78,35 +87,17 @@ const HomeScreen = () => {
     return res.json();
   };
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ["restaurants", selectedCategory, searchQuery],
-    queryFn: fetchRestaurants,
-    getNextPageParam: (lastPage) => {
-      if (!lastPage.next) return undefined;
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery({
+      queryKey: ["restaurants", selectedCategory, searchQuery],
+      queryFn: fetchRestaurants,
+      getNextPageParam: (lastPage) => {
+        if (!lastPage.next) return undefined;
 
-      const match = lastPage.next.match(/page=(\d+)/);
-      return match ? Number(match[1]) : undefined;
-    },
-  });
-
-  const debouncedSearch = useCallback(
-    debounce((query: string) => {
-      setSearchQuery(query);
-    }, 500),
-    [setSearchQuery],
-  );
-
-  const handleSearch = (text: string) => {
-    setInputValue(text);
-    debouncedSearch(text);
-  };
+        const match = lastPage.next.match(/page=(\d+)/);
+        return match ? Number(match[1]) : undefined;
+      },
+    });
 
   const restaurants = data?.pages.flatMap((page) => page.results) || [];
 
@@ -118,21 +109,21 @@ const HomeScreen = () => {
         </Text>
         <Text style={styles.subtitle}>{t("home.subtitle")}</Text>
       </View>
+
       <View style={styles.searchBar}>
         <SearchBar
           placeholder={t("home.searchPlaceholder")}
-          onChangeText={handleSearch}
           value={inputValue}
+          onChangeText={handleSearch}
         />
       </View>
 
-      <TouchableOpacity onPress={() => router.push("/restaurants")}>
-        <Text style={{ color: colors.primary }}>{t("home.seeAll")}</Text>
-      </TouchableOpacity>
       <FlatList
         horizontal
         data={categories}
         keyExtractor={(item) => item.id.toString()}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16 }}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={[
@@ -154,8 +145,6 @@ const HomeScreen = () => {
             </Text>
           </TouchableOpacity>
         )}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
       />
 
       {isLoading ? (
@@ -195,7 +184,7 @@ const HomeScreen = () => {
   );
 };
 
-export default HomeScreen;
+export default RestaurantListScreen;
 
 const styles = StyleSheet.create({
   container: {

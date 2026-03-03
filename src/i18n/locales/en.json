@@ -66,10 +66,11 @@
     "greeting": "Hello, {name}!",
     "subtitle": "Where will you dine today?",
     "searchPlaceholder": "Search by name",
-    "popularTitle": "Popular"
+    "popularTitle": "Popular",
     "invalidPhone": "Invalid phone number",
     "error": "Error",
-    "resetFailed": "Password recovery failed. Please try again."
+    "resetFailed": "Password recovery failed. Please try again.",
+    "seeAll": "See All"
   },
 
   "resetPassword": {
