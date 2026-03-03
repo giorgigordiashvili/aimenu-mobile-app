@@ -66,10 +66,11 @@
     "greeting": "გამარჯობა, {name}!",
     "subtitle": "სად ისადილებ დღეს?",
     "searchPlaceholder": "სახელით ძებნა",
-    "popularTitle": "პოპულარული"
+    "popularTitle": "პოპულარული",
     "invalidPhone": "ტელეფონის ნომერი არასწორია",
     "error": "შეცდომა",
-    "resetFailed": "პაროლის აღდგენა ვერ მოხერხდა. ცადეთ თავიდან"
+    "resetFailed": "პაროლის აღდგენა ვერ მოხერხდა. ცადეთ თავიდან",
+    "seeAll": "ყველას ნახვა"
   },
 
   "resetPassword": {
