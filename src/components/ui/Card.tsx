@@ -2,16 +2,25 @@ import React from "react";
 import { View, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { colors, typography, spacing, borderRadius } from "../../theme";
 import { textColors } from "../../theme/colors";
+import LocationIcon from "../../assets/icons/LocationIcon";
+import ChefIcon from "../../assets/icons/ChefIcon";
+import StarIcon from "../../assets/icons/StarIcon";
 
 interface CardProps {
   /** Restaurant cover image URL */
   imageUrl: string;
   /** Restaurant name */
   title: string;
-  /** Cuisine type (e.g., "იტალიური, ქართული") */
-  subtitle?: string;
+  /** Location/address */
+  location?: string;
+  /** Restaurant description */
+  description?: string;
+  /** Array of tags/features */
+  tags?: string[];
   /** Rating number (e.g., 4.8) */
   rating?: number;
+  /** Cuisine type (e.g., "იტალიური, ქართული") */
+  subtitle?: string;
   /** Review count */
   reviewCount?: number;
   /** Price range ("₾", "₾₾", "₾₾₾") */
@@ -29,14 +38,13 @@ interface CardProps {
 export const Card: React.FC<CardProps> = ({
   imageUrl,
   title,
-  subtitle,
+  location,
+  description,
+  tags,
   rating,
-  reviewCount,
-  priceRange,
   isOpen,
   isFavorite = false,
   onPress,
-  onFavoritePress,
 }) => {
   return (
     <TouchableOpacity
@@ -52,14 +60,16 @@ export const Card: React.FC<CardProps> = ({
           resizeMode="cover"
         />
 
-        {/* Favorite Button (top-right) */}
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={onFavoritePress}
-        >
-          <Text style={{ fontSize: 20 }}>{isFavorite ? "❤️" : "🤍"}</Text>
-        </TouchableOpacity>
-        {/* Open/Closed Badge (top-left) */}
+        {/* Rating Badge (top-right) */}
+        {rating !== undefined && rating !== null && !isNaN(Number(rating)) && (
+          <View style={styles.ratingBadge}>
+            <StarIcon />
+            <Text style={styles.ratingBadgeText}>
+              {Number(rating).toFixed(1)}
+            </Text>
+          </View>
+        )}
+        {/* Open/Closed Badge (top-left) - only if isOpen is defined and true/false */}
         {isOpen !== undefined && (
           <View
             style={[
@@ -81,33 +91,44 @@ export const Card: React.FC<CardProps> = ({
 
       {/* Info Section */}
       <View style={styles.infoContainer}>
-        <Text style={styles.title} numberOfLines={1}>
-          {title}
-        </Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+        </View>
 
-        {subtitle && (
-          <Text style={styles.subtitle} numberOfLines={1}>
-            {subtitle}
+        {location && (
+          <View style={styles.locationRow}>
+            <LocationIcon />
+            <Text style={styles.locationText}>{location}</Text>
+          </View>
+        )}
+
+        {description && (
+          <Text style={styles.description} numberOfLines={2}>
+            {description}
           </Text>
         )}
 
-        <View style={styles.metaRow}>
-          {rating !== undefined &&
-            rating !== null &&
-            !isNaN(Number(rating)) && (
-              <View style={styles.ratingContainer}>
-                <Text style={styles.starIcon}>⭐</Text>
-                <Text style={styles.ratingText}>
-                  {Number(rating).toFixed(1)}
-                </Text>
-                {reviewCount !== undefined && (
-                  <Text style={styles.reviewCount}>({reviewCount})</Text>
+        {tags && tags.length > 0 && (
+          <View style={styles.tagsContainer}>
+            {tags.slice(0, 3).map((tag, index, arr) => (
+              <View key={index} style={styles.tag}>
+                {index < arr.length - 1 && (
+                  <Text style={styles.tagIcon}>
+                    <ChefIcon />
+                  </Text>
                 )}
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+            {tags.length > 3 && (
+              <View style={styles.tag}>
+                <Text style={styles.tagsMore}>+{tags.length - 3}</Text>
               </View>
             )}
-
-          {priceRange && <Text style={styles.priceRange}>{priceRange}</Text>}
-        </View>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -119,11 +140,8 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     overflow: "hidden",
     marginBottom: spacing.md,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.light,
   },
   imageWrapper: {
     position: "relative",
@@ -133,23 +151,29 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  favoriteButton: {
+  ratingBadge: {
     position: "absolute",
     top: spacing.sm,
     right: spacing.sm,
     backgroundColor: colors.white,
-    borderRadius: 20,
-    width: 36,
-    height: 36,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: spacing.xs,
+  },
+  ratingBadgeText: {
+    fontSize: typography.rating.fontSize,
+    fontWeight: typography.rating.fontWeight,
+    color: colors.black,
   },
   statusBadge: {
     position: "absolute",
     top: spacing.sm,
     left: spacing.sm,
     paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: borderRadius.sm,
   },
   openBadge: {
@@ -165,50 +189,75 @@ const styles = StyleSheet.create({
     color: colors.error2,
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontSize: typography.buttonSm.fontSize,
+    fontWeight: typography.buttonSm.fontWeight,
   },
   infoContainer: {
     padding: spacing.md,
   },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
   title: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: colors.gray900,
-    marginBottom: 4,
+    fontSize: typography.h4.fontSize,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.black,
+    flex: 1,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+    gap: spacing.xs,
+  },
+  locationText: {
+    fontSize: typography.buttonSm.fontSize,
+    fontWeight: typography.buttonSm.fontWeight,
+    color: textColors.tertiary,
+  },
+  description: {
+    fontSize: typography.buttonSm.fontSize,
+    fontWeight: typography.textXl.fontWeight,
+    color: textColors.secondary,
+    lineHeight: typography.textXs.lineHeight,
+    marginBottom: spacing.sm,
+  },
+  tagsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.xs,
+  },
+  tag: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.state100,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.xs,
+    gap: spacing.xs,
+    alignContent: "center",
+  },
+  tagIcon: {
+    fontSize: 12,
+    color: colors.primary,
+  },
+  tagText: {
+    fontSize: typography.rating.fontSize,
+    fontWeight: typography.textXs.fontWeight,
+    color: textColors.secondary,
+  },
+  tagsMore: {
+    fontSize: typography.textXs.fontSize,
+    fontWeight: typography.textXs.fontWeight,
+    color: textColors.secondary,
   },
   subtitle: {
     fontSize: 13,
     fontWeight: "400",
     color: colors.gray500,
     marginBottom: spacing.sm,
-  },
-  metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  starIcon: {
-    fontSize: 14,
-    marginRight: 4,
-  },
-  ratingText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.gray800,
-    marginRight: 4,
-  },
-  reviewCount: {
-    fontSize: 12,
-    color: colors.gray500,
-  },
-  priceRange: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: textColors.secondary,
   },
 });
