@@ -126,6 +126,18 @@ const HomeScreen = () => {
         />
       </View>
 
+      <Card
+        imageUrl="..."
+        title="შავი ლომი"
+        location="თბილისი"
+        description="უნიკალური გარემო ძველ თბილისში, სადაც ტრადიციული გემოები ახლებურადაა წარმოჩენილი."
+        tags={["ტერასა", "ცოცხალი მუსიკა", "+1"]}
+        rating={4.8}
+        isFavorite={false}
+        onPress={() => {}}
+        onFavoritePress={() => {}}
+      />
+
       <TouchableOpacity onPress={() => router.push("/restaurants")}>
         <Text style={{ color: colors.primary }}>{t("home.seeAll")}</Text>
       </TouchableOpacity>

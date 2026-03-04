@@ -16,6 +16,7 @@ export const typography: Record<string, TextStyle> = {
   buttonSm: { fontSize: 12, fontWeight: "500", lineHeight: 16 },
   button: { fontSize: 14, fontWeight: "500", lineHeight: 20 },
   splashTitle: { fontSize: 34, fontWeight: "bold", lineHeight: 40 },
+  rating: { fontSize: 10, fontWeight: "700", lineHeight: 15 },
 };
 
 // Define font weights separately
