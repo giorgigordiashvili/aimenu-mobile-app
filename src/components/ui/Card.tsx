@@ -27,12 +27,8 @@ interface CardProps {
   priceRange?: string;
   /** Whether restaurant is currently open */
   isOpen?: boolean;
-  /** Favorite/heart toggle */
-  isFavorite?: boolean;
   /** Callback when card is pressed */
   onPress?: () => void;
-  /** Callback when heart is pressed */
-  onFavoritePress?: () => void;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -43,7 +39,6 @@ export const Card: React.FC<CardProps> = ({
   tags,
   rating,
   isOpen,
-  isFavorite = false,
   onPress,
 }) => {
   return (
@@ -114,11 +109,7 @@ export const Card: React.FC<CardProps> = ({
           <View style={styles.tagsContainer}>
             {tags.slice(0, 3).map((tag, index, arr) => (
               <View key={index} style={styles.tag}>
-                {index < arr.length - 1 && (
-                  <Text style={styles.tagIcon}>
-                    <ChefIcon />
-                  </Text>
-                )}
+                {index < arr.length - 1 && <ChefIcon />}
                 <Text style={styles.tagText}>{tag}</Text>
               </View>
             ))}
