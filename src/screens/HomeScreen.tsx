@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -18,10 +18,31 @@ import { useTranslation } from "react-i18next";
 const { width } = Dimensions.get("window");
 const BANNER_WIDTH = width - spacing.md * 2;
 
+// Banner data constant - moved outside component to avoid recreation on render
+const BANNER_DATA = [
+  { id: 1, image: require("../assets/images/Banner.png") },
+  { id: 2, image: require("../assets/images/Banner.png") },
+  { id: 3, image: require("../assets/images/Banner.png") },
+  { id: 4, image: require("../assets/images/Banner.png") },
+  { id: 5, image: require("../assets/images/Banner.png") },
+];
+
 const HomeScreen = () => {
   const router = useRouter();
   const { t } = useTranslation();
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+
+  // Stable reference for viewabilityConfig
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+  }).current;
+
+  // Stable callback reference using useCallback
+  const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
+    if (viewableItems.length > 0 && viewableItems[0].index != null) {
+      setCurrentBannerIndex(viewableItems[0].index);
+    }
+  }, []);
 
   const { data: popular, isLoading: popularLoading } = useQuery({
     queryKey: ["popularRestaurants"],
@@ -62,14 +83,6 @@ const HomeScreen = () => {
     </View>
   );
 
-  const banners = [
-    { id: 1, image: require("../assets/images/Banner.png") },
-    { id: 2, image: require("../assets/images/Banner.png") },
-    { id: 3, image: require("../assets/images/Banner.png") },
-    { id: 4, image: require("../assets/images/Banner.png") },
-    { id: 5, image: require("../assets/images/Banner.png") },
-  ];
-
   return (
     <FlatList
       style={styles.container}
@@ -105,27 +118,21 @@ const HomeScreen = () => {
           <View style={styles.bannerWrapper}>
             <FlatList
               horizontal
-              data={banners}
+              data={BANNER_DATA}
               keyExtractor={(item) => item.id.toString()}
               showsHorizontalScrollIndicator={false}
               pagingEnabled
               snapToInterval={BANNER_WIDTH + spacing.md}
               decelerationRate="fast"
-              onViewableItemsChanged={({ viewableItems }) => {
-                if (viewableItems.length > 0 && viewableItems[0].index != null) {
-                  setCurrentBannerIndex(viewableItems[0].index);
-                }
-              }}
-              viewabilityConfig={{
-                itemVisiblePercentThreshold: 50,
-              }}
+              onViewableItemsChanged={onViewableItemsChanged}
+              viewabilityConfig={viewabilityConfig}
               renderItem={({ item, index }) => (
                 <View style={{ marginRight: spacing.md }}>
                   <PromoBanner
                     image={item.image}
                     title={t("home.bannerTitle")}
                     currentIndex={currentBannerIndex}
-                    totalCount={banners.length}
+                    totalCount={BANNER_DATA.length}
                   />
                 </View>
               )}
