@@ -67,10 +67,12 @@
     "subtitle": "სად ისადილებ დღეს?",
     "searchPlaceholder": "სახელით ძებნა",
     "popularTitle": "პოპულარული",
+    "recommendedTitle": "რეკომენდებული",
     "invalidPhone": "ტელეფონის ნომერი არასწორია",
     "error": "შეცდომა",
     "resetFailed": "პაროლის აღდგენა ვერ მოხერხდა. ცადეთ თავიდან",
-    "seeAll": "ყველას ნახვა"
+    "seeAll": "ყველას ნახვა",
+    "bannerTitle": "დაასკანერე\nრესტორნის მენიუ"
   },
 
   "resetPassword": {

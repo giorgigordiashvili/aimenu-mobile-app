@@ -67,10 +67,12 @@
     "subtitle": "Where will you dine today?",
     "searchPlaceholder": "Search by name",
     "popularTitle": "Popular",
+    "recommendedTitle": "Recommended",
     "invalidPhone": "Invalid phone number",
     "error": "Error",
     "resetFailed": "Password recovery failed. Please try again.",
-    "seeAll": "See All"
+    "seeAll": "See All",
+    "bannerTitle": "Scan the restaurant's menu"
   },
 
   "resetPassword": {

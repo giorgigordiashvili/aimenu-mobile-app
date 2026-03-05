@@ -1,209 +1,176 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
   ActivityIndicator,
+  TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import debounce from "lodash/debounce";
-
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "../components/ui/Card";
-import { SearchBar } from "../components/ui/SearchBar";
-import { borderRadius, colors, spacing, typography } from "../theme";
+import { PromoBanner } from "../components/PromoBanner";
+import { colors, spacing, typography, borderRadius } from "../theme";
 import { useTranslation } from "react-i18next";
+
+const { width } = Dimensions.get("window");
+const BANNER_WIDTH = width - spacing.md * 2;
 
 const HomeScreen = () => {
   const router = useRouter();
-  const [inputValue, setInputValue] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // category ID
   const { t } = useTranslation();
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
-  const { data: categories } = useQuery({
-    queryKey: ["categories"],
+  const { data: popular, isLoading: popularLoading } = useQuery({
+    queryKey: ["popularRestaurants"],
     queryFn: async () => {
-      // Fetch all pages to get all categories
-      const categoryMap = new Map();
-      let page = 1;
-      let hasMore = true;
-
-      while (hasMore) {
-        const res = await fetch(
-          `https://admin.aimenu.ge/api/v1/restaurants/?page=${page}`,
-        );
-        if (!res.ok) throw new Error("Failed to fetch categories");
-        const data = await res.json();
-
-        // Extract unique categories from restaurants
-        data.results?.forEach((restaurant: any) => {
-          if (restaurant.category && restaurant.category.id) {
-            const categoryName =
-              restaurant.category.translations?.ka?.name ||
-              restaurant.category.slug;
-            categoryMap.set(restaurant.category.id, {
-              id: restaurant.category.id,
-              slug: restaurant.category.slug,
-              name: categoryName,
-            });
-          }
-        });
-
-        // Check if there are more pages
-        hasMore = !!data.next;
-        page++;
-      }
-
-      // Convert to array of objects for FlatList
-      return Array.from(categoryMap.values());
+      const res = await fetch(
+        "https://admin.aimenu.ge/api/v1/restaurants/?ordering=-rating&page_size=10",
+      );
+      return res.json();
     },
   });
 
-  const fetchRestaurants = async ({ pageParam = 1 }) => {
-    let url = `https://admin.aimenu.ge/api/v1/restaurants/?page=${pageParam}`;
-
-    if (selectedCategory) {
-      url += `&category=${selectedCategory}`;
-    }
-
-    if (searchQuery) {
-      url += `&search=${searchQuery}`;
-    }
-
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to fetch restaurants");
-    return res.json();
-  };
-
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ["restaurants", selectedCategory, searchQuery],
-    queryFn: fetchRestaurants,
-    getNextPageParam: (lastPage) => {
-      if (!lastPage.next) return undefined;
-
-      const match = lastPage.next.match(/page=(\d+)/);
-      return match ? Number(match[1]) : undefined;
+  const { data: recommended, isLoading: recommendedLoading } = useQuery({
+    queryKey: ["recommendedRestaurants"],
+    queryFn: async () => {
+      const res = await fetch(
+        "https://admin.aimenu.ge/api/v1/restaurants/?is_recommended=true",
+      );
+      return res.json();
     },
   });
 
-  const debouncedSearch = useCallback(
-    debounce((query: string) => {
-      setSearchQuery(query);
-    }, 500),
-    [setSearchQuery],
+  const popularRestaurants = popular?.results || [];
+  const recommendedRestaurants = recommended?.results || [];
+
+  if (popularLoading || recommendedLoading) {
+    return <ActivityIndicator style={{ flex: 1 }} />;
+  }
+
+  const renderSectionHeader = (title: string, onPress?: () => void) => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+
+      {onPress && (
+        <TouchableOpacity onPress={onPress}>
+          <Text style={styles.seeAll}>{t("home.seeAll")}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 
-  const handleSearch = (text: string) => {
-    setInputValue(text);
-    debouncedSearch(text);
-  };
-
-  const restaurants = data?.pages.flatMap((page) => page.results) || [];
+  const banners = [
+    { id: 1, image: require("../assets/images/Banner.png") },
+    { id: 2, image: require("../assets/images/Banner.png") },
+    { id: 3, image: require("../assets/images/Banner.png") },
+    { id: 4, image: require("../assets/images/Banner.png") },
+    { id: 5, image: require("../assets/images/Banner.png") },
+  ];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.greeting}>
-          {t("home.greeting", { name: "გაგი" })}
-        </Text>
-        <Text style={styles.subtitle}>{t("home.subtitle")}</Text>
-      </View>
-      <View style={styles.searchBar}>
-        <SearchBar
-          placeholder={t("home.searchPlaceholder")}
-          onChangeText={handleSearch}
-          value={inputValue}
-        />
-      </View>
-
-      <Card
-        imageUrl="..."
-        title="შავი ლომი"
-        location="თბილისი"
-        description="უნიკალური გარემო ძველ თბილისში, სადაც ტრადიციული გემოები ახლებურადაა წარმოჩენილი."
-        tags={["ტერასა", "ცოცხალი მუსიკა", "+1"]}
-        rating={4.8}
-        isFavorite={false}
-        onPress={() => {}}
-        onFavoritePress={() => {}}
-      />
-
-      <TouchableOpacity onPress={() => router.push("/restaurants")}>
-        <Text style={{ color: colors.primary }}>{t("home.seeAll")}</Text>
-      </TouchableOpacity>
-      <FlatList
-        horizontal
-        data={categories}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.chip,
-              selectedCategory === item.id && styles.chipActive,
-            ]}
-            onPress={() =>
-              setSelectedCategory(selectedCategory === item.id ? null : item.id)
-            }
-          >
-            <Text
-              style={
-                selectedCategory === item.id
-                  ? styles.chipTextActive
-                  : styles.chipText
-              }
-            >
-              {item.name}
-            </Text>
-          </TouchableOpacity>
-        )}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-      />
-
-      {isLoading ? (
-        <ActivityIndicator size="large" style={{ marginTop: 20 }} />
-      ) : (
-        <FlatList
-          data={restaurants}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <Card
-              title={item.name}
-              imageUrl={item.logo}
-              rating={parseFloat(item.average_rating)}
-              reviewCount={item.total_reviews}
-              subtitle={
-                item.category?.translations?.ka?.name || item.description
-              }
-              isOpen={item.is_open_now}
-              onPress={() =>
-                router.push({
-                  pathname: "/restaurant-detail",
-                  params: { slug: item.slug },
-                })
-              }
-            />
-          )}
-          onEndReached={() => {
-            if (hasNextPage) fetchNextPage();
-          }}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            isFetchingNextPage ? <ActivityIndicator /> : null
+    <FlatList
+      style={styles.container}
+      data={recommendedRestaurants}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={({ item }) => (
+        <Card
+          title={item.name}
+          imageUrl={item.cover_image || item.logo}
+          rating={parseFloat(item.average_rating)}
+          reviewCount={item.total_reviews}
+          subtitle={item.category?.translations?.ka?.name}
+          isOpen={item.is_open_now}
+          onPress={() =>
+            router.push({
+              pathname: "/restaurant-detail",
+              params: { slug: item.slug },
+            })
           }
         />
       )}
-    </View>
+      ListHeaderComponent={
+        <>
+          {/* Greeting */}
+          <View style={styles.header}>
+            <Text style={styles.greeting}>
+              {t("home.greeting", { name: "გაგი" })}
+            </Text>
+            <Text style={styles.subtitle}>{t("home.subtitle")}</Text>
+          </View>
+
+          {/* Promo Banner Carousel */}
+          <View style={styles.bannerWrapper}>
+            <FlatList
+              horizontal
+              data={banners}
+              keyExtractor={(item) => item.id.toString()}
+              showsHorizontalScrollIndicator={false}
+              pagingEnabled
+              snapToInterval={BANNER_WIDTH + spacing.md}
+              decelerationRate="fast"
+              onViewableItemsChanged={({ viewableItems }) => {
+                if (viewableItems.length > 0 && viewableItems[0].index != null) {
+                  setCurrentBannerIndex(viewableItems[0].index);
+                }
+              }}
+              viewabilityConfig={{
+                itemVisiblePercentThreshold: 50,
+              }}
+              renderItem={({ item, index }) => (
+                <View style={{ marginRight: spacing.md }}>
+                  <PromoBanner
+                    image={item.image}
+                    title={t("home.bannerTitle")}
+                    currentIndex={currentBannerIndex}
+                    totalCount={banners.length}
+                  />
+                </View>
+              )}
+            />
+          </View>
+
+          {/* Popular Section */}
+          <View style={styles.section}>
+            {renderSectionHeader(t("home.popularTitle"), () =>
+              router.push("/restaurants"),
+            )}
+
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={popularRestaurants}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <View style={{ width: 260, marginRight: spacing.md }}>
+                  <Card
+                    title={item.name}
+                    imageUrl={item.cover_image || item.logo}
+                    rating={parseFloat(item.average_rating)}
+                    reviewCount={item.total_reviews}
+                    subtitle={item.category?.translations?.ka?.name}
+                    isOpen={item.is_open_now}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/restaurant-detail",
+                        params: { slug: item.slug },
+                      })
+                    }
+                  />
+                </View>
+              )}
+            />
+          </View>
+
+          {/* Recommended title */}
+          <View style={styles.section}>
+            {renderSectionHeader(t("home.recommendedTitle"))}
+          </View>
+        </>
+      }
+    />
   );
 };
 
@@ -212,35 +179,48 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginVertical: spacing.xxxl,
-    marginHorizontal: spacing.md,
+    backgroundColor: colors.white,
+    padding: spacing.md,
   },
-  searchBar: {
-    marginTop: spacing.md,
+
+  header: {
+    paddingTop: spacing.xxxl,
+    marginBottom: spacing.xl,
   },
-  header: {},
+
   greeting: {
     fontSize: typography.button.fontSize,
     fontWeight: typography.button.fontWeight,
     color: colors.placeholder,
     marginBottom: spacing.xs,
   },
+
   subtitle: {
     fontSize: typography.h1.fontSize,
     fontWeight: typography.h1.fontWeight,
   },
-  chip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.full,
-    marginRight: spacing.sm,
+
+  bannerWrapper: {},
+
+  section: {
+    marginTop: spacing.xl,
+  },
+
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: spacing.lg,
   },
-  chipActive: {
-    backgroundColor: colors.greenButtonBackground,
+
+  sectionTitle: {
+    ...typography.h2,
+    color: colors.dark,
+    fontWeight: typography.h1.fontWeight,
   },
-  chipText: {},
-  chipTextActive: {
-    color: colors.white,
+
+  seeAll: {
+    ...typography.button,
+    color: colors.primary,
   },
 });
