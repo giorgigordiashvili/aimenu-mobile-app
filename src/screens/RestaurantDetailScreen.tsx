@@ -34,6 +34,18 @@ interface RestaurantCategory {
   name?: string;
 }
 
+interface MenuCategory {
+  id: string;
+  translations: {
+    ka?: { name?: string; description?: string };
+    en?: { name?: string; description?: string };
+  };
+  image: string | null;
+  display_order: number;
+  is_active: boolean;
+  items_count: number;
+}
+
 interface RestaurantDetail {
   category?: string | RestaurantCategory | null;
   id: number;
@@ -55,7 +67,7 @@ interface RestaurantDetail {
 export default function RestaurantDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -64,6 +76,8 @@ export default function RestaurantDetailScreen() {
   const [activeTab, setActiveTab] = useState<"info" | "menu" | "reviews">(
     "info",
   );
+  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
+  const [menuLoading, setMenuLoading] = useState(false);
 
   const debouncedSearch = useCallback(
     debounce((query: string) => {
@@ -78,6 +92,7 @@ export default function RestaurantDetailScreen() {
   };
   useEffect(() => {
     fetchRestaurant();
+    fetchMenuCategories();
   }, [slug]);
 
   const fetchRestaurant = async () => {
@@ -88,9 +103,33 @@ export default function RestaurantDetailScreen() {
       const data = await res.json();
       setRestaurant(data);
     } catch (e) {
-      console.log(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMenuCategories = async () => {
+    try {
+      setMenuLoading(true);
+      const res = await fetch(
+        `https://admin.aimenu.ge/api/v1/restaurants/${slug}/menu/categories/`,
+      );
+      const response = await res.json();
+
+      if (response.results && Array.isArray(response.results)) {
+        // Filter active categories and sort by display order
+        const activeCategories = response.results
+          .filter((cat: MenuCategory) => cat.is_active)
+          .sort(
+            (a: MenuCategory, b: MenuCategory) =>
+              a.display_order - b.display_order,
+          );
+        setMenuCategories(activeCategories);
+      }
+    } catch (e) {
+      console.error("Failed to fetch menu categories:", e);
+    } finally {
+      setMenuLoading(false);
     }
   };
 
@@ -118,19 +157,23 @@ export default function RestaurantDetailScreen() {
         restaurant.category?.name ||
         "";
 
-  const cardTitles = [
-    "გემრიელი სალათები",
-    "მჟავე კერძები",
-    "ტრადიციული დესერტები",
-    "ბოსტნეულის კერძები",
-    "თევზის კერძები",
-    "ხორცის კერძები",
-  ];
+  // Use menu categories from API if available, otherwise show empty state
+  const cardItems = menuCategories.map((category) => {
+    // Get category name based on current language
+    const currentLang = i18n.language as "ka" | "en";
+    const categoryName =
+      category.translations?.[currentLang]?.name ||
+      category.translations?.ka?.name ||
+      category.translations?.en?.name ||
+      "";
 
-  const cardItems = cardTitles.map((title) => ({
-    title,
-    image: restaurant.cover_image,
-  }));
+    return {
+      id: category.id,
+      title: categoryName,
+      image: category.image || restaurant.cover_image,
+      itemsCount: category.items_count,
+    };
+  });
 
   return (
     <View style={styles.container}>
@@ -225,26 +268,38 @@ export default function RestaurantDetailScreen() {
             />
           </View>
 
-          <View style={styles.cardsContainer}>
-            {cardItems.map((item, index) => (
-              <TouchableOpacity
-                key={`${item.title}-${index}`}
-                style={styles.infoCard}
-                activeOpacity={0.85}
-              >
-                <Image
-                  source={{ uri: item.image }}
-                  style={styles.infoCardImage}
-                />
-                <Text numberOfLines={1} style={styles.infoCardTitle}>
-                  {item.title}
-                </Text>
-                <View style={styles.infoCardArrow}>
-                  <CardArrow />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {menuLoading ? (
+            <View style={styles.center}>
+              <Text>{t("common.loading")}</Text>
+            </View>
+          ) : cardItems.length > 0 ? (
+            <View style={styles.cardsContainer}>
+              {cardItems.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.infoCard}
+                  activeOpacity={0.85}
+                >
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.infoCardImage}
+                  />
+                  <Text numberOfLines={1} style={styles.infoCardTitle}>
+                    {item.title}
+                  </Text>
+                  <View style={styles.infoCardArrow}>
+                    <CardArrow />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>
+                {t("restaurant.noCategories") || "No menu categories available"}
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -455,6 +510,17 @@ const styles = StyleSheet.create({
   },
 
   footerButtonText: {
+    textAlign: "center",
+  },
+
+  emptyState: {
+    paddingVertical: spacing.xl,
+    alignItems: "center",
+  },
+
+  emptyStateText: {
+    ...typography.body,
+    color: colors.grey,
     textAlign: "center",
   },
 });
