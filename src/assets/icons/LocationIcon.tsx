@@ -1,7 +1,11 @@
 import * as React from "react";
 import Svg, { G, Path, Defs, ClipPath } from "react-native-svg";
 
-function LocationIcon() {
+interface LocationIconProps {
+  color?: string;
+}
+
+function LocationIcon({ color = "#62748E" }: LocationIconProps) {
   return (
     <Svg
       width={12}
@@ -12,7 +16,7 @@ function LocationIcon() {
     >
       <G
         clipPath="url(#clip0_213_3448)"
-        stroke="#62748E"
+        stroke={color}
         strokeWidth={0.999781}
         strokeLinecap="round"
         strokeLinejoin="round"
