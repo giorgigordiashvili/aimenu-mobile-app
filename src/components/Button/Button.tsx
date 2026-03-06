@@ -74,7 +74,10 @@ export const Button: React.FC<ButtonProps> = ({
         <>
           {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
 
-          <Text style={[variantStyle.text, sizeStyle.typography, textStyle]}>
+          <Text
+            numberOfLines={1}
+            style={[variantStyle.text, sizeStyle.typography, textStyle]}
+          >
             {title}
           </Text>
 

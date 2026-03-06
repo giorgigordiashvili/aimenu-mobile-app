@@ -89,5 +89,31 @@
     "resend": "Resend",
     "button": "Confirm",
     "invalidCode": "Invalid code. Please try again."
+  },
+
+  "restaurant": {
+    "menu": "Menu",
+    "reviews": "Reviews",
+    "info": "Info",
+    "address": "Address",
+    "phone": "Phone",
+    "hours": "Hours",
+    "back": "Back",
+    "open": "Open",
+    "closed": "Closed",
+    "about": "About",
+    "location": "Tbilisi",
+    "description": "A unique atmosphere in old Tbilisi, where traditional flavors are presented in a new way.",
+    "operatingHours": "Operating Hours",
+    "searchPlaceholder": "Search for a dish by name",
+    "category": "Categories",
+    "category1": "Delicious Salads",
+    "category2": "Sour Dishes",
+    "category3": "Traditional Desserts",
+    "category4": "Vegetable Dishes",
+    "category5": "Fish Dishes",
+    "category6": "Meat Dishes",
+    "button1": "Reserve Only",
+    "button2": "Place Order"
   }
 }
