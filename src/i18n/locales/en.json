@@ -115,5 +115,13 @@
     "category6": "Meat Dishes",
     "button1": "Reserve Only",
     "button2": "Place Order"
+  },
+
+  "restaurantList": {
+    "title": "Restaurants",
+    "city": "City",
+    "date": "Date",
+    "time": "Time",
+    "guest": "Guests"
   }
 }
