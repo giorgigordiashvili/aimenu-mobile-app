@@ -280,7 +280,10 @@ export default function RestaurantDetailScreen() {
                   style={styles.infoCard}
                   activeOpacity={0.85}
                   onPress={() =>
-                    router.push(`/restaurant/${slug}/category/${item.id}`)
+                    router.push({
+                      pathname: `/restaurant/${slug}/category/${item.id}`,
+                      params: { categoryName: item.title },
+                    })
                   }
                 >
                   <Image
@@ -329,7 +332,7 @@ export default function RestaurantDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+  container: { flex: 1, backgroundColor: colors.state50 },
 
   scrollContent: {
     paddingBottom: spacing.md,
