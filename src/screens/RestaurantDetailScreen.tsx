@@ -279,6 +279,9 @@ export default function RestaurantDetailScreen() {
                   key={item.id}
                   style={styles.infoCard}
                   activeOpacity={0.85}
+                  onPress={() =>
+                    router.push(`/restaurant/${slug}/category/${item.id}`)
+                  }
                 >
                   <Image
                     source={{ uri: item.image }}
