@@ -13,6 +13,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { colors, spacing, borderRadius } from "../theme";
+import BackArrowIcon from "../assets/icons/BackArrowIcon";
 
 const { width } = Dimensions.get("window");
 const IMAGE_HEIGHT = 300;
@@ -98,7 +99,7 @@ export default function MenuItemDetailScreen() {
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <Text style={styles.backArrow}>←</Text>
+            <BackArrowIcon />
           </TouchableOpacity>
         </View>
 
@@ -170,32 +171,53 @@ export default function MenuItemDetailScreen() {
 
       {/* BOTTOM ACTION BAR */}
 
-      {quantity === 0 ? (
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setQuantity(1)}
-        >
-          <Text style={styles.addButtonText}>{t("menuItem.add")}</Text>
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.bottomBar}>
-          <View style={styles.quantityControls}>
-            <TouchableOpacity onPress={decrementQty} style={styles.qtyButton}>
-              <Text style={styles.qtyButtonText}>−</Text>
-            </TouchableOpacity>
-
-            <Text style={styles.qtyNumber}>{quantity}</Text>
-
-            <TouchableOpacity onPress={incrementQty} style={styles.qtyButton}>
-              <Text style={styles.qtyButtonText}>+</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.cartButton}>
-            <Text style={styles.cartButtonText}>{t("menuItem.update")}</Text>
+      <View style={styles.bottomSection}>
+        {quantity === 0 ? (
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => setQuantity(1)}
+          >
+            <Text style={styles.addButtonText}>{t("menuItem.add")}</Text>
           </TouchableOpacity>
-        </View>
-      )}
+        ) : (
+          <>
+            <View style={styles.bottomBar}>
+              <View style={styles.quantityControls}>
+                <TouchableOpacity
+                  onPress={decrementQty}
+                  style={styles.qtyButton}
+                >
+                  <Text
+                    style={[
+                      styles.qtyButtonText,
+                      quantity === 1 && styles.qtyButtonTextDisabled,
+                    ]}
+                  >
+                    −
+                  </Text>
+                </TouchableOpacity>
+
+                <Text style={styles.qtyNumber}>{quantity}</Text>
+
+                <TouchableOpacity
+                  onPress={incrementQty}
+                  style={styles.qtyButton}
+                >
+                  <Text style={styles.qtyButtonText}>+</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity style={styles.cartButton}>
+                <Text style={styles.cartButtonText}>
+                  {t("menuItem.update")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.addMoreText}>{t("menuItem.addMore")}</Text>
+          </>
+        )}
+      </View>
     </View>
   );
 }
@@ -203,7 +225,7 @@ export default function MenuItemDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
   },
 
   center: {
@@ -219,12 +241,12 @@ const styles = StyleSheet.create({
 
   backButton: {
     position: "absolute",
-    top: 50,
-    left: 16,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#fff",
+    top: spacing.xxxl,
+    left: spacing.md,
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.white,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -233,12 +255,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 
-  backArrow: {
-    fontSize: 20,
-  },
-
   infoSection: {
+    marginTop: -20,
     padding: spacing.lg,
+    backgroundColor: colors.white,
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
   },
 
   itemName: {
@@ -249,14 +271,14 @@ const styles = StyleSheet.create({
 
   itemDescription: {
     fontSize: 14,
-    color: "#666",
+    color: colors.gray600,
   },
 
   modifierSection: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
+    borderTopColor: colors.gray500,
   },
 
   sectionTitle: {
@@ -278,15 +300,15 @@ const styles = StyleSheet.create({
 
   modifierPrice: {
     fontSize: 14,
-    color: "#444",
+    color: colors.gray800,
   },
 
   radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: "#CCC",
+    width: 20,
+    height: 20,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: colors.gray500,
     justifyContent: "center",
     alignItems: "center",
     marginRight: spacing.sm,
@@ -299,67 +321,104 @@ const styles = StyleSheet.create({
   radioInner: {
     width: 12,
     height: 12,
-    borderRadius: 6,
+    borderRadius: borderRadius.full,
     backgroundColor: colors.primary,
   },
 
   addButton: {
     backgroundColor: colors.primary,
-    borderRadius: 25,
+    borderRadius: borderRadius.full,
     paddingVertical: 16,
     marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
+    marginVertical: spacing.lg,
     alignItems: "center",
   },
 
   addButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "600",
+  },
+
+  bottomSection: {
+    backgroundColor: colors.white,
+    shadowColor: colors.black,
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 10,
   },
 
   bottomBar: {
     flexDirection: "row",
     alignItems: "center",
+    paddingTop: spacing.lg,
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
   },
 
   quantityControls: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    width: 107,
+    height: 52,
+    borderWidth: 1,
+    borderColor: colors.quantityControlBorder,
+    borderRadius: 30,
+    paddingHorizontal: spacing.md,
     marginRight: spacing.md,
   },
 
   qtyButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#eee",
+    width: 28,
+    height: 28,
+    borderRadius: borderRadius.full,
     justifyContent: "center",
     alignItems: "center",
   },
 
   qtyButtonText: {
-    fontSize: 20,
+    fontSize: 30,
+    lineHeight: 30,
+    color: colors.quantityControlIcon,
+  },
+
+  qtyButtonTextDisabled: {
+    color: colors.quantityControlIconDisabled,
   },
 
   qtyNumber: {
-    marginHorizontal: spacing.md,
+    marginHorizontal: spacing.xs,
     fontSize: 16,
     fontWeight: "600",
+    color: colors.dark,
   },
 
   cartButton: {
     flex: 1,
-    backgroundColor: colors.primary,
+    height: 52,
+    backgroundColor: colors.dangerSoftBackground,
     borderRadius: 25,
-    paddingVertical: 14,
+    justifyContent: "center",
     alignItems: "center",
   },
 
   cartButtonText: {
-    color: "#fff",
+    color: colors.dangerSoftText,
     fontWeight: "600",
+  },
+
+  addMoreText: {
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
+    textAlign: "center",
+    color: colors.gray600,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "600",
+    letterSpacing: -0.15,
   },
 });

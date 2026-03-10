@@ -1,6 +1,7 @@
 import React from "react";
 import { TextInput } from "./TextInput";
 import SearchIcon from "../../assets/icons/SearchIcon";
+import { colors } from "../../theme";
 
 interface SearchBarProps {
   value: string;
@@ -19,6 +20,7 @@ export const SearchBar = ({
       onChangeText={onChangeText}
       placeholder={placeholder}
       leftIcon={<SearchIcon />}
+      inputWrapperStyle={{ backgroundColor: colors.white }}
     />
   );
 };

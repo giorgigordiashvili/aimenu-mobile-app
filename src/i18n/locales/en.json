@@ -114,7 +114,8 @@
     "category5": "Fish Dishes",
     "category6": "Meat Dishes",
     "button1": "Reserve Only",
-    "button2": "Place Order"
+    "button2": "Place Order",
+    "all": "All"
   },
 
   "restaurantList": {
@@ -123,5 +124,12 @@
     "date": "Date",
     "time": "Time",
     "guest": "Guests"
+  },
+
+  "menuItem": {
+    "add": "Add",
+    "remove": "Remove",
+    "update": "Update",
+    "addMore": "Add more with different ingredients"
   }
 }

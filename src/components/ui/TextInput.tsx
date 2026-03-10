@@ -5,6 +5,8 @@ import {
   Text,
   StyleSheet,
   TextInputProps as RNTextInputProps,
+  StyleProp,
+  ViewStyle,
 } from "react-native";
 import { colors, typography, spacing, borderRadius } from "../../theme";
 import { textColors } from "../../theme/colors";
@@ -16,6 +18,7 @@ interface TextInputProps extends RNTextInputProps {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   disabled?: boolean;
+  inputWrapperStyle?: StyleProp<ViewStyle>;
 }
 
 export const TextInput: React.FC<TextInputProps> = ({
@@ -25,6 +28,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   leftIcon,
   rightIcon,
   disabled = false,
+  inputWrapperStyle,
   style,
   ...props
 }) => {
@@ -46,6 +50,7 @@ export const TextInput: React.FC<TextInputProps> = ({
         style={[
           styles.inputWrapper,
           { borderColor: getBorderColor() },
+          inputWrapperStyle,
           disabled && styles.disabled,
         ]}
       >

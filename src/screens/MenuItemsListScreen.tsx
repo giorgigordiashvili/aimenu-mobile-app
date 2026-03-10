@@ -7,11 +7,16 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  ScrollView,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { colors, spacing, typography, borderRadius } from "../theme";
+import { SearchBar } from "../components/ui/SearchBar";
+import PlusIcon from "../assets/icons/PlusIcon";
+import BackArrowIcon from "../assets/icons/BackArrowIcon";
 
 interface MenuItem {
   id: number;
@@ -24,20 +29,51 @@ interface MenuItem {
 }
 
 export default function MenuItemsListScreen() {
-  const { slug, categoryId } = useLocalSearchParams<{
+  const { slug, categoryId, categoryName } = useLocalSearchParams<{
     slug: string;
     categoryId: string;
+    categoryName?: string;
   }>();
 
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const [items, setItems] = useState<MenuItem[]>([]);
+  const [allItems, setAllItems] = useState<MenuItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchItems();
   }, [slug, categoryId]);
+
+  useEffect(() => {
+    filterItems();
+  }, [searchQuery, allItems]);
+
+  const filterItems = () => {
+    let filtered = allItems;
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = allItems.filter((item) => {
+        const name =
+          item.translations?.[i18n.language as "ka" | "en"]?.name ||
+          item.translations?.ka?.name ||
+          "";
+        const description =
+          item.translations?.[i18n.language as "ka" | "en"]?.description ||
+          item.translations?.ka?.description ||
+          "";
+        return (
+          name.toLowerCase().includes(query) ||
+          description.toLowerCase().includes(query)
+        );
+      });
+    }
+
+    setFilteredItems(filtered);
+  };
 
   const fetchItems = async () => {
     try {
@@ -48,7 +84,7 @@ export default function MenuItemsListScreen() {
       const data = await res.json();
 
       if (data.results) {
-        setItems(data.results);
+        setAllItems(data.results);
       }
     } catch (e) {
       console.error("Failed to fetch items:", e);
@@ -67,57 +103,93 @@ export default function MenuItemsListScreen() {
       item.translations?.ka?.description;
 
     return (
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => router.push(`/restaurant/${slug}/item/${item.id}`)}
-      >
-        {item.image && (
-          <Image source={{ uri: item.image }} style={styles.image} />
-        )}
+      <View style={styles.card}>
+        <TouchableOpacity
+          style={styles.cardContent}
+          onPress={() => router.push(`/restaurant/${slug}/item/${item.id}`)}
+        >
+          {item.image && (
+            <Image source={{ uri: item.image }} style={styles.image} />
+          )}
 
-        <View style={styles.info}>
-          <Text style={styles.name}>{name}</Text>
+          <View style={styles.info}>
+            <Text style={styles.name}>{name}</Text>
 
-          {description ? (
-            <Text numberOfLines={2} style={styles.description}>
-              {description}
-            </Text>
-          ) : null}
+            {description ? (
+              <Text numberOfLines={1} style={styles.description}>
+                {description}
+              </Text>
+            ) : null}
 
-          <Text style={styles.price}>{item.price} ₾</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+            <Text style={styles.price}>{item.price} ₾</Text>
+          </View>
+        </TouchableOpacity>
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <TouchableOpacity style={styles.addButton}>
+          <PlusIcon />
+        </TouchableOpacity>
       </View>
     );
-  }
+  };
 
   return (
     <View style={styles.container}>
       {/* Header */}
-
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.back}>←</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <BackArrowIcon />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Menu</Text>
+        <Text style={styles.headerTitle}>{categoryName || "Menu"}</Text>
       </View>
 
-      {/* Items list */}
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <SearchBar
+          placeholder={t("restaurant.searchPlaceholder")}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
 
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-      />
+      {/* Filter Tabs */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabsContainer}
+        contentContainerStyle={styles.tabsContent}
+      >
+        <TouchableOpacity style={[styles.chip, styles.chipActive]}>
+          <Text style={styles.chipTextActive}>{t("restaurant.all")}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.chip}>
+          <Text style={styles.chipText}>
+            {categoryName || t("restaurant.category")}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      <Text style={styles.subtitle}>{t("restaurant.category2")}</Text>
+      {/* Items list */}
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : filteredItems.length > 0 ? (
+        <FlatList
+          data={filteredItems}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+        />
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No items found</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -125,7 +197,7 @@ export default function MenuItemsListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.state50,
   },
 
   center: {
@@ -140,56 +212,175 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: spacing.md,
     paddingHorizontal: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.light,
   },
 
-  back: {
-    fontSize: 24,
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.full,
     marginRight: spacing.md,
+    backgroundColor: colors.white,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1.5,
+    elevation: 3,
   },
 
   headerTitle: {
     ...typography.h3,
+    flex: 1,
+    textAlign: "center",
+    marginRight: 40,
+  },
+
+  searchContainer: {
+    paddingHorizontal: spacing.md,
+  },
+
+  tabsContainer: {
+    paddingHorizontal: spacing.md,
+    flexGrow: 0,
+  },
+
+  tabsContent: {
+    paddingBottom: spacing.xs,
+  },
+
+  subtitle: {
+    ...typography.h4,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    color: colors.dark,
+    fontWeight: typography.buttonLg.fontWeight,
+  },
+
+  chip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    height: 40,
+    borderRadius: borderRadius.full,
+    marginRight: spacing.sm,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.light,
+    backgroundColor: colors.light,
+  },
+
+  chipText: {
+    fontSize: typography.textXs.fontSize,
+    lineHeight: typography.textSm.lineHeight,
+    fontWeight: typography.buttonSm.fontWeight,
+    color: colors.dark,
+  },
+
+  chipActive: {
+    backgroundColor: colors.greenButtonBackground,
+    borderColor: colors.greenButtonBackground,
+  },
+
+  chipTextActive: {
+    fontSize: typography.textXs.fontSize,
+    lineHeight: typography.textSm.lineHeight,
+    fontWeight: typography.buttonSm.fontWeight,
+    color: colors.white,
   },
 
   list: {
     padding: spacing.md,
+    paddingTop: 0,
+    flexGrow: 0,
   },
 
   card: {
     flexDirection: "row",
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.light,
-    overflow: "hidden",
+    overflow: "visible",
     backgroundColor: colors.white,
+    alignItems: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.16,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+
+  cardContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: spacing.md,
   },
 
   image: {
-    width: 90,
-    height: 90,
+    width: 78,
+    height: 76,
+    borderRadius: borderRadius.md,
   },
 
   info: {
     flex: 1,
-    padding: spacing.sm,
+    marginLeft: spacing.sm,
   },
 
   name: {
-    ...typography.button,
+    ...typography.textSm,
     marginBottom: spacing.xs,
+    fontWeight: typography.h2.fontWeight,
   },
 
   description: {
-    ...typography.textSm,
-    color: colors.grey,
+    ...typography.textXs,
+    color: colors.darkGrey,
     marginBottom: spacing.xs,
   },
 
   price: {
+    fontSize: typography.paragraph.fontSize,
+    fontWeight: typography.h1.fontWeight,
+  },
+
+  addButton: {
+    width: 42,
+    height: 42,
+    alignSelf: "flex-start",
+    borderRadius: borderRadius.lg,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: colors.light,
+    backgroundColor: colors.white,
+    marginTop: spacing.md,
+    marginRight: spacing.md,
+  },
+
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  emptyText: {
     ...typography.body,
-    fontWeight: "600",
+    color: colors.grey,
   },
 });

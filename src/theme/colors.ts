@@ -27,6 +27,9 @@ export const colors = {
   gray900: "#0E162B", // Ingredient text
   placeholder: "#717182", // Placeholder text
   languageSwitcher: "#CAD5E2", // Tab text
+  quantityControlBorder: "#D4DBE8", // Quantity stepper border
+  quantityControlIcon: "#4A5568", // Quantity stepper +/- icon
+  quantityControlIconDisabled: "#B0B7C3", // Disabled state for decrement
   // Error
   error: "#E7000B", // Error messages, indicators
   rose: "#C70036", // Error states, accents
