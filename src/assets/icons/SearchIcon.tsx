@@ -3,13 +3,14 @@ import Svg, { Path } from "react-native-svg";
 
 interface SearchIconProps {
   color?: string;
+  size?: number;
 }
 
-function SearchIcon({ color = "#000" }: SearchIconProps) {
+function SearchIcon({ color = "#98A2B3", size = 22 }: SearchIconProps) {
   return (
     <Svg
-      width={16}
-      height={16}
+      width={size}
+      height={size}
       viewBox="0 0 16 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

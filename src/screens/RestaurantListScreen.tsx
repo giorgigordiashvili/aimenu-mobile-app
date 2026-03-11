@@ -310,7 +310,7 @@ const RestaurantListScreen = () => {
               isOpen={item.is_open_now}
               onPress={() =>
                 router.push({
-                  pathname: "/restaurant-detail",
+                  pathname: "/(tabs)/restaurant-detail",
                   params: { slug: item.slug },
                 })
               }
