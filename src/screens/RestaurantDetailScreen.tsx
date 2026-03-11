@@ -281,7 +281,7 @@ export default function RestaurantDetailScreen() {
                   activeOpacity={0.85}
                   onPress={() =>
                     router.push({
-                      pathname: `/restaurant/${slug}/category/${item.id}`,
+                      pathname: `/(tabs)/restaurant/${slug}/category/${item.id}`,
                       params: { categoryName: item.title },
                     })
                   }
