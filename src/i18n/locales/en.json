@@ -138,5 +138,15 @@
     "search": "Search",
     "scan": "Scan",
     "profile": "Profile"
+  },
+
+  "cart": {
+    "orderReview": "Order Review",
+    "empty": "Your cart is empty",
+    "browseMenu": "Browse Menu",
+    "subtotal": "Subtotal",
+    "serviceFee": "Service Fee",
+    "total": "Total",
+    "placeOrder": "Place Order"
   }
 }
