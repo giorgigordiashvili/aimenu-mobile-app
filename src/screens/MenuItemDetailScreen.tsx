@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 
 import { colors, spacing, borderRadius } from "../theme";
 import BackArrowIcon from "../assets/icons/BackArrowIcon";
+import { useCart } from "../context/CartContext";
 
 const { width } = Dimensions.get("window");
 const IMAGE_HEIGHT = 300;
@@ -21,6 +22,7 @@ const IMAGE_HEIGHT = 300;
 export default function MenuItemDetailScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const { addItem } = useCart();
 
   const { slug, itemId } = useLocalSearchParams<{
     slug: string;
@@ -44,7 +46,6 @@ export default function MenuItemDetailScreen() {
         );
 
         const data = await response.json();
-
         setItem(data);
       } catch (error) {
         console.error("Failed to fetch menu item:", error);
@@ -57,8 +58,47 @@ export default function MenuItemDetailScreen() {
   }, [slug, itemId]);
 
   const incrementQty = () => setQuantity((q) => q + 1);
-
   const decrementQty = () => setQuantity((q) => (q > 0 ? q - 1 : 0));
+
+  const handleAddToCart = () => {
+    if (!item || quantity === 0) return;
+
+    const modifiers = Object.entries(selectedModifiers).map(
+      ([groupId, modifierId]) => {
+        const group = item.modifier_groups.find(
+          (g: any) => g.id === Number(groupId),
+        );
+
+        const modifier = group?.modifiers.find((m: any) => m.id === modifierId);
+
+        const modifierName =
+          modifier?.translations?.[i18n.language]?.name ||
+          modifier?.translations?.ka?.name;
+
+        return {
+          groupId: Number(groupId),
+          modifierId: modifierId,
+          name: modifierName,
+          price: modifier?.price || 0,
+        };
+      },
+    );
+
+    const itemName =
+      item.translations?.[i18n.language]?.name || item.translations?.ka?.name;
+
+    addItem({
+      itemId: item.id,
+      slug: slug,
+      name: itemName,
+      price: item.price,
+      quantity: quantity,
+      image: item.image,
+      modifiers,
+    });
+
+    router.back();
+  };
 
   if (loading) {
     return (
@@ -207,7 +247,10 @@ export default function MenuItemDetailScreen() {
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity style={styles.cartButton}>
+              <TouchableOpacity
+                style={styles.cartButton}
+                onPress={handleAddToCart}
+              >
                 <Text style={styles.cartButtonText}>
                   {t("menuItem.update")}
                 </Text>

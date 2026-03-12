@@ -320,11 +320,11 @@ export default function RestaurantDetailScreen() {
         />
         <Button
           title={t("restaurant.button2")}
-          onPress={() => {}}
           variant="primary"
           size="md"
           style={styles.footerButtonPrimary}
           textStyle={styles.footerButtonText}
+          onPress={() => router.push("/order-review")}
         />
       </View>
     </View>
