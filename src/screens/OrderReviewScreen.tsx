@@ -111,7 +111,10 @@ export default function OrderReviewScreen() {
 
       {/* ORDER BUTTON */}
 
-      <TouchableOpacity style={styles.orderButton}>
+      <TouchableOpacity
+        style={styles.orderButton}
+        onPress={() => router.push("/payment")}
+      >
         <Text style={styles.orderText}>
           {t("cart.placeOrder")} — {grandTotal.toFixed(2)}₾
         </Text>
