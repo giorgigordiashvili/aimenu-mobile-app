@@ -148,5 +148,18 @@
     "serviceFee": "Service Fee",
     "total": "Total",
     "placeOrder": "Place Order"
+  },
+
+  "payment": {
+    "orderSummary": "Order Summary",
+    "total": "Total",
+    "paymentMethod": "Payment Method",
+    "cardNumber": "Card Number",
+    "expiry": "Expiry",
+    "tip": "Tip",
+    "noTip": "No Tip",
+    "pay": "Pay",
+    "failed": "Payment Failed",
+    "tryAgain": "Please try again"
   }
 }
