@@ -2,7 +2,6 @@ import React from "react";
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
@@ -11,191 +10,604 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { useCart } from "../context/CartContext";
-import { colors, spacing, borderRadius } from "../theme";
+import { colors, spacing, borderRadius, typography } from "../theme";
 import BackArrowIcon from "../assets/icons/BackArrowIcon";
+import CalendarIcon from "../assets/icons/CalendarIcon";
+import DropdownArrow from "../assets/icons/DropdownArrow";
+import CardArrow from "../assets/icons/CardArrow";
+import { textColors } from "../theme/colors";
+import EditIcon from "../assets/icons/EditIcon";
+import ShieldIcon from "../assets/icons/ShieldIcon";
 
 export default function OrderReviewScreen() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { items, totalPrice, updateQuantity } = useCart();
+  const [guests, setGuests] = React.useState(2);
 
   if (items.length === 0) {
     return (
       <View style={styles.center}>
-        <Text>{t("cart.empty")}</Text>
+        <Text style={styles.emptyText}>{t("cart.empty")}</Text>
 
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={{ marginTop: 10, color: colors.primary }}>
-            {t("cart.browseMenu")}
-          </Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.emptyActionBtn}
+        >
+          <Text style={styles.emptyActionText}>{t("cart.browseMenu")}</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  const serviceFee = totalPrice * 0.1;
-  const grandTotal = totalPrice + serviceFee;
+  const reservationDeposit = 10;
+  const grandTotal = totalPrice + reservationDeposit;
+
+  const displayDate = new Date().toLocaleDateString(
+    i18n.language === "ka" ? "ka-GE" : "en-GB",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    },
+  );
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
-
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <BackArrowIcon />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>{t("cart.orderReview")}</Text>
 
-        <View style={{ width: 24 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView>
-        {items.map((item) => (
-          <View key={item.itemId} style={styles.itemRow}>
-            {item.image && (
-              <Image source={{ uri: item.image }} style={styles.image} />
-            )}
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.sectionHeader}>
+          <CalendarIcon />
+          <Text style={styles.sectionTitle}>
+            {t("cart.reservationDetails")}
+          </Text>
+        </View>
 
-            <View style={{ flex: 1 }}>
-              <Text style={styles.itemName}>{item.name}</Text>
+        <View style={styles.firstCard}>
+          <View style={styles.reservationRow}>
+            <View style={styles.detailTile}>
+              <View style={styles.tileLabelRow}>
+                <Text style={styles.tileLabel}>{t("cart.dateLabel")}</Text>
+              </View>
 
-              {item.modifiers.map((mod) => (
-                <Text key={mod.modifierId} style={styles.modifier}>
-                  + {mod.name} ({mod.price}₾)
+              <Text style={styles.tileValue}>{displayDate}</Text>
+            </View>
+
+            <View style={[styles.detailTile, styles.detailTileSpacing]}>
+              <View style={styles.tileLabelRow}>
+                <Text style={styles.tileLabel}>{t("cart.timeLabel")}</Text>
+              </View>
+
+              <View style={styles.timeValueRow}>
+                <Text style={styles.tileValue}>
+                  {t("cart.timePlaceholder")}
                 </Text>
-              ))}
+                <DropdownArrow />
+              </View>
+            </View>
+          </View>
 
-              <View style={styles.qtyRow}>
+          <View style={styles.guestCard}>
+            <Text style={styles.tileLabel}>{t("cart.guestLabel")}</Text>
+
+            <View style={styles.guestRow}>
+              <Text style={styles.guestValue}>
+                {t("cart.guestCount", { count: guests })}
+              </Text>
+
+              <View style={styles.guestControls}>
                 <TouchableOpacity
-                  onPress={() => updateQuantity(item.itemId, item.quantity - 1)}
+                  onPress={() => setGuests((prev) => Math.max(1, prev - 1))}
+                  style={styles.guestControlButton}
                 >
-                  <Text style={styles.qtyBtn}>−</Text>
+                  <Text style={styles.guestControlSymbol}>-</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.qtyText}>{item.quantity}</Text>
-
                 <TouchableOpacity
-                  onPress={() => updateQuantity(item.itemId, item.quantity + 1)}
+                  onPress={() => setGuests((prev) => prev + 1)}
+                  style={[
+                    styles.guestControlButton,
+                    styles.guestControlPrimary,
+                  ]}
                 >
-                  <Text style={styles.qtyBtn}>+</Text>
+                  <Text
+                    style={[
+                      styles.guestControlSymbol,
+                      styles.guestControlPrimarySymbol,
+                    ]}
+                  >
+                    +
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
+          </View>
+        </View>
 
-            <Text style={styles.price}>
-              {(item.price * item.quantity).toFixed(2)}₾
+        <View style={[styles.sectionHeader, styles.itemsSectionHeader]}>
+          <CalendarIcon />
+          <Text style={styles.sectionTitle}>{t("cart.browseMenu")}</Text>
+        </View>
+
+        <View style={styles.card}>
+          {items.map((item, index) => {
+            const modifierTotal = item.modifiers.reduce(
+              (sum, mod) => sum + mod.price,
+              0,
+            );
+            const rowTotal = (item.price + modifierTotal) * item.quantity;
+
+            return (
+              <View
+                key={item.itemId}
+                style={[
+                  styles.itemRow,
+                  index !== items.length - 1 && styles.itemRowDivider,
+                ]}
+              >
+                <View style={styles.itemLeftBlock}>
+                  <View style={styles.quantityBadge}>
+                    <Text style={styles.quantityBadgeText}>
+                      {item.quantity}x
+                    </Text>
+                  </View>
+
+                  <View style={styles.itemTextWrap}>
+                    <Text
+                      style={styles.itemName}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {item.name}
+                    </Text>
+
+                    {item.modifiers.map((mod) => (
+                      <Text key={mod.modifierId} style={styles.modifier}>
+                        - {mod.name}
+                      </Text>
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.itemRightBlock}>
+                  <Text style={styles.price}>{rowTotal.toFixed(2)} ₾</Text>
+
+                  <TouchableOpacity
+                    onPress={() =>
+                      updateQuantity(item.itemId, item.quantity + 1)
+                    }
+                    style={styles.itemEditButton}
+                  >
+                    <EditIcon />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            );
+          })}
+
+          <View style={styles.itemsSummaryRow}>
+            <Text style={styles.itemsSummaryLabel}>{t("cart.subtotal")}</Text>
+            <Text style={styles.itemsSummaryValue}>
+              {totalPrice.toFixed(2)} ₾
             </Text>
           </View>
-        ))}
+        </View>
 
-        {/* SUMMARY */}
+        <View style={styles.totalSection}>
+          <Text style={styles.totalSectionTitle}>{t("cart.tax")}</Text>
 
-        <View style={styles.summary}>
           <View style={styles.summaryRow}>
-            <Text>{t("cart.subtotal")}</Text>
-            <Text>{totalPrice.toFixed(2)}₾</Text>
+            <Text style={styles.summaryLabel}>{t("cart.deposit")}</Text>
+            <Text style={styles.summaryValue}>
+              {reservationDeposit.toFixed(2)} ₾
+            </Text>
           </View>
 
           <View style={styles.summaryRow}>
-            <Text>{t("cart.serviceFee")}</Text>
-            <Text>{serviceFee.toFixed(2)}₾</Text>
+            <Text style={styles.summaryLabel}>{t("cart.subtotal")}</Text>
+            <Text style={styles.summaryValue}>{totalPrice.toFixed(2)} ₾</Text>
           </View>
 
+          <View style={styles.summaryDivider} />
+
           <View style={styles.summaryRow}>
-            <Text style={styles.total}>{t("cart.total")}</Text>
-            <Text style={styles.total}>{grandTotal.toFixed(2)}₾</Text>
+            <Text style={styles.totalLabel}>{t("cart.total")}</Text>
+            <Text style={styles.totalValue}>{grandTotal.toFixed(2)} ₾</Text>
+          </View>
+
+          <View style={styles.safeRow}>
+            <ShieldIcon />
+            <Text style={styles.safeText}>{t("cart.safe")}</Text>
           </View>
         </View>
       </ScrollView>
-
-      {/* ORDER BUTTON */}
 
       <TouchableOpacity
         style={styles.orderButton}
         onPress={() => router.push("/payment")}
       >
-        <Text style={styles.orderText}>
-          {t("cart.placeOrder")} — {grandTotal.toFixed(2)}₾
-        </Text>
+        <Text style={styles.orderText}>{t("cart.button")}</Text>
+        <CardArrow color={colors.white} />
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+  container: {
+    flex: 1,
+    backgroundColor: colors.state50,
+    paddingTop: spacing.xl,
+  },
 
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  content: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+  },
+
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  emptyText: {
+    ...typography.textBase,
+    color: colors.dark,
+  },
+
+  emptyActionBtn: {
+    marginTop: spacing.sm,
+  },
+
+  emptyActionText: {
+    ...typography.button,
+    color: colors.primary,
+  },
 
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: spacing.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
   },
 
-  headerTitle: { fontSize: 18, fontWeight: "600" },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.light,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  headerTitle: {
+    ...typography.textSm,
+    color: colors.dark,
+    fontWeight: typography.h1.fontWeight,
+  },
+
+  headerSpacer: {
+    width: 44,
+    height: 44,
+  },
+
+  sectionTitle: {
+    ...typography.textSm,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.dark,
+    marginLeft: spacing.sm,
+  },
+
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+
+  itemsSectionHeader: {
+    marginTop: spacing.xl,
+  },
+
+  firstCard: {},
+
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    borderColor: colors.light,
+    overflow: "hidden",
+  },
+
+  reservationRow: {
+    flexDirection: "row",
+    padding: spacing.sm,
+  },
+
+  detailTile: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.light,
+    borderRadius: borderRadius.lg,
+    padding: spacing.sm,
+    backgroundColor: colors.white,
+  },
+
+  detailTileSpacing: {
+    marginLeft: spacing.sm,
+  },
+
+  tileLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+
+  tileLabel: {
+    ...typography.textXs,
+    color: textColors.tertiary,
+  },
+
+  tileValue: {
+    ...typography.textSm,
+    fontWeight: typography.h2.fontWeight,
+    color: colors.dark,
+  },
+
+  timeValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  guestCard: {
+    marginHorizontal: spacing.sm,
+    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.light,
+    borderRadius: borderRadius.lg,
+    backgroundColor: colors.white,
+    padding: spacing.sm,
+  },
+
+  guestRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  guestValue: {
+    ...typography.textSm,
+    fontWeight: typography.h2.fontWeight,
+    color: colors.gray900,
+  },
+
+  guestControls: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  guestControlButton: {
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: colors.quantityControlBorder,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+    marginLeft: spacing.sm,
+  },
+
+  guestControlPrimary: {
+    borderColor: colors.dangerSoftBackground,
+    backgroundColor: colors.primaryLightest,
+  },
+
+  guestControlSymbol: {
+    ...typography.textLg,
+    color: colors.quantityControlIcon,
+    lineHeight: 22,
+  },
+
+  guestControlPrimarySymbol: {
+    color: colors.primary,
+  },
 
   itemRow: {
     flexDirection: "row",
-    padding: spacing.lg,
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.md,
+  },
+
+  itemRowDivider: {
     borderBottomWidth: 1,
-    borderColor: colors.gray500,
+    borderColor: colors.light,
   },
 
-  image: {
-    width: 60,
-    height: 60,
-    borderRadius: borderRadius.md,
-    marginRight: spacing.md,
-  },
-
-  itemName: { fontWeight: "600" },
-
-  modifier: { fontSize: 13, color: colors.gray600 },
-
-  qtyRow: {
+  itemLeftBlock: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 6,
+    marginRight: spacing.sm,
   },
 
-  qtyBtn: {
-    fontSize: 20,
-    paddingHorizontal: 10,
+  quantityBadge: {
+    minWidth: 24,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primaryLightest,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: spacing.xs,
+    marginRight: spacing.sm,
   },
 
-  qtyText: {
-    marginHorizontal: 10,
+  quantityBadgeText: {
+    ...typography.buttonSm,
+    color: colors.primary,
+    fontWeight: typography.h1.fontWeight,
+  },
+
+  itemTextWrap: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  itemName: {
+    ...typography.buttonSm,
+    fontWeight: typography.h2.fontWeight,
+    color: colors.darkGrey,
+  },
+
+  modifier: {
+    ...typography.textXs,
+    color: colors.gray500,
+    marginTop: spacing.xs,
+  },
+
+  itemRightBlock: {
+    display: "flex",
+    flexDirection: "row",
+    gap: spacing.md,
+    alignItems: "center",
   },
 
   price: {
-    fontWeight: "600",
+    ...typography.buttonSm,
+    fontWeight: typography.h2.fontWeight,
+    color: colors.darkGrey,
   },
 
-  summary: {
-    padding: spacing.lg,
+  itemEditButton: {
+    width: 30,
+    height: 30,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.state100,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  itemsSummaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: spacing.xmd,
+    paddingVertical: spacing.xmd,
+    borderTopWidth: 1,
+    borderColor: colors.light,
+  },
+
+  itemsSummaryLabel: {
+    ...typography.button,
+    color: colors.gray600,
+    fontWeight: typography.button.fontWeight,
+  },
+
+  itemsSummaryValue: {
+    ...typography.button,
+    fontWeight: typography.buttonLg.fontWeight,
+    color: colors.dark,
+  },
+
+  totalSection: {
+    marginTop: spacing.xxxl,
+    borderTopWidth: 1,
+    borderColor: colors.light,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
+  },
+
+  totalSectionTitle: {
+    ...typography.h4,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.gray900,
+    marginBottom: spacing.md,
   },
 
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 8,
+    alignItems: "center",
+    marginBottom: spacing.sm,
   },
 
-  total: {
-    fontWeight: "700",
+  summaryLabel: {
+    ...typography.textSm,
+    color: colors.gray600,
+  },
+
+  summaryValue: {
+    ...typography.textSm,
+    color: colors.gray800,
+  },
+
+  summaryDivider: {
+    height: 1,
+    backgroundColor: colors.light,
+    marginVertical: spacing.sm,
+  },
+
+  totalLabel: {
+    ...typography.h3,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.gray900,
+  },
+
+  totalValue: {
+    ...typography.text2xl,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.primary,
+  },
+
+  safeRow: {
+    marginTop: spacing.md,
+    backgroundColor: colors.privacyBackground,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  safeText: {
+    ...typography.textXs,
+    color: colors.privacyText,
+    marginLeft: spacing.sm,
   },
 
   orderButton: {
-    backgroundColor: colors.primary,
-    padding: spacing.lg,
+    backgroundColor: colors.greenButtonBackground,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: borderRadius.full,
+    paddingVertical: spacing.md,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
   },
 
   orderText: {
     color: colors.white,
-    fontWeight: "600",
+    ...typography.buttonLg,
+    fontWeight: typography.h1.fontWeight,
+    marginRight: spacing.sm,
   },
 });
