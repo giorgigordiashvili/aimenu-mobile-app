@@ -144,11 +144,20 @@
   "cart": {
     "orderReview": "შეკვეთის მიმოხილვა",
     "empty": "კალათა ცარიელია",
-    "browseMenu": "მენიუს ნახვა",
-    "subtotal": "ქვეჯამი",
+    "reservationDetails": "თქვენი ჯავშანი",
+    "dateLabel": "თარიღი",
+    "timeLabel": "დრო",
+    "timePlaceholder": "აირჩიე",
+    "guestLabel": "სტუმრები",
+    "guestCount": "{{count}} პერსონა",
+    "browseMenu": "არჩეული კერძები",
+    "subtotal": "საკვების ჯამი",
     "serviceFee": "მომსახურების საფასური",
-    "total": "ჯამი",
-    "placeOrder": "შეკვეთის გაფორმება"
+    "tax": "გადასახდელი თანხა",
+    "deposit": "ჯავშნის დეპოზიტი",
+    "total": "სულ ჯამი",
+    "button": "გაგრძელება",
+    "safe": "უსაფრთხო გადახდა დაცულია"
   },
 
   "payment": {

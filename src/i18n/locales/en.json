@@ -143,11 +143,20 @@
   "cart": {
     "orderReview": "Order Review",
     "empty": "Your cart is empty",
-    "browseMenu": "Browse Menu",
-    "subtotal": "Subtotal",
+    "reservationDetails": "Reservation Details",
+    "dateLabel": "Date",
+    "timeLabel": "Time",
+    "timePlaceholder": "Select",
+    "guestLabel": "Guests",
+    "guestCount": "{{count}} person",
+    "browseMenu": "Selected Dishes",
+    "subtotal": "Food Total",
     "serviceFee": "Service Fee",
+    "tax": "Tax",
+    "deposit": "Reservation Deposit",
     "total": "Total",
-    "placeOrder": "Place Order"
+    "button": "Continue",
+    "safe": "Secure Payment Protected"
   },
 
   "payment": {
