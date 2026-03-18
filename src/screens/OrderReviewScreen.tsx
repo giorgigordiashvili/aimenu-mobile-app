@@ -1,10 +1,13 @@
 import React from "react";
 import {
+  Animated,
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -24,6 +27,11 @@ export default function OrderReviewScreen() {
   const { t, i18n } = useTranslation();
   const { items, totalPrice, updateQuantity } = useCart();
   const [guests, setGuests] = React.useState(2);
+
+  const ctaTranslateY = React.useRef(new Animated.Value(0)).current;
+  const ctaOpacity = React.useRef(new Animated.Value(1)).current;
+  const lastScrollY = React.useRef(0);
+  const isCtaVisible = React.useRef(true);
 
   if (items.length === 0) {
     return (
@@ -52,6 +60,61 @@ export default function OrderReviewScreen() {
     },
   );
 
+  const showCta = React.useCallback(() => {
+    if (isCtaVisible.current) return;
+    isCtaVisible.current = true;
+
+    Animated.parallel([
+      Animated.timing(ctaTranslateY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(ctaOpacity, {
+        toValue: 1,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [ctaOpacity, ctaTranslateY]);
+
+  const hideCta = React.useCallback(() => {
+    if (!isCtaVisible.current) return;
+    isCtaVisible.current = false;
+
+    Animated.parallel([
+      Animated.timing(ctaTranslateY, {
+        toValue: 120,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(ctaOpacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [ctaOpacity, ctaTranslateY]);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentY = event.nativeEvent.contentOffset.y;
+    const delta = currentY - lastScrollY.current;
+
+    if (currentY <= 0) {
+      showCta();
+      lastScrollY.current = currentY;
+      return;
+    }
+
+    if (delta > 6) {
+      hideCta();
+    } else if (delta < -6) {
+      showCta();
+    }
+
+    lastScrollY.current = currentY;
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -67,7 +130,11 @@ export default function OrderReviewScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <View style={styles.sectionHeader}>
           <CalendarIcon />
           <Text style={styles.sectionTitle}>
@@ -234,13 +301,23 @@ export default function OrderReviewScreen() {
         </View>
       </ScrollView>
 
-      <TouchableOpacity
-        style={styles.orderButton}
-        onPress={() => router.push("/payment")}
+      <Animated.View
+        style={[
+          styles.ctaContainer,
+          {
+            opacity: ctaOpacity,
+            transform: [{ translateY: ctaTranslateY }],
+          },
+        ]}
       >
-        <Text style={styles.orderText}>{t("cart.button")}</Text>
-        <CardArrow color={colors.white} />
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.orderButton}
+          onPress={() => router.push("/payment")}
+        >
+          <Text style={styles.orderText}>{t("cart.button")}</Text>
+          <CardArrow color={colors.white} />
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
@@ -254,7 +331,7 @@ const styles = StyleSheet.create({
 
   content: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
+    paddingBottom: 132,
   },
 
   center: {
@@ -593,10 +670,17 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
   },
 
+  ctaContainer: {
+    position: "absolute",
+    left: spacing.md,
+    right: spacing.md,
+    bottom: 0,
+    marginVertical: spacing.md,
+    backgroundColor: "transparent",
+  },
+
   orderButton: {
     backgroundColor: colors.greenButtonBackground,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
     borderRadius: borderRadius.full,
     paddingVertical: spacing.md,
     flexDirection: "row",

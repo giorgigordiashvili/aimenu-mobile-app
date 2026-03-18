@@ -161,15 +161,20 @@
   },
 
   "payment": {
-    "orderSummary": "შეკვეთის მიმოხილვა",
-    "total": "ჯამი",
-    "paymentMethod": "გადახდის მეთოდი",
-    "cardNumber": "ბარათის ნომერი",
-    "expiry": "ვადის გასვლა",
-    "tip": "ჩაი",
-    "noTip": "ჩაი არ არის",
-    "pay": "გადახდა",
-    "failed": "გადახდა ვერ განხორციელდა",
-    "tryAgain": "გთხოვთ, სცადეთ თავიდან"
+    "title": "გადახდა",
+    "subtitle": "საკონტაქტო ინფორმაცია",
+    "description": "შეიყვანეთ მონაცემები ჯავშნის დასადასტურებლად",
+    "namePlaceholder": "სახელი და გვარიი",
+    "phonePlaceholder": "ტელეფონის ნომერი",
+    "emailPlaceholder": "ელ-ფოსტა",
+    "textPlaceholder": "სპეციალური მოთხოვნები (არასავალდებულო)",
+    "method": "აირჩიეთ გადახდის მეთოდი",
+    "addCard": "ახალი საბანკო ბარათი",
+    "cardBrands": "Visa, Mastercard, Amex",
+    "savedCardMasked": "****4488",
+    "savedCardBrand": "Mastercard",
+    "applePay": "Apple Pay",
+    "soon": "მალე დაემატება",
+    "button": "გადახდა"
   }
 }

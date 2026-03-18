@@ -54,7 +54,7 @@ export const TextInput: React.FC<TextInputProps> = ({
           disabled && styles.disabled,
         ]}
       >
-        {leftIcon && <View style={styles.icon}>{leftIcon}</View>}
+        {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
 
         <RNTextInput
           style={[styles.input, style]}
@@ -65,7 +65,7 @@ export const TextInput: React.FC<TextInputProps> = ({
           {...props}
         />
 
-        {rightIcon && <View style={styles.icon}>{rightIcon}</View>}
+        {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
       </View>
 
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -76,7 +76,7 @@ export const TextInput: React.FC<TextInputProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.xmd,
   },
   label: {
     ...typography.textSm,
@@ -94,18 +94,21 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md, // 8
     paddingHorizontal: spacing.md, // 16
     height: 48,
-    backgroundColor: colors.state50,
+    backgroundColor: colors.white,
   },
   input: {
     flex: 1,
-    ...typography.textBase,
+    ...typography.textXs,
     color: textColors.primary,
     textAlignVertical: "center",
     borderWidth: 1,
     borderColor: "transparent",
   },
-  icon: {
-    marginHorizontal: spacing.xs,
+  leftIcon: {
+    marginRight: spacing.xmd,
+  },
+  rightIcon: {
+    marginLeft: spacing.xmd,
   },
   disabled: {
     backgroundColor: colors.state50,
