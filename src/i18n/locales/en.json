@@ -160,15 +160,20 @@
   },
 
   "payment": {
-    "orderSummary": "Order Summary",
-    "total": "Total",
-    "paymentMethod": "Payment Method",
-    "cardNumber": "Card Number",
-    "expiry": "Expiry",
-    "tip": "Tip",
-    "noTip": "No Tip",
-    "pay": "Pay",
-    "failed": "Payment Failed",
-    "tryAgain": "Please try again"
+    "title": "Payment",
+    "subtitle": "Contact Information",
+    "description": "Enter your details to confirm the reservation",
+    "namePlaceholder": "Full Name",
+    "phonePlaceholder": "Phone Number",
+    "emailPlaceholder": "Email",
+    "textPlaceholder": "Special Requests (Optional)",
+    "method": "Select Payment Method",
+    "addCard": "Add New Card",
+    "cardBrands": "Visa, Mastercard, Amex",
+    "savedCardMasked": "****4488",
+    "savedCardBrand": "Mastercard",
+    "applePay": "Apple Pay",
+    "soon": "Coming Soon",
+    "button": "Pay"
   }
 }

@@ -1,33 +1,50 @@
 import React, { useState } from "react";
 import {
+  Animated,
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { useCart } from "../context/CartContext";
 import { TextInput } from "../components/ui/TextInput";
-import { colors, spacing, borderRadius } from "../theme";
+import { colors, spacing, borderRadius, typography } from "../theme";
+import { textColors } from "../theme/colors";
+import BackArrowIcon from "../assets/icons/BackArrowIcon";
+import PersonIcon from "../assets/icons/PersonIcon";
+import PhoneIcon from "../assets/icons/PhoneIcon";
+import ShieldIcon from "../assets/icons/ShieldIcon";
+import MailIcon from "../assets/icons/MailIcon";
 
 export default function PaymentScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { items, totalPrice } = useCart();
+  const { totalPrice } = useCart();
 
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [specialRequest, setSpecialRequest] = useState("");
 
-  const [tipPercent, setTipPercent] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<"new" | "saved" | "apple">(
+    "saved",
+  );
   const [loading, setLoading] = useState(false);
 
-  const tipAmount = (totalPrice * tipPercent) / 100;
-  const finalTotal = totalPrice + tipAmount;
+  const ctaTranslateY = React.useRef(new Animated.Value(0)).current;
+  const ctaOpacity = React.useRef(new Animated.Value(1)).current;
+  const lastScrollY = React.useRef(0);
+  const isCtaVisible = React.useRef(true);
+
+  const reservationDeposit = 10;
+  const finalTotal = totalPrice + reservationDeposit;
 
   const handlePay = async () => {
     setLoading(true);
@@ -38,180 +55,503 @@ export default function PaymentScreen() {
     }, 1500);
   };
 
+  const showCta = React.useCallback(() => {
+    if (isCtaVisible.current) return;
+    isCtaVisible.current = true;
+
+    Animated.parallel([
+      Animated.timing(ctaTranslateY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(ctaOpacity, {
+        toValue: 1,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [ctaOpacity, ctaTranslateY]);
+
+  const hideCta = React.useCallback(() => {
+    if (!isCtaVisible.current) return;
+    isCtaVisible.current = false;
+
+    Animated.parallel([
+      Animated.timing(ctaTranslateY, {
+        toValue: 120,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(ctaOpacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [ctaOpacity, ctaTranslateY]);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentY = event.nativeEvent.contentOffset.y;
+    const delta = currentY - lastScrollY.current;
+
+    if (currentY <= 0) {
+      showCta();
+      lastScrollY.current = currentY;
+      return;
+    }
+
+    if (delta > 6) {
+      hideCta();
+    } else if (delta < -6) {
+      showCta();
+    }
+
+    lastScrollY.current = currentY;
+  };
+
   return (
     <View style={styles.container}>
-      <ScrollView>
-        {/* ORDER SUMMARY */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <BackArrowIcon />
+        </TouchableOpacity>
 
+        <Text style={styles.headerTitle}>{t("payment.title")}</Text>
+
+        <View style={styles.headerSpacer} />
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <View style={styles.section}>
-          <Text style={styles.title}>{t("payment.orderSummary")}</Text>
-
-          {items.map((item) => (
-            <View key={item.itemId} style={styles.row}>
-              <Text>
-                {item.name} x{item.quantity}
-              </Text>
-
-              <Text>{(item.price * item.quantity).toFixed(2)}₾</Text>
-            </View>
-          ))}
-
-          <View style={styles.divider} />
-
-          <View style={styles.row}>
-            <Text style={styles.total}>{t("payment.total")}</Text>
-            <Text style={styles.total}>{totalPrice.toFixed(2)}₾</Text>
-          </View>
-        </View>
-
-        {/* CARD INPUT */}
-
-        <View style={styles.section}>
-          <Text style={styles.title}>{t("payment.paymentMethod")}</Text>
+          <Text style={styles.sectionTitle}>{t("payment.subtitle")}</Text>
+          <Text style={styles.sectionDescription}>
+            {t("payment.description")}
+          </Text>
 
           <TextInput
-            label={t("payment.cardNumber")}
-            value={cardNumber}
-            onChangeText={setCardNumber}
-            keyboardType="number-pad"
-            maxLength={19}
+            leftIcon={<PersonIcon />}
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder={t("payment.namePlaceholder")}
           />
 
-          <View style={{ flexDirection: "row" }}>
-            <TextInput
-              label={t("payment.expiry")}
-              value={expiry}
-              onChangeText={setExpiry}
-              keyboardType="number-pad"
-              maxLength={5}
-              style={{ flex: 1, marginRight: 12 }}
-            />
+          <TextInput
+            leftIcon={<PhoneIcon />}
+            value={phone}
+            onChangeText={setPhone}
+            placeholder={t("payment.phonePlaceholder")}
+            keyboardType="phone-pad"
+          />
 
-            <TextInput
-              label="CVV"
-              value={cvv}
-              onChangeText={setCvv}
-              keyboardType="number-pad"
-              maxLength={3}
-              secureTextEntry
-              style={{ flex: 1 }}
-            />
-          </View>
+          <TextInput
+            leftIcon={<MailIcon />}
+            value={email}
+            onChangeText={setEmail}
+            placeholder={t("payment.emailPlaceholder")}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <TextInput
+            value={specialRequest}
+            onChangeText={setSpecialRequest}
+            placeholder={t("payment.textPlaceholder")}
+            multiline
+            numberOfLines={3}
+            inputWrapperStyle={styles.noteWrapper}
+            style={styles.noteInput}
+          />
         </View>
 
-        {/* TIP */}
-
         <View style={styles.section}>
-          <Text style={styles.title}>{t("payment.tip")}</Text>
+          <Text style={styles.methodTitle}>{t("payment.method")}</Text>
 
-          <View style={styles.tipRow}>
-            {[0, 10, 15, 20].map((pct) => (
-              <TouchableOpacity
-                key={pct}
-                style={[
-                  styles.tipButton,
-                  tipPercent === pct && styles.tipActive,
-                ]}
-                onPress={() => setTipPercent(pct)}
-              >
-                <Text
-                  style={[
-                    styles.tipText,
-                    tipPercent === pct && styles.tipTextActive,
-                  ]}
-                >
-                  {pct === 0 ? t("payment.noTip") : `${pct}%`}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <TouchableOpacity
+            style={[
+              styles.methodCard,
+              paymentMethod === "new" && styles.methodCardSelected,
+            ]}
+            onPress={() => setPaymentMethod("new")}
+          >
+            <View style={styles.methodIconCircle}>
+              <View style={styles.methodIconLine} />
+            </View>
+
+            <View style={styles.methodTextWrap}>
+              <Text style={styles.methodLabel}>{t("payment.addCard")}</Text>
+              <Text style={styles.methodSubtext}>
+                {t("payment.cardBrands")}
+              </Text>
+            </View>
+
+            <View style={styles.radioOuter}>
+              {paymentMethod === "new" && <View style={styles.radioInner} />}
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.methodCard,
+              paymentMethod === "saved" && styles.methodCardSelected,
+            ]}
+            onPress={() => setPaymentMethod("saved")}
+          >
+            <View style={styles.savedCardMark}>
+              <View style={styles.dotYellow} />
+              <View style={styles.dotRed} />
+            </View>
+
+            <View style={styles.methodTextWrap}>
+              <Text style={styles.methodLabel}>
+                {t("payment.savedCardMasked")}
+              </Text>
+              <Text style={styles.methodSubtext}>
+                {t("payment.savedCardBrand")}
+              </Text>
+            </View>
+
+            <View style={styles.radioOuter}>
+              {paymentMethod === "saved" && <View style={styles.radioInner} />}
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.methodCard,
+              paymentMethod === "apple" && styles.methodCardSelected,
+            ]}
+            onPress={() => setPaymentMethod("apple")}
+          >
+            <View style={styles.methodIconCircle} />
+
+            <View style={styles.methodTextWrap}>
+              <Text style={styles.methodLabel}>{t("payment.applePay")}</Text>
+              <Text style={styles.methodSubtext}>{t("payment.soon")}</Text>
+            </View>
+
+            <View style={styles.radioOuter}>
+              {paymentMethod === "apple" && <View style={styles.radioInner} />}
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.totalSection}>
+          <Text style={styles.totalSectionTitle}>{t("cart.tax")}</Text>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>{t("cart.deposit")}</Text>
+            <Text style={styles.summaryValue}>
+              {reservationDeposit.toFixed(2)} ₾
+            </Text>
+          </View>
+
+          <View style={styles.summaryDivider} />
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.totalLabel}>{t("cart.total")}</Text>
+            <Text style={styles.totalValue}>{finalTotal.toFixed(2)} ₾</Text>
+          </View>
+
+          <View style={styles.safeRow}>
+            <ShieldIcon />
+            <Text style={styles.safeText}>{t("cart.safe")}</Text>
           </View>
         </View>
       </ScrollView>
 
-      {/* PAY BUTTON */}
-
-      <TouchableOpacity
-        style={styles.payButton}
-        onPress={handlePay}
-        disabled={loading}
+      <Animated.View
+        pointerEvents={loading ? "none" : "auto"}
+        style={[
+          styles.ctaContainer,
+          {
+            opacity: ctaOpacity,
+            transform: [{ translateY: ctaTranslateY }],
+          },
+        ]}
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.payText}>
-            {t("payment.pay")} ₾{finalTotal.toFixed(2)}
-          </Text>
-        )}
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.orderButton}
+          onPress={handlePay}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color={colors.white} />
+          ) : (
+            <Text style={styles.orderText}>{t("payment.button")}</Text>
+          )}
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
-
-  section: {
-    padding: spacing.lg,
+  container: {
+    flex: 1,
+    backgroundColor: colors.state50,
+    paddingTop: spacing.xl,
   },
 
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
+  },
+
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.light,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  headerTitle: {
+    ...typography.textSm,
+    color: colors.dark,
+    fontWeight: typography.h1.fontWeight,
+  },
+
+  headerSpacer: {
+    width: 44,
+    height: 44,
+  },
+
+  content: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.xxl,
+  },
+
+  section: {
     marginBottom: spacing.md,
   },
 
-  row: {
+  sectionTitle: {
+    ...typography.button,
+    color: colors.dark,
+    fontWeight: typography.h1.fontWeight,
+    marginBottom: spacing.xs,
+  },
+
+  sectionDescription: {
+    ...typography.textXs,
+    color: textColors.tertiary,
+    marginBottom: spacing.lg,
+  },
+
+  noteWrapper: {
+    height: 100,
+    alignItems: "flex-start",
+    backgroundColor: colors.white,
+    paddingVertical: spacing.sm,
+  },
+
+  noteInput: {
+    minHeight: 76,
+    textAlignVertical: "top",
+  },
+
+  methodTitle: {
+    ...typography.h4,
+    color: colors.gray900,
+    fontWeight: typography.h1.fontWeight,
+    marginBottom: spacing.xmd,
+  },
+
+  methodCard: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
-
-  total: {
-    fontWeight: "700",
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: colors.light,
-    marginVertical: spacing.md,
-  },
-
-  tipRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-
-  tipButton: {
-    padding: 10,
+    alignItems: "center",
+    borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.light,
-    borderRadius: borderRadius.md,
-    width: 70,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+
+  methodCardSelected: {
+    borderColor: colors.dark,
+    borderWidth: 1.75,
+  },
+
+  methodIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: colors.light,
     alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.xmd,
+    backgroundColor: colors.white,
   },
 
-  tipActive: {
+  methodIconLine: {
+    width: 16,
+    height: 2,
+    backgroundColor: colors.darkGrey,
+  },
+
+  savedCardMark: {
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: colors.light,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.xmd,
+    backgroundColor: colors.white,
+  },
+
+  dotYellow: {
+    width: 12,
+    height: 12,
+    borderRadius: borderRadius.full,
+    backgroundColor: "#F59E0B",
+    marginRight: -4,
+  },
+
+  dotRed: {
+    width: 12,
+    height: 12,
+    borderRadius: borderRadius.full,
     backgroundColor: colors.primary,
-    borderColor: colors.primary,
   },
 
-  tipText: {
+  methodTextWrap: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  methodLabel: {
+    ...typography.button,
     color: colors.dark,
+    fontWeight: typography.h1.fontWeight,
   },
 
-  tipTextActive: {
-    color: colors.white,
+  methodSubtext: {
+    ...typography.textXs,
+    color: textColors.tertiary,
   },
 
-  payButton: {
-    backgroundColor: colors.primary,
-    padding: spacing.lg,
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: borderRadius.full,
+    borderWidth: 2,
+    borderColor: colors.light,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+  },
+
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.gray900,
+  },
+
+  totalSection: {
+    marginTop: spacing.xl,
+    borderTopWidth: 1,
+    borderColor: colors.light,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
+  },
+
+  totalSectionTitle: {
+    ...typography.h4,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.gray900,
+    marginBottom: spacing.md,
+  },
+
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+
+  summaryLabel: {
+    ...typography.textSm,
+    color: colors.gray600,
+  },
+
+  summaryValue: {
+    ...typography.textSm,
+    color: colors.gray800,
+  },
+
+  summaryDivider: {
+    height: 1,
+    backgroundColor: colors.light,
+    marginVertical: spacing.sm,
+  },
+
+  totalLabel: {
+    ...typography.h3,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.gray900,
+  },
+
+  totalValue: {
+    ...typography.text2xl,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.primary,
+  },
+
+  safeRow: {
+    marginTop: spacing.md,
+    backgroundColor: colors.privacyBackground,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    flexDirection: "row",
     alignItems: "center",
   },
 
-  payText: {
+  safeText: {
+    ...typography.textXs,
+    color: colors.privacyText,
+    marginLeft: spacing.sm,
+  },
+
+  ctaContainer: {
+    position: "absolute",
+    left: spacing.md,
+    right: spacing.md,
+    bottom: 0,
+    marginVertical: spacing.md,
+    backgroundColor: "transparent",
+  },
+
+  orderButton: {
+    backgroundColor: colors.greenButtonBackground,
+    borderRadius: borderRadius.full,
+    paddingVertical: spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  orderText: {
     color: colors.white,
-    fontWeight: "600",
-    fontSize: 16,
+    ...typography.buttonLg,
+    fontWeight: typography.h1.fontWeight,
   },
 });
