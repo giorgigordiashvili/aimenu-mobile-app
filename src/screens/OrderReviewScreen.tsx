@@ -33,21 +33,6 @@ export default function OrderReviewScreen() {
   const lastScrollY = React.useRef(0);
   const isCtaVisible = React.useRef(true);
 
-  if (items.length === 0) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.emptyText}>{t("cart.empty")}</Text>
-
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.emptyActionBtn}
-        >
-          <Text style={styles.emptyActionText}>{t("cart.browseMenu")}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   const reservationDeposit = 10;
   const grandTotal = totalPrice + reservationDeposit;
 
@@ -114,6 +99,21 @@ export default function OrderReviewScreen() {
 
     lastScrollY.current = currentY;
   };
+
+  if (items.length === 0) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyText}>{t("cart.empty")}</Text>
+
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.emptyActionBtn}
+        >
+          <Text style={styles.emptyActionText}>{t("cart.browseMenu")}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

@@ -51,7 +51,9 @@ export default function PaymentScreen() {
 
     setTimeout(() => {
       setLoading(false);
-      router.replace("/(tabs)/payment/success");
+      const paymentResult = Math.random() >= 0.5 ? "success" : "failed";
+
+      router.replace(`/payment/${paymentResult}`);
     }, 1500);
   };
 

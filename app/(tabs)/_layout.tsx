@@ -113,13 +113,6 @@ export default function TabLayout() {
           href: null,
         }}
       />
-
-      <Tabs.Screen
-        name="payment/success"
-        options={{
-          href: null,
-        }}
-      />
     </Tabs>
   );
 }
