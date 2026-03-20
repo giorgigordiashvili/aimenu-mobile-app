@@ -191,5 +191,16 @@
     "title": "Payment Failed",
     "subtitle": "Please ensure the payment method is correct or check the card balance",
     "cta": "Go Back"
+  },
+  "profile": {
+    "title": "My Profile",
+    "name": "Gagi Murjikneli",
+    "settings ": "Account Settings",
+    "payment": "Payment Methods",
+    "orders": "Order History",
+    "favorites": "My Favorites",
+    "language": "Language",
+    "currency": "Currency",
+    "logout": "Logout"
   }
 }
