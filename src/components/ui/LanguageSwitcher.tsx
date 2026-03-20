@@ -4,12 +4,11 @@ import {
   Text,
   StyleSheet,
   View,
-  Modal,
   Pressable,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { setLanguage } from "../../i18n";
-import { colors, textColors } from "../../theme/colors";
+import { colors } from "../../theme/colors";
 import ChevronIcon from "../../assets/icons/ChevronIcon";
 import { borderRadius, spacing, typography } from "../../theme";
 
@@ -66,10 +65,28 @@ const styles = StyleSheet.create({
   },
 });
 
-export const LanguageSwitcher = () => {
+interface LanguageSwitcherProps {
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+}
+
+export const LanguageSwitcher = ({
+  isOpen,
+  onOpenChange,
+}: LanguageSwitcherProps) => {
   const { i18n } = useTranslation();
   const isGeorgian = i18n.language === "ka";
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const dropdownOpen = isOpen ?? internalOpen;
+
+  const setDropdownOpen = (nextOpen: boolean) => {
+    if (isOpen === undefined) {
+      setInternalOpen(nextOpen);
+    }
+
+    onOpenChange?.(nextOpen);
+  };
 
   const handleSelect = (lang: "ka" | "en") => {
     setLanguage(lang);
@@ -81,7 +98,7 @@ export const LanguageSwitcher = () => {
       <TouchableOpacity
         style={[styles.container, dropdownOpen && styles.containerOpen]}
         onPress={() => setDropdownOpen(!dropdownOpen)}
-        activeOpacity={0.8}
+        activeOpacity={1}
       >
         <View style={styles.content}>
           <Text style={styles.text}>{isGeorgian ? "GEO" : "ENG"}</Text>
