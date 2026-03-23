@@ -101,13 +101,6 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="order-review"
-        options={{
-          href: null,
-        }}
-      />
-
-      <Tabs.Screen
         name="payment/index"
         options={{
           href: null,

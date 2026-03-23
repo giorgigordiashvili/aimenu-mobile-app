@@ -202,5 +202,12 @@
     "language": "Language",
     "currency": "Currency",
     "logout": "Logout"
+  },
+  "orderHistory": {
+    "title": "Order History",
+    "cardTitle": "Black Lion",
+    "cardBio": "Tbilisi • Georgian Fusion",
+    "tag": "2 Dishes",
+    "empty": "You do not have any orders yet"
   }
 }
