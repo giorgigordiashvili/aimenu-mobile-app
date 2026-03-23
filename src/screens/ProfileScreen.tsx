@@ -9,6 +9,7 @@ import {
   StyleProp,
   ViewStyle,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { colors } from "../theme/colors";
 import { LanguageSwitcher } from "../components/ui/LanguageSwitcher";
@@ -75,6 +76,7 @@ const ProfileMenuItem = ({
 };
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const { t } = useTranslation();
   const profileName = user.name || t("profile.name");
@@ -133,7 +135,7 @@ export default function ProfileScreen() {
         <ProfileMenuItem
           label={t("profile.orders")}
           leftElement={<OrdersIcon />}
-          onPress={() => console.log("Orders")}
+          onPress={() => router.push("/order-history")}
         />
         <ProfileMenuItem
           label={t("profile.favorites")}
