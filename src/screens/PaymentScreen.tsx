@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Animated,
   View,
@@ -9,7 +9,9 @@ import {
   ActivityIndicator,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
@@ -17,6 +19,7 @@ import { useCart } from "../context/CartContext";
 import { TextInput } from "../components/ui/TextInput";
 import { colors, spacing, borderRadius, typography } from "../theme";
 import { textColors } from "../theme/colors";
+
 import BackArrowIcon from "../assets/icons/BackArrowIcon";
 import PersonIcon from "../assets/icons/PersonIcon";
 import PhoneIcon from "../assets/icons/PhoneIcon";
@@ -27,6 +30,11 @@ export default function PaymentScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { totalPrice } = useCart();
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem("auth_token").then(setToken);
+  }, []);
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -36,6 +44,10 @@ export default function PaymentScreen() {
   const [paymentMethod, setPaymentMethod] = useState<"new" | "saved" | "apple">(
     "saved",
   );
+
+  const [cards, setCards] = useState<any[]>([]);
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+
   const [loading, setLoading] = useState(false);
 
   const ctaTranslateY = React.useRef(new Animated.Value(0)).current;
@@ -46,18 +58,61 @@ export default function PaymentScreen() {
   const reservationDeposit = 10;
   const finalTotal = totalPrice + reservationDeposit;
 
-  const handlePay = async () => {
-    setLoading(true);
+  // 🔌 Fetch cards
+  const fetchCards = async () => {
+    try {
+      const res = await fetch("https://admin.aimenu.ge/api/payments/methods/", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    setTimeout(() => {
-      setLoading(false);
-      const paymentResult = Math.random() >= 0.5 ? "success" : "failed";
+      if (!res.ok) throw new Error();
 
-      router.replace(`/payment/${paymentResult}`);
-    }, 1500);
+      const data = await res.json();
+
+      setCards(data.results || []);
+
+      const defaultCard = data.results?.find((c: any) => c.is_default);
+      if (defaultCard) setSelectedCardId(defaultCard.id);
+    } catch (e) {
+      Alert.alert("Error", "ბარათების მიღება ვერ მოხერხდა");
+    }
   };
 
-  const showCta = React.useCallback(() => {
+  useEffect(() => {
+    if (token) {
+      fetchCards();
+    }
+  }, [token]);
+
+  // 💳 Handle Payment
+  const handlePay = async () => {
+    if (paymentMethod === "saved" && !selectedCardId) {
+      return Alert.alert("Error", "აირჩიეთ ბარათი");
+    }
+
+    if (paymentMethod === "new") {
+      return Alert.alert("Error", "გთხოვთ დაამატოთ ბარათი");
+    }
+
+    try {
+      setLoading(true);
+
+      console.log("Paying with card:", selectedCardId);
+
+      setTimeout(() => {
+        router.replace("/payment/success");
+      }, 1000);
+    } catch (e) {
+      router.replace("/payment/failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🎬 CTA animations
+  const showCta = () => {
     if (isCtaVisible.current) return;
     isCtaVisible.current = true;
 
@@ -73,9 +128,9 @@ export default function PaymentScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [ctaOpacity, ctaTranslateY]);
+  };
 
-  const hideCta = React.useCallback(() => {
+  const hideCta = () => {
     if (!isCtaVisible.current) return;
     isCtaVisible.current = false;
 
@@ -91,29 +146,23 @@ export default function PaymentScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [ctaOpacity, ctaTranslateY]);
+  };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentY = event.nativeEvent.contentOffset.y;
     const delta = currentY - lastScrollY.current;
 
-    if (currentY <= 0) {
-      showCta();
-      lastScrollY.current = currentY;
-      return;
-    }
+    if (currentY <= 0) return showCta();
 
-    if (delta > 6) {
-      hideCta();
-    } else if (delta < -6) {
-      showCta();
-    }
+    if (delta > 6) hideCta();
+    else if (delta < -6) showCta();
 
     lastScrollY.current = currentY;
   };
 
   return (
     <View style={styles.container}>
+      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -123,20 +172,18 @@ export default function PaymentScreen() {
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>{t("payment.title")}</Text>
-
         <View style={styles.headerSpacer} />
       </View>
 
+      {/* CONTENT */}
       <ScrollView
         contentContainerStyle={styles.content}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
+        {/* USER INFO */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t("payment.subtitle")}</Text>
-          <Text style={styles.sectionDescription}>
-            {t("payment.description")}
-          </Text>
 
           <TextInput
             leftIcon={<PersonIcon />}
@@ -150,7 +197,6 @@ export default function PaymentScreen() {
             value={phone}
             onChangeText={setPhone}
             placeholder={t("payment.phonePlaceholder")}
-            keyboardType="phone-pad"
           />
 
           <TextInput
@@ -158,96 +204,64 @@ export default function PaymentScreen() {
             value={email}
             onChangeText={setEmail}
             placeholder={t("payment.emailPlaceholder")}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          <TextInput
-            value={specialRequest}
-            onChangeText={setSpecialRequest}
-            placeholder={t("payment.textPlaceholder")}
-            multiline
-            numberOfLines={3}
-            inputWrapperStyle={styles.noteWrapper}
-            style={styles.noteInput}
           />
         </View>
 
+        {/* PAYMENT METHODS */}
         <View style={styles.section}>
           <Text style={styles.methodTitle}>{t("payment.method")}</Text>
 
+          {/* ➕ ADD CARD */}
           <TouchableOpacity
             style={[
               styles.methodCard,
               paymentMethod === "new" && styles.methodCardSelected,
             ]}
-            onPress={() => setPaymentMethod("new")}
-          >
-            <View style={styles.methodIconCircle}>
-              <View style={styles.methodIconLine} />
-            </View>
-
-            <View style={styles.methodTextWrap}>
-              <Text style={styles.methodLabel}>{t("payment.addCard")}</Text>
-              <Text style={styles.methodSubtext}>
-                {t("payment.cardBrands")}
-              </Text>
-            </View>
-
-            <View style={styles.radioOuter}>
-              {paymentMethod === "new" && <View style={styles.radioInner} />}
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.methodCard,
-              paymentMethod === "saved" && styles.methodCardSelected,
-            ]}
-            onPress={() => setPaymentMethod("saved")}
-          >
-            <View style={styles.savedCardMark}>
-              <View style={styles.dotYellow} />
-              <View style={styles.dotRed} />
-            </View>
-
-            <View style={styles.methodTextWrap}>
-              <Text style={styles.methodLabel}>
-                {t("payment.savedCardMasked")}
-              </Text>
-              <Text style={styles.methodSubtext}>
-                {t("payment.savedCardBrand")}
-              </Text>
-            </View>
-
-            <View style={styles.radioOuter}>
-              {paymentMethod === "saved" && <View style={styles.radioInner} />}
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.methodCard,
-              paymentMethod === "apple" && styles.methodCardSelected,
-            ]}
-            onPress={() => setPaymentMethod("apple")}
+            onPress={() => router.push("/payment-methods")}
           >
             <View style={styles.methodIconCircle} />
-
             <View style={styles.methodTextWrap}>
-              <Text style={styles.methodLabel}>{t("payment.applePay")}</Text>
-              <Text style={styles.methodSubtext}>{t("payment.soon")}</Text>
-            </View>
-
-            <View style={styles.radioOuter}>
-              {paymentMethod === "apple" && <View style={styles.radioInner} />}
+              <Text style={styles.methodLabel}>{t("payment.addCard")}</Text>
             </View>
           </TouchableOpacity>
+
+          {/* 💳 SAVED CARDS */}
+          {cards.map((card) => (
+            <TouchableOpacity
+              key={card.id}
+              style={[
+                styles.methodCard,
+                selectedCardId === card.id && styles.methodCardSelected,
+              ]}
+              onPress={() => {
+                setPaymentMethod("saved");
+                setSelectedCardId(card.id);
+              }}
+            >
+              <View style={styles.savedCardMark}>
+                <View style={styles.dotYellow} />
+                <View style={styles.dotRed} />
+              </View>
+
+              <View style={styles.methodTextWrap}>
+                <Text style={styles.methodLabel}>•••• {card.last_four}</Text>
+                <Text style={styles.methodSubtext}>
+                  {String(card.expiry_month).padStart(2, "0")}/
+                  {card.expiry_year}
+                </Text>
+              </View>
+
+              <View style={styles.radioOuter}>
+                {selectedCardId === card.id && (
+                  <View style={styles.radioInner} />
+                )}
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
 
+        {/* TOTAL */}
         <View style={styles.totalSection}>
-          <Text style={styles.totalSectionTitle}>{t("cart.tax")}</Text>
-
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>{t("cart.deposit")}</Text>
             <Text style={styles.summaryValue}>
@@ -269,6 +283,7 @@ export default function PaymentScreen() {
         </View>
       </ScrollView>
 
+      {/* CTA */}
       <Animated.View
         pointerEvents={loading ? "none" : "auto"}
         style={[
@@ -282,7 +297,7 @@ export default function PaymentScreen() {
         <TouchableOpacity
           style={styles.orderButton}
           onPress={handlePay}
-          disabled={loading}
+          disabled={loading || (paymentMethod === "saved" && !selectedCardId)}
         >
           {loading ? (
             <ActivityIndicator color={colors.white} />
@@ -423,7 +438,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: borderRadius.full,
-    backgroundColor: "#F59E0B",
+    backgroundColor: colors.yellow,
     marginRight: -4,
   },
 
