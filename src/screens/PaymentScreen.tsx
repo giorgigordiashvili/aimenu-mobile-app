@@ -263,7 +263,7 @@ export default function PaymentScreen() {
         {/* TOTAL */}
         <View style={styles.totalSection}>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Deposit</Text>
+            <Text style={styles.summaryLabel}>{t("cart.deposit")}</Text>
             <Text style={styles.summaryValue}>
               {reservationDeposit.toFixed(2)} ₾
             </Text>
@@ -272,7 +272,7 @@ export default function PaymentScreen() {
           <View style={styles.summaryDivider} />
 
           <View style={styles.summaryRow}>
-            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalLabel}>{t("cart.total")}</Text>
             <Text style={styles.totalValue}>{finalTotal.toFixed(2)} ₾</Text>
           </View>
 
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: borderRadius.full,
-    backgroundColor: "#F59E0B",
+    backgroundColor: colors.yellow,
     marginRight: -4,
   },
 
