@@ -141,7 +141,7 @@ export default function ProfileScreen() {
           label={t("profile.favorites")}
           leftElement={<FavoritesIcon />}
           hideBottomBorder
-          onPress={() => console.log("Favorites")}
+          onPress={() => router.push("/favorites")}
         />
       </View>
 
