@@ -209,5 +209,12 @@
     "cardBio": "Tbilisi • Georgian Fusion",
     "tag": "2 Dishes",
     "empty": "You do not have any orders yet"
+  },
+  "favorites": {
+    "title": "My Favorites",
+    "empty": "You do not have any favorites yet",
+    "emptyDescription": "Add favorites from the restaurant or dish page",
+    "dishes": "Dishes",
+    "restaurants": "Restaurants"
   }
 }
