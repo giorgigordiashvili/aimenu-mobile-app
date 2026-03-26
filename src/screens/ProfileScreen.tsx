@@ -123,14 +123,14 @@ export default function ProfileScreen() {
       {/* Section 1 */}
       <View style={styles.section}>
         <ProfileMenuItem
-          label={t("profile.settings ")}
+          label={t("profile.settings")}
           leftElement={<SettingsIcon />}
-          onPress={() => console.log("Settings")}
+          onPress={() => router.push("/settings")}
         />
         <ProfileMenuItem
           label={t("profile.payment")}
           leftElement={<BillingIcon />}
-          onPress={() => console.log("Payments")}
+          onPress={() => router.push("/payments")}
         />
         <ProfileMenuItem
           label={t("profile.orders")}

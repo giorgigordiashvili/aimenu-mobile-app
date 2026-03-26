@@ -195,7 +195,7 @@
   "profile": {
     "title": "My Profile",
     "name": "Gagi Murjikneli",
-    "settings ": "Account Settings",
+    "settings": "Account Settings",
     "payment": "Payment Methods",
     "orders": "Order History",
     "favorites": "My Favorites",
@@ -216,5 +216,14 @@
     "emptyDescription": "Add favorites from the restaurant or dish page",
     "dishes": "Dishes",
     "restaurants": "Restaurants"
+  },
+  "accountSettings": {
+    "title": "Account Settings",
+    "name": "Full Name",
+    "email": "Email or Phone",
+    "password": "Password",
+    "saveButton": "Save Changes",
+    "deleteButton": "Delete Account",
+    "firstNamePlaceholder": "Enter your full name"
   }
 }
