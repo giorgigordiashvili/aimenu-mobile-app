@@ -1,14 +1,9 @@
-// src/screens/QRScannerScreen/ScannerView.tsx
-import {
-  Camera,
-  CameraType,
-  useCameraPermissions,
-  BarCodeScannedCallback,
-} from "expo-camera";
 import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { PermissionView } from "./PermissionView";
 import { QROverlay } from "./QROverlay";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { colors } from "../../theme";
 
 type ScannerViewProps = {
   onScan: (code: string) => void;
@@ -22,22 +17,23 @@ export function ScannerView({ onScan }: ScannerViewProps) {
     return <PermissionView onRequest={requestPermission} />;
   }
 
-  const handleBarCodeScanned: BarCodeScannedCallback = ({ data }) => {
-    if (!scanned) {
-      setScanned(true);
-      onScan(data);
-    }
-  };
-
   return (
-    <View style={{ flex: 1 }}>
-      <Camera
+    <View style={{ flex: 1, backgroundColor: colors.darkGrey }}>
+      <CameraView
         style={StyleSheet.absoluteFill}
-        type={CameraType.back}
-        onBarCodeScanned={handleBarCodeScanned}
+        facing="back"
+        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+        onBarcodeScanned={
+          scanned
+            ? undefined
+            : ({ data }) => {
+                setScanned(true);
+                onScan(data);
+              }
+        }
       >
         <QROverlay />
-      </Camera>
+      </CameraView>
     </View>
   );
 }

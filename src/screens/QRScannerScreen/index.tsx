@@ -41,7 +41,7 @@ function QRScannerScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.black }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.dark }}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <MaterialCommunityIcons
@@ -78,7 +78,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: spacing.md,
-    backgroundColor: colors.black,
   },
   title: {
     color: colors.white,
@@ -94,7 +93,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.black + "aa",
+    backgroundColor: colors.darkGrey,
   },
   loadingText: {
     color: colors.white,
