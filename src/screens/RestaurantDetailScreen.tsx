@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -18,7 +18,6 @@ import { SearchBar } from "../components/ui/SearchBar";
 import { Button } from "../components/Button";
 import { debounce } from "lodash";
 import LocationIcon from "../assets/icons/LocationIcon";
-import { textColors } from "../theme/colors";
 import ChefIcon from "../assets/icons/ChefIcon";
 import StarIcon from "../assets/icons/StarIcon";
 import CardArrow from "../assets/icons/CardArrow";
