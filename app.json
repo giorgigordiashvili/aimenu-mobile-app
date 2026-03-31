@@ -2,6 +2,10 @@
   "expo": {
     "name": "aimenu-mobile-app",
     "slug": "aimenu-mobile-app",
-    "scheme": "aimenu"
+    "scheme": "aimenu",
+    "plugins": [
+      "expo-barcode-scanner",
+      "expo-router"
+    ]
   }
 }

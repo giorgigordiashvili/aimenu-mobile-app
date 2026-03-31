@@ -56,7 +56,13 @@ export default function OnboardingScreen() {
   const handleNext = async () => {
     if (isLastSlide) {
       await AsyncStorage.setItem("hasSeenOnboarding", "true");
-      router.replace("/login");
+      // After onboarding, go to login or main tabs if already logged in
+      const token = await AsyncStorage.getItem("auth_token");
+      if (token) {
+        router.replace("/(tabs)");
+      } else {
+        router.replace("/login");
+      }
     } else {
       flatListRef.current?.scrollToIndex({
         index: currentIndex + 1,

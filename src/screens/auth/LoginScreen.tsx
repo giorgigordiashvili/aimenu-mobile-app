@@ -18,6 +18,7 @@ import FbIcon from "../../assets/icons/FbIcon";
 import AppleIcon from "../../assets/icons/AppleIcon";
 import { LanguageSwitcher } from "../../components/ui/LanguageSwitcher";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -50,8 +51,10 @@ export default function LoginScreen() {
   const handleLogin = () => {
     if (!validate()) return;
 
-    console.log("Login:", { email, password });
-    router.push("/home");
+    // ...existing login logic...
+    // On successful login, store token and navigate to main tabs
+    AsyncStorage.setItem("auth_token", "dummy_token"); // Replace with real token
+    router.replace("/(tabs)");
   };
 
   return (

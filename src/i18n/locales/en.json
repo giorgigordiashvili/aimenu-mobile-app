@@ -225,5 +225,14 @@
     "saveButton": "Save Changes",
     "deleteButton": "Delete Account",
     "firstNamePlaceholder": "Enter your full name"
+  },
+  "qr-scanner": {
+    "title": "Scan QR Code",
+    "hint": "Scan the QR code on the table, choose your food, and pay instantly here",
+    "loading": "Checking...",
+    "error_invalid": "Invalid QR code. Please try again.",
+    "permission_title": "Camera Access Required",
+    "permission_desc": "To scan the QR code, please allow camera access",
+    "permission_button": "Allow Camera Access"
   }
 }

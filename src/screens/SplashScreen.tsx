@@ -20,7 +20,17 @@ export default function SplashScreen() {
 
         const hasSeenOnboarding =
           await AsyncStorage.getItem("hasSeenOnboarding");
-        router.replace(hasSeenOnboarding === "true" ? "/onboarding" : "/login");
+        if (!hasSeenOnboarding || hasSeenOnboarding !== "true") {
+          router.replace("/onboarding");
+        } else {
+          // Check if user is logged in (implement your logic here)
+          const token = await AsyncStorage.getItem("auth_token");
+          if (token) {
+            router.replace("/(tabs)");
+          } else {
+            router.replace("/login");
+          }
+        }
       } catch (error) {
         router.replace("/login");
       }

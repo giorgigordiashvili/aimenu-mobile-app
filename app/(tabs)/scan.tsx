@@ -1,17 +1,5 @@
-import { View, Text, StyleSheet } from "react-native";
+import QRScannerScreen from "../../src/screens/QRScannerScreen";
 
-export default function ScanScreen() {
-  return (
-    <View style={styles.container}>
-      <Text>Scan Screen (Coming Soon)</Text>
-    </View>
-  );
+export default function ScanTab() {
+  return <QRScannerScreen />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
