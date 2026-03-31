@@ -1,3 +1,5 @@
+import "react-native-reanimated";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import "../src/i18n";
