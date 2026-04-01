@@ -63,17 +63,7 @@ export default function LoginScreen() {
         },
       );
 
-      const text = await response.text();
-      console.log("RAW RESPONSE:", text);
-
-      let data;
-      try {
-        data = JSON.parse(text); // try parse JSON
-      } catch (e) {
-        console.log("Not JSON response:", e);
-        setErrors({ email: "Server returned unexpected response" });
-        return;
-      }
+      const data = await response.json();
 
       if (!response.ok) {
         setErrors({ email: data.detail || "Invalid credentials" });
@@ -81,6 +71,8 @@ export default function LoginScreen() {
       }
 
       await login(data.access, data.refresh, data.user);
+
+      router.replace("/(tabs)");
     } catch (e) {
       console.log("LOGIN ERROR:", e);
       setErrors({ email: "Network error. Please try again." });

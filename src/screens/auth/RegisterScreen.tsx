@@ -77,8 +77,8 @@ export default function RegisterScreen() {
           body: JSON.stringify({
             first_name: firstName,
             email: email,
-            password1: password,
-            password2: confirmPassword,
+            password: password,
+            password_confirm: confirmPassword,
           }),
         },
       );
