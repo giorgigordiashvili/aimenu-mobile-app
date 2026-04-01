@@ -18,7 +18,7 @@ import FbIcon from "../../assets/icons/FbIcon";
 import AppleIcon from "../../assets/icons/AppleIcon";
 import { LanguageSwitcher } from "../../components/ui/LanguageSwitcher";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../../context/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -48,13 +48,41 @@ export default function LoginScreen() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleLogin = () => {
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
     if (!validate()) return;
 
-    // ...existing login logic...
-    // On successful login, store token and navigate to main tabs
-    AsyncStorage.setItem("auth_token", "dummy_token"); // Replace with real token
-    router.replace("/(tabs)");
+    try {
+      const response = await fetch(
+        "https://admin.aimenu.ge/api/v1/auth/login/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({ email: data.detail || "Invalid credentials" });
+        return;
+      }
+
+      const userRes = await fetch("https://admin.aimenu.ge/api/v1/users/me/", {
+        headers: { Authorization: `Bearer ${data.access}` },
+      });
+      const userJson = await userRes.json();
+      const userData = userJson.data;
+
+      await login(data.access, data.refresh, userData);
+
+      router.replace("/(tabs)");
+    } catch (e) {
+      console.log("LOGIN ERROR:", e);
+      setErrors({ email: "Network error. Please try again." });
+    }
   };
 
   return (
