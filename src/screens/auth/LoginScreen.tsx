@@ -70,7 +70,13 @@ export default function LoginScreen() {
         return;
       }
 
-      await login(data.access, data.refresh, data.user);
+      const userRes = await fetch("https://admin.aimenu.ge/api/v1/users/me/", {
+        headers: { Authorization: `Bearer ${data.access}` },
+      });
+      const userJson = await userRes.json();
+      const userData = userJson.data;
+
+      await login(data.access, data.refresh, userData);
 
       router.replace("/(tabs)");
     } catch (e) {
