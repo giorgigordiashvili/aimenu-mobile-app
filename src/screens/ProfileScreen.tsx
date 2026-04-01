@@ -23,6 +23,7 @@ import LogoutIcon from "../assets/icons/LogoutIcon";
 import CurrencyIcon from "../assets/icons/CurrencyIcon";
 import CameraIcon from "../assets/icons/CameraIcon";
 import { borderRadius, spacing, typography } from "../theme";
+import { useAuth } from "../context/AuthContext";
 
 // Temporary user (replace with auth later)
 const user = {
@@ -80,7 +81,7 @@ export default function ProfileScreen() {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const { t } = useTranslation();
   const profileName = user.name || t("profile.name");
-
+  const { logout } = useAuth();
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -88,6 +89,11 @@ export default function ProfileScreen() {
       .join("")
       .slice(0, 2)
       .toUpperCase();
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/login");
   };
 
   return (
@@ -178,7 +184,7 @@ export default function ProfileScreen() {
           leftElement={<LogoutIcon />}
           hideBottomBorder
           danger
-          onPress={() => Alert.alert("Logout")}
+          onPress={handleLogout}
         />
       </View>
     </View>

@@ -18,7 +18,7 @@ import FbIcon from "../../assets/icons/FbIcon";
 import AppleIcon from "../../assets/icons/AppleIcon";
 import { LanguageSwitcher } from "../../components/ui/LanguageSwitcher";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../../context/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -48,13 +48,43 @@ export default function LoginScreen() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleLogin = () => {
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
     if (!validate()) return;
 
-    // ...existing login logic...
-    // On successful login, store token and navigate to main tabs
-    AsyncStorage.setItem("auth_token", "dummy_token"); // Replace with real token
-    router.replace("/(tabs)");
+    try {
+      const response = await fetch(
+        "https://admin.aimenu.ge/api/v1/auth/login/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        },
+      );
+
+      const text = await response.text();
+      console.log("RAW RESPONSE:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text); // try parse JSON
+      } catch (e) {
+        console.log("Not JSON response:", e);
+        setErrors({ email: "Server returned unexpected response" });
+        return;
+      }
+
+      if (!response.ok) {
+        setErrors({ email: data.detail || "Invalid credentials" });
+        return;
+      }
+
+      await login(data.access, data.refresh, data.user);
+    } catch (e) {
+      console.log("LOGIN ERROR:", e);
+      setErrors({ email: "Network error. Please try again." });
+    }
   };
 
   return (

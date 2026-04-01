@@ -68,7 +68,7 @@ export default function RegisterScreen() {
 
     try {
       const response = await fetch(
-        "https://admin.aimenu.ge/api/auth/registration/",
+        "https://admin.aimenu.ge/api/v1/auth/register/",
         {
           method: "POST",
           headers: {
@@ -84,20 +84,27 @@ export default function RegisterScreen() {
       );
 
       const data = await response.json();
+      console.log("REGISTER RAW RESPONSE:", data);
 
-      if (!response.ok) {
-        Alert.alert("Error", JSON.stringify(data));
+      if (!response.ok || data.success === false) {
+        Alert.alert(
+          "Error",
+          data?.error?.message ||
+            "Registration failed. Check your details and try again.",
+        );
         return;
       }
 
-      Alert.alert("Success", t("auth.registerSuccess"));
+      Alert.alert("Success", "Account created successfully!");
       router.push("/login");
     } catch (error) {
-      Alert.alert("Error", "Something went wrong");
+      console.log("REGISTER ERROR:", error);
+      Alert.alert("Error", "Network error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
