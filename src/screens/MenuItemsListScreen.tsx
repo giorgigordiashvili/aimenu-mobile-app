@@ -106,9 +106,7 @@ export default function MenuItemsListScreen() {
       <View style={styles.card}>
         <TouchableOpacity
           style={styles.cardContent}
-          onPress={() =>
-            router.push(`/(tabs)/restaurant/${slug}/item/${item.id}`)
-          }
+          onPress={() => router.push(`/restaurant/${slug}/item/${item.id}`)}
         >
           {item.image && (
             <Image source={{ uri: item.image }} style={styles.image} />

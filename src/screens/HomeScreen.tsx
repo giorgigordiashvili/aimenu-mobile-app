@@ -98,7 +98,7 @@ const HomeScreen = () => {
           isOpen={item.is_open_now}
           onPress={() =>
             router.push({
-              pathname: "/(tabs)/restaurant-detail",
+              pathname: "/restaurant-detail",
               params: { slug: item.slug },
             })
           }
@@ -142,7 +142,7 @@ const HomeScreen = () => {
           {/* Popular Section */}
           <View style={styles.section}>
             {renderSectionHeader(t("home.popularTitle"), () =>
-              router.push("/(tabs)/restaurants"),
+              router.push("/restaurants"),
             )}
 
             <FlatList
@@ -161,7 +161,7 @@ const HomeScreen = () => {
                     isOpen={item.is_open_now}
                     onPress={() =>
                       router.push({
-                        pathname: "/(tabs)/restaurant-detail",
+                        pathname: "/restaurant-detail",
                         params: { slug: item.slug },
                       })
                     }
