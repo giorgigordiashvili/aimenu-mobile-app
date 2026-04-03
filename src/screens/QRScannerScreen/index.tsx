@@ -9,15 +9,15 @@ import {
 } from "react-native";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
-import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ScannerView } from "./ScannerView";
 import { tablesScanCreate } from "../../api";
 import { useTranslation } from "react-i18next";
 import { spacing } from "../../theme";
+import { useRouter } from "expo-router";
 
 function QRScannerScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
@@ -27,10 +27,13 @@ function QRScannerScreen() {
     setError(null);
     try {
       const response = await tablesScanCreate({ qr_code: qrCode });
-      navigation.navigate("RestaurantDetail", {
-        slug: response.data.restaurant_slug,
-        sessionId: response.data.session_id,
-        tableId: response.data.table_id,
+      router.push({
+        pathname: "/postScanOrder",
+        params: {
+          tableSessionId: response.data.session_id,
+          restaurantSlug: response.data.restaurant_slug,
+          tableNumber: response.data.table_id,
+        },
       });
     } catch (err) {
       setError(t("qr-scanner.error_invalid"));
@@ -43,7 +46,7 @@ function QRScannerScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.dark }}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => router.back()}>
           <MaterialCommunityIcons
             name="arrow-left"
             color={colors.white}
@@ -67,6 +70,12 @@ function QRScannerScreen() {
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
+      <TouchableOpacity
+        onPress={() => handleScan("test-qr-code")}
+        style={{ backgroundColor: "red", padding: 10 }}
+      >
+        <Text style={{ color: "white" }}>TEST SCAN</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
