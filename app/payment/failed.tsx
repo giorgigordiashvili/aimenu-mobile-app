@@ -1,95 +1,72 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { colors, spacing, borderRadius, typography } from "../../src/theme";
+import { StyleSheet, Text, View } from "react-native";
+
 import ErrorCircleIcon from "../../src/assets/icons/ErrorCircleIcon";
+import { Button } from "../../src/components/Button";
+import { borderRadius, colors, spacing, typography } from "../../src/theme";
+import { textColors } from "../../src/theme/colors";
 
 export default function PaymentFailedScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { reason } = useLocalSearchParams<{ reason?: string }>();
 
   return (
-    <View style={styles.container}>
-      <View style={styles.iconWrap}>
+    <View style={styles.screen}>
+      <View style={styles.content}>
         <ErrorCircleIcon />
+
+        <Text style={styles.title}>{t("failedPayment.title")}</Text>
+
+        <Text style={styles.subtitle}>{t("failedPayment.subtitle")}</Text>
       </View>
 
-      <Text style={styles.title}>
-        {t("payment.failedTitle", "Payment Failed")}
-      </Text>
-      <Text style={styles.subtitle}>
-        {reason ||
-          t(
-            "payment.failedSubtitle",
-            "Something went wrong. Please try again.",
-          )}
-      </Text>
-
-      <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-        <Text style={styles.buttonText}>
-          {t("payment.tryAgain", "Try Again")}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.secondaryButton}
-        onPress={() => router.replace("/")}
-      >
-        <Text style={styles.secondaryText}>
-          {t("payment.backHome", "Back to Home")}
-        </Text>
-      </TouchableOpacity>
+      <Button
+        title={t("failedPayment.cta")}
+        onPress={() => router.back()}
+        variant="success"
+        fullWidth
+        size="md"
+        style={styles.ctaButton}
+        textStyle={styles.ctaText}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
     backgroundColor: colors.state50,
+    paddingHorizontal: spacing.md,
+    padding: spacing.xxxl,
+  },
+  content: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: spacing.md,
-  },
-  iconWrap: {
-    marginBottom: spacing.lg,
   },
   title: {
     ...typography.h2,
-    fontWeight: typography.h1.fontWeight,
+    marginTop: spacing.md,
     color: colors.dark,
     textAlign: "center",
-    marginBottom: spacing.sm,
-  },
-  subtitle: {
-    ...typography.textSm,
-    color: colors.gray600,
-    textAlign: "center",
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.md,
-  },
-  button: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.full,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    alignItems: "center",
-    width: "100%",
-    marginBottom: spacing.md,
-  },
-  buttonText: {
-    color: colors.white,
-    ...typography.buttonLg,
     fontWeight: typography.h1.fontWeight,
   },
-  secondaryButton: {
-    paddingVertical: spacing.md,
-    alignItems: "center",
+  subtitle: {
+    ...typography.textXs,
+    marginTop: spacing.md,
+    maxWidth: 360,
+    textAlign: "center",
+    color: textColors.tertiary,
   },
-  secondaryText: {
+  ctaButton: {
+    height: 48,
+    borderRadius: borderRadius.full,
+  },
+  ctaText: {
     ...typography.button,
-    color: colors.gray600,
+    color: colors.white,
+    fontWeight: typography.h1.fontWeight,
   },
 });

@@ -2,7 +2,7 @@ const API_BASE_URL = "https://admin.aimenu.ge";
 
 const buildAuthHeaders = (token: string) => ({
   "Content-Type": "application/json",
-  Authorization: `Token ${token}`,
+  Authorization: `Bearer ${token}`,
 });
 
 export const getOrderHistory = async (token: string) => {
