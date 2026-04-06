@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import {
   Animated,
   View,
@@ -16,6 +17,7 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { useCart } from "../context/CartContext";
+import { createOrder } from "../services/orders";
 import { TextInput } from "../components/ui/TextInput";
 import { colors, spacing, borderRadius, typography } from "../theme";
 import { textColors } from "../theme/colors";
@@ -25,11 +27,12 @@ import PersonIcon from "../assets/icons/PersonIcon";
 import PhoneIcon from "../assets/icons/PhoneIcon";
 import ShieldIcon from "../assets/icons/ShieldIcon";
 import MailIcon from "../assets/icons/MailIcon";
+import { payWithCard, payWithCash } from "../api";
 
 export default function PaymentScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { totalPrice } = useCart();
+  const { totalPrice, items, restaurantSlug } = useCart();
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,6 +52,7 @@ export default function PaymentScreen() {
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const ctaTranslateY = React.useRef(new Animated.Value(0)).current;
   const ctaOpacity = React.useRef(new Animated.Value(1)).current;
@@ -58,54 +62,116 @@ export default function PaymentScreen() {
   const reservationDeposit = 10;
   const finalTotal = totalPrice + reservationDeposit;
 
-  // 🔌 Fetch cards
-  const fetchCards = async () => {
+  // 🔄 Post-scan mode
+  const params = useLocalSearchParams<{ orderNumber?: string }>();
+  const [postScanMode] = useState(() => !!params.orderNumber);
+  const [orderNumber] = useState<string | null>(
+    () => params.orderNumber ?? null,
+  );
+
+  // 🔌 Fetch saved cards
+  const fetchCards = useCallback(async () => {
+    if (!token) return;
     try {
-      const res = await fetch("https://admin.aimenu.ge/api/payments/methods/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        "https://admin.aimenu.ge/api/v1/payments/methods/",
+        {
+          headers: { Authorization: `Bearer ${token}` },
         },
-      });
-
+      );
       if (!res.ok) throw new Error();
-
       const data = await res.json();
-
       setCards(data.results || []);
-
       const defaultCard = data.results?.find((c: any) => c.is_default);
       if (defaultCard) setSelectedCardId(defaultCard.id);
     } catch (e) {
       Alert.alert("Error", "ბარათების მიღება ვერ მოხერხდა");
     }
-  };
-
-  useEffect(() => {
-    if (token) {
-      fetchCards();
-    }
   }, [token]);
 
-  // 💳 Handle Payment
+  useFocusEffect(
+    useCallback(() => {
+      if (token) fetchCards();
+    }, [token, fetchCards]),
+  );
+
+  // 💳 Handle payment
   const handlePay = async () => {
+    // Validate card
     if (paymentMethod === "saved" && !selectedCardId) {
       return Alert.alert("Error", "აირჩიეთ ბარათი");
     }
-
     if (paymentMethod === "new") {
       return Alert.alert("Error", "გთხოვთ დაამატოთ ბარათი");
     }
 
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
+      if (postScanMode) {
+        // 🔌 POST-SCAN PAYMENT FLOW
+        if (!orderNumber) throw new Error("Order number missing");
 
-      console.log("Paying with card:", selectedCardId);
+        let response;
+        if (paymentMethod === "saved") {
+          response = await payWithCard({
+            order_number: orderNumber,
+            payment_method_id: selectedCardId!,
+            token: token!,
+          });
+        } else {
+          response = await payWithCash({
+            order_number: orderNumber,
+            token: token!,
+          });
+        }
 
-      setTimeout(() => {
-        router.replace("/payment/success");
-      }, 1000);
-    } catch (e) {
-      router.replace("/payment/failed");
+        const data = response?.data;
+        const ok = data?.success === true || data?.payment_status === "paid";
+
+        if (ok) {
+          router.replace({
+            pathname: "/payment/success",
+            params: { orderNumber },
+          });
+        } else {
+          const reason = data?.message || "Payment failed";
+          router.replace({
+            pathname: "/payment/failed",
+            params: { reason },
+          });
+        }
+      } else {
+        // 🔌 MENU CHECKOUT FLOW
+        const order = await createOrder(token!, {
+          restaurant_slug: restaurantSlug!,
+          items: items.map((item) => ({
+            item_id: item.itemId,
+            quantity: item.quantity,
+            modifiers: item.modifiers.map((m) => ({
+              modifier_id: m.modifierId,
+            })),
+          })),
+          payment_method_id: selectedCardId!,
+          full_name: fullName,
+          phone,
+          email,
+          special_request: specialRequest || undefined,
+        });
+
+        router.replace({
+          pathname: "/payment/success",
+          params: { orderNumber: order.order_number },
+        });
+      }
+    } catch (err: any) {
+      const apiMessage = err?.message ?? t("postScanPayment.genericError");
+      setError(apiMessage);
+      router.replace({
+        pathname: "/payment/failed",
+        params: { reason: apiMessage },
+      });
     } finally {
       setLoading(false);
     }
@@ -115,7 +181,6 @@ export default function PaymentScreen() {
   const showCta = () => {
     if (isCtaVisible.current) return;
     isCtaVisible.current = true;
-
     Animated.parallel([
       Animated.timing(ctaTranslateY, {
         toValue: 0,
@@ -133,7 +198,6 @@ export default function PaymentScreen() {
   const hideCta = () => {
     if (!isCtaVisible.current) return;
     isCtaVisible.current = false;
-
     Animated.parallel([
       Animated.timing(ctaTranslateY, {
         toValue: 120,
@@ -151,12 +215,9 @@ export default function PaymentScreen() {
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentY = event.nativeEvent.contentOffset.y;
     const delta = currentY - lastScrollY.current;
-
     if (currentY <= 0) return showCta();
-
     if (delta > 6) hideCta();
     else if (delta < -6) showCta();
-
     lastScrollY.current = currentY;
   };
 
