@@ -312,7 +312,7 @@ export default function OrderReviewScreen() {
       >
         <TouchableOpacity
           style={styles.orderButton}
-          onPress={() => router.push("/payment")}
+          onPress={() => router.push("/reservation-success")}
         >
           <Text style={styles.orderText}>{t("cart.button")}</Text>
           <CardArrow color={colors.white} />

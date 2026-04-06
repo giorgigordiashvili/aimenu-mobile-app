@@ -235,6 +235,25 @@
     "permission_desc": "To scan the QR code, please allow camera access",
     "permission_button": "Allow Camera Access"
   },
+  "addCard": {
+    "title": "Add New Card",
+    "cardNumberLabel": "Card Number",
+    "expiryLabel": "Expiry Date",
+    "cvvLabel": "CVV",
+    "holderLabel": "Cardholder Name",
+    "holderPlaceholder": "AS ON CARD",
+    "saveButton": "Save Card",
+    "hint": "Your card details are encrypted and stored securely.",
+    "error": "Error",
+    "errorCardNumber": "Please enter a valid 16-digit card number.",
+    "errorExpiry": "Please enter a valid expiry date (MM/YY).",
+    "errorCvv": "Please enter a valid CVV.",
+    "errorHolder": "Please enter the cardholder name.",
+    "errorPaymentMethodId": "Please enter a payment method ID.",
+    "paymentMethodIdLabel": "Payment Method ID",
+    "paymentMethodIdPlaceholder": "e.g. pm_xxxxxxxxxxxx",
+    "saveFailed": "Failed to save card. Please try again."
+  },
   "postScanOrder": {
     "title": "Order Summary",
     "menu": "Menu",
