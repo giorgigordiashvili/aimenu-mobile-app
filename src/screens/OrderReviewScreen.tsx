@@ -42,8 +42,7 @@ export default function OrderReviewScreen() {
 
   const reservationDeposit = 10;
   const grandTotal = totalPrice + reservationDeposit;
-
-  const { token, user } = useAuth();
+  const { token, user, logout } = useAuth();
 
   const handleReservation = async () => {
     if (!token) {
@@ -59,30 +58,17 @@ export default function OrderReviewScreen() {
     setReservationError(null);
 
     console.log("[Reservation] slug:", restaurantSlug, "user:", user?.email);
+    const payload = {
+      restaurant: restaurantSlug,
+      reservation_date: new Date().toISOString().split("T")[0],
+      reservation_time: "19:00:00",
+      party_size: guests,
+      guest_name: user ? `${user.first_name} ${user.last_name}`.trim() : "",
+      guest_email: user?.email ?? "",
+    };
 
-    try {
-      await createReservation(token, {
-        restaurant_slug: restaurantSlug,
-        reservation_date: new Date().toISOString().split("T")[0],
-        reservation_time: "19:00:00",
-        party_size: guests,
-        guest_name: user ? `${user.first_name} ${user.last_name}`.trim() : "",
-        guest_email: user?.email ?? "",
-      });
-
-      router.push("/reservation-booking");
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Reservation failed";
-
-      if (message.includes("404")) {
-        Alert.alert("Error (404)", message);
-      } else if (message === "SESSION_EXPIRED") {
-        router.replace("/login");
-      } else {
-        setReservationError(message);
-        Alert.alert("Error", message);
-      }
-    }
+    console.log("RESERVATION PAYLOAD:", payload);
+    await createReservation(token, payload);
   };
 
   const displayDate = new Date().toLocaleDateString(

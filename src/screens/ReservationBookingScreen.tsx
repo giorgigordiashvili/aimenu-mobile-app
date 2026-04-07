@@ -21,7 +21,7 @@ import { ReservationStatusBadge } from "../components/reservation/ReservationSta
 import { colors, spacing, typography, borderRadius } from "../theme";
 import { useRouter } from "expo-router";
 
-export default function ReservationBookingScreen({ navigation }: any) {
+export default function ReservationBookingScreen() {
   const { t } = useTranslation();
   const { token, user } = useAuth();
   const { restaurantSlug } = useCart();
