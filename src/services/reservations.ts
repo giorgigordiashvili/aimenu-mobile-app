@@ -67,17 +67,11 @@ export const createReservation = async (
 ) => {
   const { restaurant_slug, ...body } = data;
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/v1/reservations/create/?restaurant_slug=${encodeURIComponent(restaurant_slug)}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    },
-  );
+  const response = await fetch(`${API_BASE_URL}/api/v1/reservations/create/`, {
+    method: "POST",
+    headers: buildAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
 
   if (!response.ok) {
     const text = await response.text();

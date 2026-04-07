@@ -70,7 +70,7 @@ export default function OrderReviewScreen() {
         guest_email: user?.email ?? "",
       });
 
-      router.push("/reservation-success");
+      router.push("/reservation-booking");
     } catch (e) {
       const message = e instanceof Error ? e.message : "Reservation failed";
 

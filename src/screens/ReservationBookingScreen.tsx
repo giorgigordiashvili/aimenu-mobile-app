@@ -19,11 +19,13 @@ import {
 import { GuestCountSelector } from "../components/reservation/GuestCountSelector";
 import { ReservationStatusBadge } from "../components/reservation/ReservationStatusBadge";
 import { colors, spacing, typography, borderRadius } from "../theme";
+import { useRouter } from "expo-router";
 
 export default function ReservationBookingScreen({ navigation }: any) {
   const { t } = useTranslation();
   const { token, user } = useAuth();
   const { restaurantSlug } = useCart();
+  const router = useRouter();
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -87,10 +89,10 @@ export default function ReservationBookingScreen({ navigation }: any) {
       });
       setReservationStatus("confirmed");
       Alert.alert(t("reservation.success") || "Reservation confirmed!");
-      navigation.navigate("ReservationSuccess");
+      router.push("/reservation-success");
     } catch (err: any) {
       if (err.message === "SESSION_EXPIRED") {
-        navigation.replace("Login");
+        router.replace("/login");
         return;
       }
       setReservationStatus("cancelled");
