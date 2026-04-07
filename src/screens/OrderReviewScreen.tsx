@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { useCart } from "../context/CartContext";
 import { colors, spacing, borderRadius, typography } from "../theme";
 import BackArrowIcon from "../assets/icons/BackArrowIcon";
+import PhoneIcon from "../assets/icons/PhoneIcon";
 import CalendarIcon from "../assets/icons/CalendarIcon";
 import DropdownArrow from "../assets/icons/DropdownArrow";
 import CardArrow from "../assets/icons/CardArrow";
@@ -23,6 +24,7 @@ import { textColors } from "../theme/colors";
 import EditIcon from "../assets/icons/EditIcon";
 import ShieldIcon from "../assets/icons/ShieldIcon";
 import { GuestCountSelector } from "../components/reservation/GuestCountSelector";
+import { TextInput } from "../components/ui/TextInput";
 import { createReservation } from "../services/reservations";
 import { useAuth } from "../context/AuthContext";
 
@@ -31,6 +33,7 @@ export default function OrderReviewScreen() {
   const { t, i18n } = useTranslation();
   const { items, totalPrice, updateQuantity, restaurantSlug } = useCart();
   const [guests, setGuests] = React.useState(2);
+  const [phone, setPhone] = React.useState("");
   const [reservationError, setReservationError] = React.useState<string | null>(
     null,
   );
@@ -57,7 +60,6 @@ export default function OrderReviewScreen() {
 
     setReservationError(null);
 
-    console.log("[Reservation] slug:", restaurantSlug, "user:", user?.email);
     const payload = {
       restaurant_slug: restaurantSlug,
       reservation_date: new Date().toISOString().split("T")[0],
@@ -65,10 +67,24 @@ export default function OrderReviewScreen() {
       party_size: guests,
       guest_name: user ? `${user.first_name} ${user.last_name}`.trim() : "",
       guest_email: user?.email ?? "",
+      guest_phone: (phone || user?.phone) ?? "",
     };
 
-    console.log("RESERVATION PAYLOAD:", payload);
-    await createReservation(token, payload);
+    if (!payload.guest_phone) {
+      Alert.alert("Error", "Please provide a phone number.");
+      return;
+    }
+
+    try {
+      const data = await createReservation(token, payload, restaurantSlug);
+      console.log("Reservation successful:", data);
+
+      router.push("/reservation-success");
+    } catch (err: any) {
+      console.error("Reservation error:", err);
+      Alert.alert("Reservation failed", err.message);
+      setReservationError(err.message);
+    }
   };
 
   const displayDate = new Date().toLocaleDateString(
@@ -208,6 +224,15 @@ export default function OrderReviewScreen() {
             onChange={setGuests}
             label={t("cart.guestLabel")}
           />
+
+          <View style={styles.phoneRow}>
+            <TextInput
+              leftIcon={<PhoneIcon />}
+              value={phone}
+              onChangeText={setPhone}
+              placeholder={t("payment.phonePlaceholder")}
+            />
+          </View>
         </View>
 
         <View style={[styles.sectionHeader, styles.itemsSectionHeader]}>
@@ -409,6 +434,11 @@ const styles = StyleSheet.create({
   },
 
   firstCard: {},
+
+  phoneRow: {
+    paddingHorizontal: spacing.sm,
+    paddingBottom: spacing.sm,
+  },
 
   card: {
     backgroundColor: colors.white,

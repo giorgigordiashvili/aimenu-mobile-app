@@ -142,14 +142,18 @@ export const getReservationSettings = async (
 };
 
 // 🔹 Create Reservation
-export const createReservation = async (token: string, payload: any) => {
-  const res = await fetch(
+export const createReservation = async (
+  token: string,
+  payload: any,
+  restaurantSlug: string,
+) => {
+  const res = await authFetch(
     "https://admin.aimenu.ge/api/v1/reservations/create/",
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "X-Restaurant": restaurantSlug,
       },
       body: JSON.stringify(payload),
     },
