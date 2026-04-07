@@ -31,6 +31,10 @@
     "hide": "Hide"
   },
 
+  "common": {
+    "error": "Error"
+  },
+
   "error": {
     "passwordError": "Incorrect password"
   },

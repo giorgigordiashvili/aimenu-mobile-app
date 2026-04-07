@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Alert,
   Animated,
   View,
   Text,
@@ -21,12 +22,18 @@ import CardArrow from "../assets/icons/CardArrow";
 import { textColors } from "../theme/colors";
 import EditIcon from "../assets/icons/EditIcon";
 import ShieldIcon from "../assets/icons/ShieldIcon";
+import { GuestCountSelector } from "../components/reservation/GuestCountSelector";
+import { createReservation } from "../services/reservations";
+import { useAuth } from "../context/AuthContext";
 
 export default function OrderReviewScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { items, totalPrice, updateQuantity } = useCart();
+  const { items, totalPrice, updateQuantity, restaurantSlug } = useCart();
   const [guests, setGuests] = React.useState(2);
+  const [reservationError, setReservationError] = React.useState<string | null>(
+    null,
+  );
 
   const ctaTranslateY = React.useRef(new Animated.Value(0)).current;
   const ctaOpacity = React.useRef(new Animated.Value(1)).current;
@@ -35,6 +42,48 @@ export default function OrderReviewScreen() {
 
   const reservationDeposit = 10;
   const grandTotal = totalPrice + reservationDeposit;
+
+  const { token, user } = useAuth();
+
+  const handleReservation = async () => {
+    if (!token) {
+      Alert.alert("Error", "You must be logged in to make a reservation.");
+      return;
+    }
+
+    if (!restaurantSlug) {
+      Alert.alert("Error", "No restaurant selected.");
+      return;
+    }
+
+    setReservationError(null);
+
+    console.log("[Reservation] slug:", restaurantSlug, "user:", user?.email);
+
+    try {
+      await createReservation(token, {
+        restaurant_slug: restaurantSlug,
+        reservation_date: new Date().toISOString().split("T")[0],
+        reservation_time: "19:00:00",
+        party_size: guests,
+        guest_name: user ? `${user.first_name} ${user.last_name}`.trim() : "",
+        guest_email: user?.email ?? "",
+      });
+
+      router.push("/reservation-success");
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Reservation failed";
+
+      if (message.includes("404")) {
+        Alert.alert("Error (404)", message);
+      } else if (message === "SESSION_EXPIRED") {
+        router.replace("/login");
+      } else {
+        setReservationError(message);
+        Alert.alert("Error", message);
+      }
+    }
+  };
 
   const displayDate = new Date().toLocaleDateString(
     i18n.language === "ka" ? "ka-GE" : "en-GB",
@@ -166,41 +215,13 @@ export default function OrderReviewScreen() {
             </View>
           </View>
 
-          <View style={styles.guestCard}>
-            <Text style={styles.tileLabel}>{t("cart.guestLabel")}</Text>
-
-            <View style={styles.guestRow}>
-              <Text style={styles.guestValue}>
-                {t("cart.guestCount", { count: guests })}
-              </Text>
-
-              <View style={styles.guestControls}>
-                <TouchableOpacity
-                  onPress={() => setGuests((prev) => Math.max(1, prev - 1))}
-                  style={styles.guestControlButton}
-                >
-                  <Text style={styles.guestControlSymbol}>-</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => setGuests((prev) => prev + 1)}
-                  style={[
-                    styles.guestControlButton,
-                    styles.guestControlPrimary,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.guestControlSymbol,
-                      styles.guestControlPrimarySymbol,
-                    ]}
-                  >
-                    +
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+          <GuestCountSelector
+            value={guests}
+            min={1}
+            max={20}
+            onChange={setGuests}
+            label={t("cart.guestLabel")}
+          />
         </View>
 
         <View style={[styles.sectionHeader, styles.itemsSectionHeader]}>
@@ -312,7 +333,7 @@ export default function OrderReviewScreen() {
       >
         <TouchableOpacity
           style={styles.orderButton}
-          onPress={() => router.push("/reservation-success")}
+          onPress={handleReservation}
         >
           <Text style={styles.orderText}>{t("cart.button")}</Text>
           <CardArrow color={colors.white} />
@@ -450,60 +471,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-  },
-
-  guestCard: {
-    marginHorizontal: spacing.sm,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.light,
-    borderRadius: borderRadius.lg,
-    backgroundColor: colors.white,
-    padding: spacing.sm,
-  },
-
-  guestRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  guestValue: {
-    ...typography.textSm,
-    fontWeight: typography.h2.fontWeight,
-    color: colors.gray900,
-  },
-
-  guestControls: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  guestControlButton: {
-    width: 32,
-    height: 32,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    borderColor: colors.quantityControlBorder,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.white,
-    marginLeft: spacing.sm,
-  },
-
-  guestControlPrimary: {
-    borderColor: colors.dangerSoftBackground,
-    backgroundColor: colors.primaryLightest,
-  },
-
-  guestControlSymbol: {
-    ...typography.textLg,
-    color: colors.quantityControlIcon,
-    lineHeight: 22,
-  },
-
-  guestControlPrimarySymbol: {
-    color: colors.primary,
   },
 
   itemRow: {

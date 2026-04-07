@@ -18,6 +18,8 @@ export const colors = {
   yellow: "#F0B100", // Ratings, stars
   success: "#00A63E", // Success messages, indicators
   greenButtonBackground: "#7CCF00", // Green button background
+  warning: "#ED6C02", // Warning messages, indicators
+  warningLight: "#FFF4E5", // Warning background
   dangerSoftText: "#FF0000", // Text on red buttons
   dangerSoftBackground: "#FDDEDE", // Background for red buttons
   info: "#0084D1", // Informational messages, accents
