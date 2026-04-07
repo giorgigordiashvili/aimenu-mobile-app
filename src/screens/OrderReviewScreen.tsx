@@ -59,7 +59,7 @@ export default function OrderReviewScreen() {
 
     console.log("[Reservation] slug:", restaurantSlug, "user:", user?.email);
     const payload = {
-      restaurant: restaurantSlug,
+      restaurant_slug: restaurantSlug,
       reservation_date: new Date().toISOString().split("T")[0],
       reservation_time: "19:00:00",
       party_size: guests,

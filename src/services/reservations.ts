@@ -142,22 +142,23 @@ export const getReservationSettings = async (
 };
 
 // 🔹 Create Reservation
-export const createReservation = async (
-  token: string,
-  data: CreateReservationPayload,
-) => {
-  const response = await authFetch(
-    `${API_BASE_URL}/api/v1/reservations/create/`,
+export const createReservation = async (token: string, payload: any) => {
+  const res = await fetch(
+    "https://admin.aimenu.ge/api/v1/reservations/create/",
     {
       method: "POST",
-      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
     },
   );
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`${response.status} - ${text}`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${res.status} - ${text}`);
   }
 
-  return response.json();
+  return res.json();
 };
