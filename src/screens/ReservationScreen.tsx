@@ -5,54 +5,68 @@ import {
   View,
   Text,
   ScrollView,
+  Image,
   TouchableOpacity,
   StyleSheet,
   NativeScrollEvent,
   NativeSyntheticEvent,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
-import { useCart } from "../context/CartContext";
 import { colors, spacing, borderRadius, typography } from "../theme";
-import BackArrowIcon from "../assets/icons/BackArrowIcon";
-import PhoneIcon from "../assets/icons/PhoneIcon";
-import CalendarIcon from "../assets/icons/CalendarIcon";
 import { textColors } from "../theme/colors";
-import EditIcon from "../assets/icons/EditIcon";
+import BackArrowIcon from "../assets/icons/BackArrowIcon";
+import CalendarIcon from "../assets/icons/CalendarIcon";
+import StarIcon from "../assets/icons/StarIcon";
 import ShieldIcon from "../assets/icons/ShieldIcon";
+import PhoneIcon from "../assets/icons/PhoneIcon";
 import { GuestCounter } from "../components/reservation/GuestCounter";
 import { DateChip } from "../components/reservation/DateChip";
 import { TimeSlotChip } from "../components/reservation/TimeSlotChip";
 import { DatePickerModal } from "../components/reservation/DatePickerModal";
 import { TimeSlotModal, Slot } from "../components/reservation/TimeSlotModal";
-import { TextInput } from "../components/ui/TextInput";
-import { createReservation, getAvailability } from "../services/reservations";
-import { useAuth } from "../context/AuthContext";
 import { PrimaryCTA } from "../components/reservation/PrimaryCTA";
+import { TextInput } from "../components/ui/TextInput";
+import {
+  createReservation,
+  getAvailability,
+  getAvailableDates,
+} from "../services/reservations";
+import { useAuth } from "../context/AuthContext";
 
-export default function OrderReviewScreen() {
+const RESERVATION_DEPOSIT = 10;
+
+export default function ReservationScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { items, totalPrice, updateQuantity, restaurantSlug } = useCart();
+  const { token, user } = useAuth();
+
+  const { slug, name, cuisine_type, rating, cover_image } =
+    useLocalSearchParams<{
+      slug: string;
+      name: string;
+      cuisine_type: string;
+      rating: string;
+      cover_image: string;
+    }>();
+
   const [guests, setGuests] = React.useState(2);
   const [phone, setPhone] = React.useState("");
-  const [reservationError, setReservationError] = React.useState<string | null>(
-    null,
-  );
 
   const todayIso = React.useMemo(() => {
     const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }, []);
 
   const [selectedDate, setSelectedDate] = React.useState<string>(todayIso);
   const [selectedTime, setSelectedTime] = React.useState<string | null>(null);
   const [slots, setSlots] = React.useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = React.useState(false);
+  const [availableDates, setAvailableDates] = React.useState<
+    string[] | undefined
+  >(undefined);
+  const [loadingDates, setLoadingDates] = React.useState(false);
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const [timePickerOpen, setTimePickerOpen] = React.useState(false);
 
@@ -61,43 +75,37 @@ export default function OrderReviewScreen() {
   const lastScrollY = React.useRef(0);
   const isCtaVisible = React.useRef(true);
 
-  const reservationDeposit = 10;
-  const grandTotal = totalPrice + reservationDeposit;
-  const { token, user } = useAuth();
-
   React.useEffect(() => {
-    if (!restaurantSlug || !token) {
-      console.log(
-        "[Availability] skipped – restaurantSlug:",
-        restaurantSlug,
-        "| token present:",
-        !!token,
-      );
-      return;
-    }
+    if (!slug || !token) return;
 
     let cancelled = false;
     setLoadingSlots(true);
     setSelectedTime(null);
 
-    getAvailability(token, restaurantSlug, selectedDate, guests)
+    getAvailability(token, slug, selectedDate, guests)
       .then((data) => {
         if (cancelled) return;
         console.log("[Availability] raw response:", JSON.stringify(data));
         const raw: any[] = Array.isArray(data)
           ? data
-          : (data.slots ?? data.time_slots ?? data.available_slots ?? []);
+          : (data.slots ??
+            data.time_slots ??
+            data.available_slots ??
+            data.results ??
+            data.available_times ??
+            data.times ??
+            []);
         console.log("[Availability] parsed slots:", raw);
         setSlots(
           raw.map((s) => ({
-            time: s.time ?? s.start_time ?? s.slot,
+            time: s.time ?? s.start_time ?? s.slot ?? s,
             available: s.available !== undefined ? Boolean(s.available) : true,
           })),
         );
       })
       .catch((err) => {
+        console.log("[Availability] error:", err?.message);
         if (!cancelled) {
-          console.log("[Availability] error:", err?.message ?? err);
           if (String(err?.message).includes("404")) {
             setSlots([
               { time: "18:00:00", available: true },
@@ -116,52 +124,34 @@ export default function OrderReviewScreen() {
     return () => {
       cancelled = true;
     };
-  }, [selectedDate, guests, restaurantSlug, token]);
+  }, [selectedDate, guests, slug, token]);
 
-  const handleReservation = async () => {
-    if (!token) {
-      Alert.alert("Error", "You must be logged in to make a reservation.");
-      return;
-    }
+  React.useEffect(() => {
+    if (!slug || !token) return;
 
-    if (!restaurantSlug) {
-      Alert.alert("Error", "No restaurant selected.");
-      return;
-    }
+    let cancelled = false;
+    setLoadingDates(true);
 
-    if (!selectedTime) {
-      Alert.alert("Error", "Please select a time slot.");
-      return;
-    }
+    getAvailableDates(token, slug, guests)
+      .then((dates) => {
+        if (cancelled) return;
+        setAvailableDates(dates);
+        // If currently selected date is no longer available, reset to first available
+        if (dates.length > 0 && !dates.includes(selectedDate)) {
+          setSelectedDate(dates[0]);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setAvailableDates(undefined); // fall back to local generation
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDates(false);
+      });
 
-    setReservationError(null);
-
-    const payload = {
-      restaurant_slug: restaurantSlug,
-      reservation_date: selectedDate,
-      reservation_time: selectedTime,
-      party_size: guests,
-      guest_name: user ? `${user.first_name} ${user.last_name}`.trim() : "",
-      guest_email: user?.email ?? "",
-      guest_phone: (phone || user?.phone) ?? "",
+    return () => {
+      cancelled = true;
     };
-
-    if (!payload.guest_phone) {
-      Alert.alert("Error", "Please provide a phone number.");
-      return;
-    }
-
-    try {
-      const data = await createReservation(token, payload, restaurantSlug);
-      console.log("Reservation successful:", data);
-
-      router.push("/reservation-success");
-    } catch (err: any) {
-      console.error("Reservation error:", err);
-      Alert.alert("Reservation failed", err.message);
-      setReservationError(err.message);
-    }
-  };
+  }, [guests, slug, token]);
 
   const displayDate = React.useMemo(() => {
     const [y, mo, d] = selectedDate.split("-").map(Number);
@@ -176,7 +166,6 @@ export default function OrderReviewScreen() {
   const showCta = React.useCallback(() => {
     if (isCtaVisible.current) return;
     isCtaVisible.current = true;
-
     Animated.parallel([
       Animated.timing(ctaTranslateY, {
         toValue: 0,
@@ -194,7 +183,6 @@ export default function OrderReviewScreen() {
   const hideCta = React.useCallback(() => {
     if (!isCtaVisible.current) return;
     isCtaVisible.current = false;
-
     Animated.parallel([
       Animated.timing(ctaTranslateY, {
         toValue: 120,
@@ -212,39 +200,55 @@ export default function OrderReviewScreen() {
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentY = event.nativeEvent.contentOffset.y;
     const delta = currentY - lastScrollY.current;
-
     if (currentY <= 0) {
       showCta();
       lastScrollY.current = currentY;
       return;
     }
-
-    if (delta > 6) {
-      hideCta();
-    } else if (delta < -6) {
-      showCta();
-    }
-
+    if (delta > 6) hideCta();
+    else if (delta < -6) showCta();
     lastScrollY.current = currentY;
   };
 
-  if (items.length === 0) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.emptyText}>{t("cart.empty")}</Text>
+  const handleReserve = async () => {
+    if (!token) {
+      Alert.alert("Error", "You must be logged in.");
+      return;
+    }
+    if (!slug) {
+      Alert.alert("Error", "No restaurant selected.");
+      return;
+    }
+    if (!selectedTime) {
+      Alert.alert("Error", "Please select a time slot.");
+      return;
+    }
 
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.emptyActionBtn}
-        >
-          <Text style={styles.emptyActionText}>{t("cart.browseMenu")}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+    const payload = {
+      restaurant_slug: slug,
+      reservation_date: selectedDate,
+      reservation_time: selectedTime,
+      party_size: guests,
+      guest_name: user ? `${user.first_name} ${user.last_name}`.trim() : "",
+      guest_email: user?.email ?? "",
+      guest_phone: (phone || user?.phone) ?? "",
+    };
+
+    try {
+      const data = await createReservation(token, payload, slug);
+      console.log("Reservation successful:", data);
+      router.push("/reservation-success");
+    } catch (err: any) {
+      console.error("Reservation error:", err);
+      Alert.alert("Reservation failed", err.message);
+    }
+  };
+
+  const parsedRating = rating ? parseFloat(rating) : null;
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -252,9 +256,7 @@ export default function OrderReviewScreen() {
         >
           <BackArrowIcon />
         </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>{t("cart.orderReview")}</Text>
-
+        <Text style={styles.headerTitle}>{t("cart.reservationTitle")}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -263,6 +265,43 @@ export default function OrderReviewScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
+        {/* Restaurant info card */}
+        <View style={styles.restaurantCard}>
+          {cover_image ? (
+            <Image
+              source={{ uri: cover_image }}
+              style={styles.restaurantImage}
+            />
+          ) : (
+            <View
+              style={[
+                styles.restaurantImage,
+                styles.restaurantImagePlaceholder,
+              ]}
+            />
+          )}
+
+          <View style={styles.restaurantInfo}>
+            <Text style={styles.restaurantName} numberOfLines={1}>
+              {name ?? ""}
+            </Text>
+            {cuisine_type ? (
+              <Text style={styles.restaurantCuisine} numberOfLines={1}>
+                {cuisine_type}
+              </Text>
+            ) : null}
+            {parsedRating !== null ? (
+              <View style={styles.ratingBadge}>
+                <StarIcon />
+                <Text style={styles.ratingText}>{parsedRating.toFixed(1)}</Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* Section header */}
         <View style={styles.sectionHeader}>
           <CalendarIcon />
           <Text style={styles.sectionTitle}>
@@ -270,13 +309,13 @@ export default function OrderReviewScreen() {
           </Text>
         </View>
 
+        {/* Date / Time / Guests card */}
         <View style={styles.reservationRow}>
           <DateChip
             label={t("cart.dateLabel")}
             value={displayDate}
             onPress={() => setDatePickerOpen(true)}
           />
-
           <TimeSlotChip
             label={t("cart.timeLabel")}
             value={
@@ -286,7 +325,7 @@ export default function OrderReviewScreen() {
                   ? selectedTime.substring(0, 5)
                   : t("cart.timePlaceholder")
             }
-            style={styles.detailTileSpacing}
+            style={styles.timeChipSpacing}
             onPress={() => setTimePickerOpen(true)}
           />
         </View>
@@ -308,95 +347,26 @@ export default function OrderReviewScreen() {
           />
         </View>
 
-        <View style={[styles.sectionHeader, styles.itemsSectionHeader]}>
-          <CalendarIcon />
-          <Text style={styles.sectionTitle}>{t("cart.browseMenu")}</Text>
-        </View>
+        <View style={styles.spacer} />
 
-        <View style={styles.card}>
-          {items.map((item, index) => {
-            const modifierTotal = item.modifiers.reduce(
-              (sum, mod) => sum + mod.price,
-              0,
-            );
-            const rowTotal = (item.price + modifierTotal) * item.quantity;
-
-            return (
-              <View
-                key={item.itemId}
-                style={[
-                  styles.itemRow,
-                  index !== items.length - 1 && styles.itemRowDivider,
-                ]}
-              >
-                <View style={styles.itemLeftBlock}>
-                  <View style={styles.quantityBadge}>
-                    <Text style={styles.quantityBadgeText}>
-                      {item.quantity}x
-                    </Text>
-                  </View>
-
-                  <View style={styles.itemTextWrap}>
-                    <Text
-                      style={styles.itemName}
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      {item.name}
-                    </Text>
-
-                    {item.modifiers.map((mod) => (
-                      <Text key={mod.modifierId} style={styles.modifier}>
-                        - {mod.name}
-                      </Text>
-                    ))}
-                  </View>
-                </View>
-
-                <View style={styles.itemRightBlock}>
-                  <Text style={styles.price}>{rowTotal.toFixed(2)} ₾</Text>
-
-                  <TouchableOpacity
-                    onPress={() =>
-                      updateQuantity(item.itemId, item.quantity + 1)
-                    }
-                    style={styles.itemEditButton}
-                  >
-                    <EditIcon />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            );
-          })}
-
-          <View style={styles.itemsSummaryRow}>
-            <Text style={styles.itemsSummaryLabel}>{t("cart.subtotal")}</Text>
-            <Text style={styles.itemsSummaryValue}>
-              {totalPrice.toFixed(2)} ₾
-            </Text>
-          </View>
-        </View>
-
+        {/* Total section */}
         <View style={styles.totalSection}>
           <Text style={styles.totalSectionTitle}>{t("cart.tax")}</Text>
 
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>{t("cart.deposit")}</Text>
             <Text style={styles.summaryValue}>
-              {reservationDeposit.toFixed(2)} ₾
+              {RESERVATION_DEPOSIT.toFixed(2)} ₾
             </Text>
-          </View>
-
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>{t("cart.subtotal")}</Text>
-            <Text style={styles.summaryValue}>{totalPrice.toFixed(2)} ₾</Text>
           </View>
 
           <View style={styles.summaryDivider} />
 
           <View style={styles.summaryRow}>
             <Text style={styles.totalLabel}>{t("cart.total")}</Text>
-            <Text style={styles.totalValue}>{grandTotal.toFixed(2)} ₾</Text>
+            <Text style={styles.totalValue}>
+              {RESERVATION_DEPOSIT.toFixed(2)} ₾
+            </Text>
           </View>
 
           <View style={styles.safeRow}>
@@ -409,15 +379,12 @@ export default function OrderReviewScreen() {
       <Animated.View
         style={[
           styles.ctaContainer,
-          {
-            opacity: ctaOpacity,
-            transform: [{ translateY: ctaTranslateY }],
-          },
+          { opacity: ctaOpacity, transform: [{ translateY: ctaTranslateY }] },
         ]}
       >
         <PrimaryCTA
           label={t("cart.button")}
-          onPress={handleReservation}
+          onPress={handleReserve}
           loading={false}
         />
       </Animated.View>
@@ -428,6 +395,8 @@ export default function OrderReviewScreen() {
         onSelect={setSelectedDate}
         onClose={() => setDatePickerOpen(false)}
         title={t("cart.dateLabel")}
+        availableDates={availableDates}
+        loadingDates={loadingDates}
       />
 
       <TimeSlotModal
@@ -448,31 +417,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.state50,
     paddingTop: spacing.xl,
-  },
-
-  content: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: 132,
-  },
-
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  emptyText: {
-    ...typography.textBase,
-    color: colors.dark,
-  },
-
-  emptyActionBtn: {
-    marginTop: spacing.sm,
-  },
-
-  emptyActionText: {
-    ...typography.button,
-    color: colors.primary,
   },
 
   header: {
@@ -505,6 +449,80 @@ const styles = StyleSheet.create({
     height: 44,
   },
 
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.md,
+    paddingBottom: 132,
+  },
+
+  phoneRow: {},
+
+  // Restaurant card
+  restaurantCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+
+  restaurantImage: {
+    width: 72,
+    height: 72,
+    borderRadius: borderRadius.lg,
+    backgroundColor: colors.light,
+  },
+
+  restaurantImagePlaceholder: {
+    backgroundColor: colors.grey,
+  },
+
+  restaurantInfo: {
+    flex: 1,
+    marginLeft: spacing.md,
+  },
+
+  restaurantName: {
+    ...typography.h3,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.dark,
+    marginBottom: spacing.xs,
+  },
+
+  restaurantCuisine: {
+    ...typography.textSm,
+    color: textColors.secondary,
+    marginBottom: spacing.sm,
+  },
+
+  ratingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: colors.state100,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    gap: spacing.xs,
+  },
+
+  ratingText: {
+    ...typography.buttonSm,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.dark,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: colors.light,
+    marginBottom: spacing.lg,
+  },
+
+  // Section
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+
   sectionTitle: {
     ...typography.textSm,
     fontWeight: typography.h1.fontWeight,
@@ -512,23 +530,9 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
   },
 
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: spacing.md,
-  },
-
-  itemsSectionHeader: {
-    marginTop: spacing.xl,
-  },
-
-  phoneRow: {},
-
-  card: {
-    backgroundColor: colors.white,
+  // Details card
+  detailsCard: {
     borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    borderColor: colors.light,
     overflow: "hidden",
   },
 
@@ -537,142 +541,16 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
 
-  detailTile: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.light,
-    borderRadius: borderRadius.lg,
-    padding: spacing.sm,
-    backgroundColor: colors.white,
-  },
-
-  detailTileSpacing: {
+  timeChipSpacing: {
     marginLeft: spacing.sm,
   },
 
-  tileLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: spacing.sm,
-  },
-
-  tileLabel: {
-    ...typography.textXs,
-    color: textColors.tertiary,
-  },
-
-  tileValue: {
-    ...typography.textSm,
-    fontWeight: typography.h2.fontWeight,
-    color: colors.dark,
-  },
-
-  timeValueRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  itemRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.md,
-  },
-
-  itemRowDivider: {
-    borderBottomWidth: 1,
-    borderColor: colors.light,
-  },
-
-  itemLeftBlock: {
+  spacer: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: spacing.sm,
   },
 
-  quantityBadge: {
-    minWidth: 24,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.primaryLightest,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: spacing.xs,
-    marginRight: spacing.sm,
-  },
-
-  quantityBadgeText: {
-    ...typography.buttonSm,
-    color: colors.primary,
-    fontWeight: typography.h1.fontWeight,
-  },
-
-  itemTextWrap: {
-    flex: 1,
-    minWidth: 0,
-  },
-
-  itemName: {
-    ...typography.buttonSm,
-    fontWeight: typography.h2.fontWeight,
-    color: colors.darkGrey,
-  },
-
-  modifier: {
-    ...typography.textXs,
-    color: colors.gray500,
-    marginTop: spacing.xs,
-  },
-
-  itemRightBlock: {
-    display: "flex",
-    flexDirection: "row",
-    gap: spacing.md,
-    alignItems: "center",
-  },
-
-  price: {
-    ...typography.buttonSm,
-    fontWeight: typography.h2.fontWeight,
-    color: colors.darkGrey,
-  },
-
-  itemEditButton: {
-    width: 30,
-    height: 30,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.state100,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  itemsSummaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: spacing.xmd,
-    paddingVertical: spacing.xmd,
-    borderTopWidth: 1,
-    borderColor: colors.light,
-  },
-
-  itemsSummaryLabel: {
-    ...typography.button,
-    color: colors.gray600,
-    fontWeight: typography.button.fontWeight,
-  },
-
-  itemsSummaryValue: {
-    ...typography.button,
-    fontWeight: typography.buttonLg.fontWeight,
-    color: colors.dark,
-  },
-
+  // Total section
   totalSection: {
-    marginTop: spacing.xxxl,
     borderTopWidth: 1,
     borderColor: colors.light,
     paddingTop: spacing.md,
@@ -737,12 +615,15 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
   },
 
+  // CTA
   ctaContainer: {
     position: "absolute",
-    left: spacing.md,
-    right: spacing.md,
     bottom: 0,
-    marginVertical: spacing.md,
-    backgroundColor: "transparent",
+    left: 0,
+    right: 0,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.lg,
+    paddingTop: spacing.sm,
+    backgroundColor: colors.state50,
   },
 });

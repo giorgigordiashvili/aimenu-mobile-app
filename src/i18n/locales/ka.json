@@ -148,6 +148,7 @@
   "cart": {
     "orderReview": "შეკვეთის მიმოხილვა",
     "empty": "კალათა ცარიელია",
+    "reservationTitle": "მაგიდის დაჯავშნა",
     "reservationDetails": "თქვენი ჯავშანი",
     "dateLabel": "თარიღი",
     "timeLabel": "დრო",

@@ -53,7 +53,7 @@ export default function ReservationSuccessScreen() {
 
         <Button
           title={t("paymentSuccess.orders")}
-          onPress={() => {}}
+          onPress={() => router.push("/order-history")}
           variant="ghost"
           size="sm"
           textStyle={styles.ordersLink}
