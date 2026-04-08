@@ -99,6 +99,34 @@ export interface CreateReservationPayload {
 // 📅 API FUNCTIONS
 // ==============================
 
+// 🔹 Available Dates
+export const getAvailableDates = async (
+  token: string,
+  restaurant: string,
+  partySize: number,
+): Promise<string[]> => {
+  const url = `${API_BASE_URL}/api/v1/reservations/available-dates/?restaurant=${encodeURIComponent(
+    restaurant,
+  )}&party_size=${partySize}`;
+
+  const response = await authFetch(url, { method: "GET" });
+
+  if (!response.ok) {
+    throw new Error(`Available dates request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const raw: any[] = Array.isArray(data)
+    ? data
+    : (data.dates ?? data.available_dates ?? data.results ?? []);
+
+  return raw
+    .map((d) =>
+      typeof d === "string" ? d : (d.date ?? d.available_date ?? ""),
+    )
+    .filter(Boolean);
+};
+
 // 🔹 Availability
 export const getAvailability = async (
   token: string,
