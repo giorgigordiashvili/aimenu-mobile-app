@@ -311,7 +311,18 @@ export default function RestaurantDetailScreen() {
       <View style={styles.footerActions}>
         <Button
           title={t("restaurant.button1")}
-          onPress={() => {}}
+          onPress={() =>
+            router.push({
+              pathname: "/reservation",
+              params: {
+                slug: restaurant.slug,
+                name: restaurant.name,
+                cuisine_type: restaurant.cuisine_type ?? "",
+                rating: String(restaurant.rating ?? ""),
+                cover_image: restaurant.cover_image ?? "",
+              },
+            })
+          }
           variant="outline"
           size="md"
           style={styles.footerButtonOutline}

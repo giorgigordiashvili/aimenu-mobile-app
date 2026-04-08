@@ -18,15 +18,18 @@ import { colors, spacing, borderRadius, typography } from "../theme";
 import BackArrowIcon from "../assets/icons/BackArrowIcon";
 import PhoneIcon from "../assets/icons/PhoneIcon";
 import CalendarIcon from "../assets/icons/CalendarIcon";
-import DropdownArrow from "../assets/icons/DropdownArrow";
-import CardArrow from "../assets/icons/CardArrow";
 import { textColors } from "../theme/colors";
 import EditIcon from "../assets/icons/EditIcon";
 import ShieldIcon from "../assets/icons/ShieldIcon";
-import { GuestCountSelector } from "../components/reservation/GuestCountSelector";
+import { GuestCounter } from "../components/reservation/GuestCounter";
+import { DateChip } from "../components/reservation/DateChip";
+import { TimeSlotChip } from "../components/reservation/TimeSlotChip";
+import { DatePickerModal } from "../components/reservation/DatePickerModal";
+import { TimeSlotModal, Slot } from "../components/reservation/TimeSlotModal";
 import { TextInput } from "../components/ui/TextInput";
-import { createReservation } from "../services/reservations";
+import { createReservation, getAvailability } from "../services/reservations";
 import { useAuth } from "../context/AuthContext";
+import { PrimaryCTA } from "../components/reservation/PrimaryCTA";
 
 export default function OrderReviewScreen() {
   const router = useRouter();
@@ -38,6 +41,21 @@ export default function OrderReviewScreen() {
     null,
   );
 
+  const todayIso = React.useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }, []);
+
+  const [selectedDate, setSelectedDate] = React.useState<string>(todayIso);
+  const [selectedTime, setSelectedTime] = React.useState<string | null>(null);
+  const [slots, setSlots] = React.useState<Slot[]>([]);
+  const [loadingSlots, setLoadingSlots] = React.useState(false);
+  const [datePickerOpen, setDatePickerOpen] = React.useState(false);
+  const [timePickerOpen, setTimePickerOpen] = React.useState(false);
+
   const ctaTranslateY = React.useRef(new Animated.Value(0)).current;
   const ctaOpacity = React.useRef(new Animated.Value(1)).current;
   const lastScrollY = React.useRef(0);
@@ -45,7 +63,52 @@ export default function OrderReviewScreen() {
 
   const reservationDeposit = 10;
   const grandTotal = totalPrice + reservationDeposit;
-  const { token, user, logout } = useAuth();
+  const { token, user } = useAuth();
+
+  React.useEffect(() => {
+    if (!restaurantSlug || !token) {
+      console.log(
+        "[Availability] skipped – restaurantSlug:",
+        restaurantSlug,
+        "| token present:",
+        !!token,
+      );
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingSlots(true);
+    setSelectedTime(null);
+
+    getAvailability(token, restaurantSlug, selectedDate, guests)
+      .then((data) => {
+        if (cancelled) return;
+        console.log("[Availability] raw response:", JSON.stringify(data));
+        const raw: any[] = Array.isArray(data)
+          ? data
+          : (data.slots ?? data.time_slots ?? data.available_slots ?? []);
+        console.log("[Availability] parsed slots:", raw);
+        setSlots(
+          raw.map((s) => ({
+            time: s.time ?? s.start_time ?? s.slot,
+            available: s.available !== undefined ? Boolean(s.available) : true,
+          })),
+        );
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.log("[Availability] error:", err?.message ?? err);
+          setSlots([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSlots(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDate, guests, restaurantSlug, token]);
 
   const handleReservation = async () => {
     if (!token) {
@@ -58,12 +121,17 @@ export default function OrderReviewScreen() {
       return;
     }
 
+    if (!selectedTime) {
+      Alert.alert("Error", "Please select a time slot.");
+      return;
+    }
+
     setReservationError(null);
 
     const payload = {
       restaurant_slug: restaurantSlug,
-      reservation_date: new Date().toISOString().split("T")[0],
-      reservation_time: "19:00:00",
+      reservation_date: selectedDate,
+      reservation_time: selectedTime,
       party_size: guests,
       guest_name: user ? `${user.first_name} ${user.last_name}`.trim() : "",
       guest_email: user?.email ?? "",
@@ -87,14 +155,15 @@ export default function OrderReviewScreen() {
     }
   };
 
-  const displayDate = new Date().toLocaleDateString(
-    i18n.language === "ka" ? "ka-GE" : "en-GB",
-    {
+  const displayDate = React.useMemo(() => {
+    const [y, mo, d] = selectedDate.split("-").map(Number);
+    const date = new Date(y, mo - 1, d);
+    return date.toLocaleDateString(i18n.language === "ka" ? "ka-GE" : "en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
-    },
-  );
+    });
+  }, [selectedDate, i18n.language]);
 
   const showCta = React.useCallback(() => {
     if (isCtaVisible.current) return;
@@ -193,46 +262,42 @@ export default function OrderReviewScreen() {
           </Text>
         </View>
 
-        <View style={styles.firstCard}>
-          <View style={styles.reservationRow}>
-            <View style={styles.detailTile}>
-              <View style={styles.tileLabelRow}>
-                <Text style={styles.tileLabel}>{t("cart.dateLabel")}</Text>
-              </View>
-
-              <Text style={styles.tileValue}>{displayDate}</Text>
-            </View>
-
-            <View style={[styles.detailTile, styles.detailTileSpacing]}>
-              <View style={styles.tileLabelRow}>
-                <Text style={styles.tileLabel}>{t("cart.timeLabel")}</Text>
-              </View>
-
-              <View style={styles.timeValueRow}>
-                <Text style={styles.tileValue}>
-                  {t("cart.timePlaceholder")}
-                </Text>
-                <DropdownArrow />
-              </View>
-            </View>
-          </View>
-
-          <GuestCountSelector
-            value={guests}
-            min={1}
-            max={20}
-            onChange={setGuests}
-            label={t("cart.guestLabel")}
+        <View style={styles.reservationRow}>
+          <DateChip
+            label={t("cart.dateLabel")}
+            value={displayDate}
+            onPress={() => setDatePickerOpen(true)}
           />
 
-          <View style={styles.phoneRow}>
-            <TextInput
-              leftIcon={<PhoneIcon />}
-              value={phone}
-              onChangeText={setPhone}
-              placeholder={t("payment.phonePlaceholder")}
-            />
-          </View>
+          <TimeSlotChip
+            label={t("cart.timeLabel")}
+            value={
+              loadingSlots
+                ? "..."
+                : selectedTime
+                  ? selectedTime.substring(0, 5)
+                  : t("cart.timePlaceholder")
+            }
+            style={styles.detailTileSpacing}
+            onPress={() => setTimePickerOpen(true)}
+          />
+        </View>
+
+        <GuestCounter
+          value={guests}
+          min={1}
+          max={20}
+          onChange={setGuests}
+          title={t("cart.guestLabel")}
+        />
+
+        <View style={styles.phoneRow}>
+          <TextInput
+            leftIcon={<PhoneIcon />}
+            value={phone}
+            onChangeText={setPhone}
+            placeholder={t("payment.phonePlaceholder")}
+          />
         </View>
 
         <View style={[styles.sectionHeader, styles.itemsSectionHeader]}>
@@ -342,14 +407,30 @@ export default function OrderReviewScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          style={styles.orderButton}
+        <PrimaryCTA
+          label={t("cart.button")}
           onPress={handleReservation}
-        >
-          <Text style={styles.orderText}>{t("cart.button")}</Text>
-          <CardArrow color={colors.white} />
-        </TouchableOpacity>
+          loading={false}
+        />
       </Animated.View>
+
+      <DatePickerModal
+        visible={datePickerOpen}
+        selectedDate={selectedDate}
+        onSelect={setSelectedDate}
+        onClose={() => setDatePickerOpen(false)}
+        title={t("cart.dateLabel")}
+      />
+
+      <TimeSlotModal
+        visible={timePickerOpen}
+        title={t("cart.timeLabel")}
+        slots={slots}
+        selectedTime={selectedTime}
+        loading={loadingSlots}
+        onSelect={setSelectedTime}
+        onClose={() => setTimePickerOpen(false)}
+      />
     </View>
   );
 }
@@ -433,12 +514,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
 
-  firstCard: {},
-
-  phoneRow: {
-    paddingHorizontal: spacing.sm,
-    paddingBottom: spacing.sm,
-  },
+  phoneRow: {},
 
   card: {
     backgroundColor: colors.white,
@@ -450,7 +526,7 @@ const styles = StyleSheet.create({
 
   reservationRow: {
     flexDirection: "row",
-    padding: spacing.sm,
+    marginBottom: spacing.sm,
   },
 
   detailTile: {
@@ -660,21 +736,5 @@ const styles = StyleSheet.create({
     bottom: 0,
     marginVertical: spacing.md,
     backgroundColor: "transparent",
-  },
-
-  orderButton: {
-    backgroundColor: colors.greenButtonBackground,
-    borderRadius: borderRadius.full,
-    paddingVertical: spacing.md,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  orderText: {
-    color: colors.white,
-    ...typography.buttonLg,
-    fontWeight: typography.h1.fontWeight,
-    marginRight: spacing.sm,
   },
 });

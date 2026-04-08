@@ -4,18 +4,18 @@ import { colors, spacing, borderRadius, typography } from "../../theme";
 
 interface Props {
   value: number;
-  min?: number;
-  max?: number;
-  onChange: (value: number) => void;
-  label?: string;
+  min: number;
+  max: number;
+  onChange: (val: number) => void;
+  title?: string;
 }
 
-export const GuestCountSelector: React.FC<Props> = ({
+export const GuestCounter: React.FC<Props> = ({
   value,
   min = 1,
   max = 20,
   onChange,
-  label,
+  title,
 }) => {
   const decrease = () => {
     if (value > min) onChange(value - 1);
@@ -27,7 +27,7 @@ export const GuestCountSelector: React.FC<Props> = ({
 
   return (
     <View style={styles.guestCard}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {title && <Text style={styles.label}>{title}</Text>}
 
       <View style={styles.guestRow}>
         <Text style={styles.guestValue}>{value}</Text>
@@ -35,14 +35,23 @@ export const GuestCountSelector: React.FC<Props> = ({
         <View style={styles.guestControls}>
           <TouchableOpacity
             onPress={decrease}
-            style={styles.guestControlButton}
+            disabled={value === min}
+            style={[
+              styles.guestControlButton,
+              value === min && styles.disabledButton,
+            ]}
           >
             <Text style={styles.guestControlSymbol}>-</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={increase}
-            style={[styles.guestControlButton, styles.guestControlPrimary]}
+            disabled={value === max}
+            style={[
+              styles.guestControlButton,
+              styles.guestControlPrimary,
+              value === max && styles.disabledButton,
+            ]}
           >
             <Text
               style={[
@@ -61,7 +70,6 @@ export const GuestCountSelector: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   guestCard: {
-    marginHorizontal: spacing.sm,
     marginBottom: spacing.sm,
     borderWidth: 1,
     borderColor: colors.light,
@@ -92,7 +100,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-
+  disabledButton: {
+    opacity: 0.4,
+  },
   guestControlButton: {
     width: 32,
     height: 32,

@@ -102,17 +102,15 @@ export interface CreateReservationPayload {
 // 🔹 Availability
 export const getAvailability = async (
   token: string,
-  restaurantSlug: string,
+  restaurant: string,
   date: string,
-  guests: number,
+  partySize: number,
 ) => {
-  const url = `${API_BASE_URL}/api/v1/reservations/availability/?restaurant_slug=${encodeURIComponent(
-    restaurantSlug,
-  )}&date=${date}&guests=${guests}`;
+  const url = `${API_BASE_URL}/api/v1/reservations/availability/?restaurant=${encodeURIComponent(
+    restaurant,
+  )}&date=${date}&party_size=${partySize}`;
 
-  const response = await authFetch(url, {
-    method: "GET",
-  });
+  const response = await authFetch(url, { method: "GET" });
 
   if (!response.ok) {
     throw new Error(`Availability request failed: ${response.status}`);
@@ -124,15 +122,13 @@ export const getAvailability = async (
 // 🔹 Settings
 export const getReservationSettings = async (
   token: string,
-  restaurantSlug: string,
+  restaurant: string,
 ) => {
-  const url = `${API_BASE_URL}/api/v1/reservations/settings/?restaurant_slug=${encodeURIComponent(
-    restaurantSlug,
+  const url = `${API_BASE_URL}/api/v1/reservations/settings/?restaurant=${encodeURIComponent(
+    restaurant,
   )}`;
 
-  const response = await authFetch(url, {
-    method: "GET",
-  });
+  const response = await authFetch(url, { method: "GET" });
 
   if (!response.ok) {
     throw new Error(`Settings request failed: ${response.status}`);
