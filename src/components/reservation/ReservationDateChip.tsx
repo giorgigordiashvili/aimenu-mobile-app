@@ -9,7 +9,11 @@ type Props = {
   onPress?: () => void;
 };
 
-export const DateChip: React.FC<Props> = ({ label, value, onPress }) => {
+export const ReservationDateChip: React.FC<Props> = ({
+  label,
+  value,
+  onPress,
+}) => {
   return (
     <TouchableOpacity
       style={styles.container}

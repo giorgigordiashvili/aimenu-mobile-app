@@ -10,7 +10,7 @@ interface Props {
   title?: string;
 }
 
-export const GuestCounter: React.FC<Props> = ({
+export const GuestCounterStepper: React.FC<Props> = ({
   value,
   min = 1,
   max = 20,
