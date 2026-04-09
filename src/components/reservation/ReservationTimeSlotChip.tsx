@@ -17,7 +17,7 @@ type Props = {
   onPress?: () => void;
 };
 
-export const TimeSlotChip: React.FC<Props> = ({
+export const ReservationTimeSlotChip: React.FC<Props> = ({
   label,
   value,
   style,

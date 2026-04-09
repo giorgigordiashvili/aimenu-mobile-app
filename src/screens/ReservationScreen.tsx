@@ -18,9 +18,9 @@ import CalendarIcon from "../assets/icons/CalendarIcon";
 import StarIcon from "../assets/icons/StarIcon";
 import ShieldIcon from "../assets/icons/ShieldIcon";
 import PhoneIcon from "../assets/icons/PhoneIcon";
-import { GuestCounter } from "../components/reservation/GuestCounter";
-import { DateChip } from "../components/reservation/DateChip";
-import { TimeSlotChip } from "../components/reservation/TimeSlotChip";
+import { GuestCounterStepper } from "../components/reservation/GuestCounterStepper";
+import { ReservationDateChip } from "../components/reservation/ReservationDateChip";
+import { ReservationTimeSlotChip } from "../components/reservation/ReservationTimeSlotChip";
 import { DatePickerModal } from "../components/reservation/DatePickerModal";
 import { TimeSlotModal, Slot } from "../components/reservation/TimeSlotModal";
 import { ReservationBottomBar } from "../components/reservation/ReservationBottomBar";
@@ -256,12 +256,12 @@ export default function ReservationScreen() {
 
         {/* Date / Time / Guests card */}
         <View style={styles.reservationRow}>
-          <DateChip
+          <ReservationDateChip
             label={t("cart.dateLabel")}
             value={displayDate}
             onPress={() => setDatePickerOpen(true)}
           />
-          <TimeSlotChip
+          <ReservationTimeSlotChip
             label={t("cart.timeLabel")}
             value={
               loadingSlots
@@ -275,7 +275,7 @@ export default function ReservationScreen() {
           />
         </View>
 
-        <GuestCounter
+        <GuestCounterStepper
           value={guests}
           min={1}
           max={20}
