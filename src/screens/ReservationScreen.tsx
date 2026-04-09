@@ -1,15 +1,12 @@
 import React from "react";
 import {
   Alert,
-  Animated,
   View,
   Text,
   ScrollView,
   Image,
   TouchableOpacity,
   StyleSheet,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -26,12 +23,13 @@ import { DateChip } from "../components/reservation/DateChip";
 import { TimeSlotChip } from "../components/reservation/TimeSlotChip";
 import { DatePickerModal } from "../components/reservation/DatePickerModal";
 import { TimeSlotModal, Slot } from "../components/reservation/TimeSlotModal";
-import { PrimaryCTA } from "../components/reservation/PrimaryCTA";
+import { ReservationBottomBar } from "../components/reservation/ReservationBottomBar";
 import { TextInput } from "../components/ui/TextInput";
 import {
   createReservation,
   getAvailability,
   getAvailableDates,
+  reservationApi,
 } from "../services/reservations";
 import { useAuth } from "../context/AuthContext";
 
@@ -70,11 +68,6 @@ export default function ReservationScreen() {
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const [timePickerOpen, setTimePickerOpen] = React.useState(false);
 
-  const ctaTranslateY = React.useRef(new Animated.Value(0)).current;
-  const ctaOpacity = React.useRef(new Animated.Value(1)).current;
-  const lastScrollY = React.useRef(0);
-  const isCtaVisible = React.useRef(true);
-
   React.useEffect(() => {
     if (!slug || !token) return;
 
@@ -82,7 +75,8 @@ export default function ReservationScreen() {
     setLoadingSlots(true);
     setSelectedTime(null);
 
-    getAvailability(token, slug, selectedDate, guests)
+    reservationApi
+      .getAvailability({ restaurant_slug: slug, date: selectedDate, guests })
       .then((data) => {
         if (cancelled) return;
         console.log("[Availability] raw response:", JSON.stringify(data));
@@ -107,6 +101,8 @@ export default function ReservationScreen() {
         console.log("[Availability] error:", err?.message);
         if (!cancelled) {
           if (String(err?.message).includes("404")) {
+            // TODO: GET /api/v1/reservations/availability/ returns 404 for some
+            // restaurants. Using local fallback slots until the endpoint is stable.
             setSlots([
               { time: "18:00:00", available: true },
               { time: "18:30:00", available: true },
@@ -163,53 +159,6 @@ export default function ReservationScreen() {
     });
   }, [selectedDate, i18n.language]);
 
-  const showCta = React.useCallback(() => {
-    if (isCtaVisible.current) return;
-    isCtaVisible.current = true;
-    Animated.parallel([
-      Animated.timing(ctaTranslateY, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-      Animated.timing(ctaOpacity, {
-        toValue: 1,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [ctaOpacity, ctaTranslateY]);
-
-  const hideCta = React.useCallback(() => {
-    if (!isCtaVisible.current) return;
-    isCtaVisible.current = false;
-    Animated.parallel([
-      Animated.timing(ctaTranslateY, {
-        toValue: 120,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-      Animated.timing(ctaOpacity, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [ctaOpacity, ctaTranslateY]);
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const currentY = event.nativeEvent.contentOffset.y;
-    const delta = currentY - lastScrollY.current;
-    if (currentY <= 0) {
-      showCta();
-      lastScrollY.current = currentY;
-      return;
-    }
-    if (delta > 6) hideCta();
-    else if (delta < -6) showCta();
-    lastScrollY.current = currentY;
-  };
-
   const handleReserve = async () => {
     if (!token) {
       Alert.alert("Error", "You must be logged in.");
@@ -260,11 +209,7 @@ export default function ReservationScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
+      <ScrollView contentContainerStyle={styles.content}>
         {/* Restaurant info card */}
         <View style={styles.restaurantCard}>
           {cover_image ? (
@@ -376,18 +321,13 @@ export default function ReservationScreen() {
         </View>
       </ScrollView>
 
-      <Animated.View
-        style={[
-          styles.ctaContainer,
-          { opacity: ctaOpacity, transform: [{ translateY: ctaTranslateY }] },
-        ]}
-      >
-        <PrimaryCTA
-          label={t("cart.button")}
-          onPress={handleReserve}
-          loading={false}
-        />
-      </Animated.View>
+      <ReservationBottomBar
+        totalGuests={guests}
+        selectedDate={displayDate}
+        selectedTime={selectedTime ?? undefined}
+        ctaLabel={t("cart.button")}
+        onPress={handleReserve}
+      />
 
       <DatePickerModal
         visible={datePickerOpen}
