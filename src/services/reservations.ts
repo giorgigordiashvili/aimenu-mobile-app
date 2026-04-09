@@ -190,3 +190,76 @@ export const createReservation = async (
 
   return res.json();
 };
+
+// ==============================
+// 🔧 INTERNAL API CLIENT
+// ==============================
+
+const api = {
+  get: async (
+    path: string,
+    options?: { params?: Record<string, string | number> },
+  ): Promise<any> => {
+    const url = new URL(`${API_BASE_URL}/api/v1${path}`);
+    if (options?.params) {
+      Object.entries(options.params).forEach(([k, v]) => {
+        if (v !== undefined && v !== null)
+          url.searchParams.append(k, String(v));
+      });
+    }
+    const res = await authFetch(url.toString(), { method: "GET" });
+    if (!res.ok) throw new Error(String(res.status));
+    return res.json();
+  },
+
+  post: async (path: string, body?: unknown): Promise<any> => {
+    const res = await authFetch(`${API_BASE_URL}/api/v1${path}`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`${res.status} - ${text}`);
+    }
+    return res.json();
+  },
+};
+
+// ==============================
+// 🏗️ RESERVATION API SHAPE
+// ==============================
+
+export const reservationApi = {
+  getSettings: (restaurantSlug: string) =>
+    api.get("/reservations/settings/", {
+      params: { restaurant: restaurantSlug },
+    }),
+
+  getAvailability: (params: {
+    restaurant_slug: string;
+    date: string;
+    guests: number;
+  }) =>
+    api.get("/reservations/availability/", {
+      params: {
+        restaurant: params.restaurant_slug,
+        date: params.date,
+        party_size: params.guests,
+      },
+    }),
+
+  createReservation: (payload: {
+    restaurant_slug: string;
+    date: string;
+    time: string;
+    guests: number;
+    note?: string;
+  }) =>
+    api.post("/reservations/create/", {
+      restaurant_slug: payload.restaurant_slug,
+      reservation_date: payload.date,
+      reservation_time: payload.time,
+      party_size: payload.guests,
+      special_requests: payload.note,
+    }),
+};
