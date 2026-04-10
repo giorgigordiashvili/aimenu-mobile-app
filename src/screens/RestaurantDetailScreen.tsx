@@ -334,7 +334,12 @@ export default function RestaurantDetailScreen() {
           size="md"
           style={styles.footerButtonPrimary}
           textStyle={styles.footerButtonText}
-          onPress={() => router.push("/order-review")}
+          onPress={() =>
+            router.push({
+              pathname: "/order-review",
+              params: { restaurantName: restaurant?.name ?? "" },
+            })
+          }
         />
       </View>
     </View>

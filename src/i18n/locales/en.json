@@ -183,10 +183,13 @@
     "successSubtitle": "Your reservation is confirmed. We look forward to welcoming you.",
     "successCta": "Back to Home"
   },
-  "paymentSuccess": {
+  "reservationSuccess": {
     "successTitle": "Reservation Confirmed!",
-    "successSubtitle": "Your table at \"Wine Library\" has been successfully reserved. You will receive a confirmation on the provided phone number and email.",
+    "successSubtitle": "Your table at \"{{restaurantName}}\" has been successfully reserved. You will receive a confirmation on the provided phone number and email.",
     "infoTitle": "Reservation Code",
+    "restaurant": "Restaurant",
+    "date": "Date",
+    "time": "Time",
     "invite": "Invite Friends",
     "successCta": "Back to Home",
     "orders": "My Orders"

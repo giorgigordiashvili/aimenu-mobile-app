@@ -10,7 +10,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { useCart } from "../context/CartContext";
@@ -34,6 +34,7 @@ import { PrimaryCTA } from "../components/reservation/PrimaryCTA";
 export default function OrderReviewScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const { restaurantName } = useLocalSearchParams<{ restaurantName: string }>();
   const { items, totalPrice, updateQuantity, restaurantSlug } = useCart();
   const [guests, setGuests] = React.useState(2);
   const [phone, setPhone] = React.useState("");
@@ -155,7 +156,15 @@ export default function OrderReviewScreen() {
       const data = await createReservation(token, payload, restaurantSlug);
       console.log("Reservation successful:", data);
 
-      router.push("/reservation-success");
+      router.push({
+        pathname: "/reservation-success",
+        params: {
+          reservationCode: data?.confirmation_code || data?.code || data?.id,
+          restaurantName: restaurantName ?? "",
+          date: selectedDate,
+          time: selectedTime ?? "",
+        },
+      });
     } catch (err: any) {
       console.error("Reservation error:", err);
       Alert.alert("Reservation failed", err.message);
