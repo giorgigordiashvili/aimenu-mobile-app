@@ -186,7 +186,15 @@ export default function ReservationScreen() {
     try {
       const data = await createReservation(token, payload, slug);
       console.log("Reservation successful:", data);
-      router.push("/reservation-success");
+      router.push({
+        pathname: "/reservation-success",
+        params: {
+          reservationCode: data?.confirmation_code || data?.code || data?.id,
+          restaurantName: name ?? "",
+          date: selectedDate,
+          time: selectedTime ?? "",
+        },
+      });
     } catch (err: any) {
       console.error("Reservation error:", err);
       Alert.alert("Reservation failed", err.message);
