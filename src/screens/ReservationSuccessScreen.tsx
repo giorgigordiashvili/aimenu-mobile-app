@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Image, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 
@@ -8,20 +8,39 @@ import InviteIcon from "../../src/assets/icons/InviteIcon";
 import { Button } from "../../src/components/Button";
 import { colors, spacing, borderRadius, typography } from "../../src/theme";
 import { textColors } from "../../src/theme/colors";
+import { InviteModal } from "../../src/components/reservation/InviteModal";
 
 export default function ReservationSuccessScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { reservationCode, restaurantName, date, time } = useLocalSearchParams<{
+  const [inviteVisible, setInviteVisible] = useState(false);
+  const {
+    reservationCode,
+    restaurantName,
+    date,
+    time,
+    cuisine_type,
+    rating,
+    cover_image,
+  } = useLocalSearchParams<{
     reservationCode: string;
     restaurantName: string;
     date: string;
     time: string;
+    cuisine_type: string;
+    rating: string;
+    cover_image: string;
   }>();
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
+        {cover_image ? (
+          <Image
+            source={{ uri: decodeURIComponent(cover_image) }}
+            style={styles.coverImage}
+          />
+        ) : null}
         <CheckCircleIcon />
 
         <Text style={styles.title}>{t("reservationSuccess.successTitle")}</Text>
@@ -68,13 +87,25 @@ export default function ReservationSuccessScreen() {
       <View style={styles.footer}>
         <Button
           title={t("reservationSuccess.invite")}
-          onPress={() => {}}
+          onPress={() => setInviteVisible(true)}
           variant="primary"
           fullWidth
           size="md"
           leftIcon={<InviteIcon />}
           style={styles.inviteButton}
           textStyle={styles.inviteButtonText}
+        />
+
+        <InviteModal
+          visible={inviteVisible}
+          onClose={() => setInviteVisible(false)}
+          reservationCode={reservationCode ?? ""}
+          restaurantName={restaurantName ?? ""}
+          date={date ?? ""}
+          time={time ?? ""}
+          cuisineType={cuisine_type}
+          rating={rating}
+          coverImage={cover_image}
         />
 
         <Button
@@ -156,6 +187,13 @@ const styles = StyleSheet.create({
   codeDivider: {
     height: 1,
     backgroundColor: colors.light,
+  },
+
+  coverImage: {
+    width: 80,
+    height: 80,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.xs,
   },
 
   codeLabel: {

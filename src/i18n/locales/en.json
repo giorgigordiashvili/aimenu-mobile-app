@@ -277,5 +277,22 @@
     "successSubtitle": "Your order at \"Wine Library\" has been successfully placed. You will receive a confirmation on the provided phone number and email.",
     "successCta": "Back to Home",
     "orders": "My Orders"
+  },
+  "inviteFriends": {
+    "title": "Invite Friends",
+    "restaurant": "Restaurant",
+    "date": "Date",
+    "time": "Time",
+    "payment": "Payment Option",
+    "userPay": "I will pay",
+    "userPayBio": "The total amount will be on you",
+    "eachPays": "Each pays their share",
+    "eachPaysBio": "Everyone will pay their part",
+    "addFriend": "Add Guest",
+    "namePlaceholder": "Full Name",
+    "phonePlaceholder": "Phone Number",
+    "addButton": "Add to List",
+    "inviteButton": "Send Invitation",
+    "cancel": "Cancel"
   }
 }
