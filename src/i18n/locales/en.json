@@ -293,6 +293,11 @@
     "phonePlaceholder": "Phone Number",
     "addButton": "Add to List",
     "inviteButton": "Send Invitation",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "copied": "Invite copied",
+    "inviteFailed": "Failed to share invite",
+    "fillFields": "Please fill all fields",
+    "added": "Added to list",
+    "copyInvite": "Copy invite"
   }
 }

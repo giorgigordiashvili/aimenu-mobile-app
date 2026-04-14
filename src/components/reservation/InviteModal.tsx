@@ -10,7 +10,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  Share,
+  Alert,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import Svg, { Path } from "react-native-svg";
 import { useTranslation } from "react-i18next";
 
@@ -44,6 +47,9 @@ export function InviteModal({
   visible,
   onClose,
   restaurantName,
+  date,
+  time,
+  reservationCode,
   cuisineType,
   rating,
   coverImage,
@@ -53,6 +59,38 @@ export function InviteModal({
   const [paymentOption, setPaymentOption] = useState<PaymentOption>("userPay");
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+
+  const inviteText = `🍽 ${restaurantName}
+📅 ${date} ${time}
+🔑 Code: ${reservationCode}`;
+
+  const handleCopy = async () => {
+    try {
+      await Clipboard.setStringAsync(inviteText);
+      Alert.alert(t("inviteFriends.copied"));
+    } catch {
+      Alert.alert(t("inviteFriends.inviteFailed"));
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: inviteText,
+      });
+    } catch {
+      Alert.alert(t("inviteFriends.inviteFailed"));
+    }
+  };
+
+  const handleAddToList = () => {
+    if (!guestName || !guestPhone) {
+      Alert.alert(t("inviteFriends.fillFields"));
+      return;
+    }
+
+    Alert.alert(t("inviteFriends.added"));
+  };
 
   const parsedRating = rating ? parseFloat(rating) : null;
   const imageUri = coverImage ? decodeURIComponent(coverImage) : null;
@@ -224,7 +262,7 @@ export function InviteModal({
               {/* Add to list button */}
               <Button
                 title={t("inviteFriends.addButton")}
-                onPress={() => {}}
+                onPress={handleAddToList}
                 variant="outline"
                 fullWidth
                 leftIcon={
@@ -246,12 +284,18 @@ export function InviteModal({
           <View style={styles.footer}>
             <PrimaryCTA
               label={t("inviteFriends.inviteButton")}
-              onPress={() => {}}
+              onPress={handleShare}
             />
             <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
               <Text style={styles.cancelText}>{t("inviteFriends.cancel")}</Text>
             </TouchableOpacity>
           </View>
+          <Button
+            onPress={handleCopy}
+            variant="ghost"
+            fullWidth
+            title={t("inviteFriends.copyInvite")}
+          />
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -478,7 +522,6 @@ const styles = StyleSheet.create({
 
   footer: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.lg,
     paddingTop: spacing.md,
   },
 
