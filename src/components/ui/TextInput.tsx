@@ -19,6 +19,7 @@ interface TextInputProps extends RNTextInputProps {
   rightIcon?: React.ReactNode;
   disabled?: boolean;
   inputWrapperStyle?: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 export const TextInput: React.FC<TextInputProps> = ({
@@ -29,6 +30,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   rightIcon,
   disabled = false,
   inputWrapperStyle,
+  containerStyle,
   style,
   ...props
 }) => {
@@ -41,7 +43,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       {label && (
         <Text style={[styles.label, error && styles.labelError]}>{label}</Text>
       )}

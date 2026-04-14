@@ -193,6 +193,10 @@ export default function ReservationScreen() {
           restaurantName: name ?? "",
           date: selectedDate,
           time: selectedTime ?? "",
+          slug: slug ?? "",
+          cuisine_type: cuisine_type ?? "",
+          rating: rating ?? "",
+          cover_image: cover_image ?? "",
         },
       });
     } catch (err: any) {
