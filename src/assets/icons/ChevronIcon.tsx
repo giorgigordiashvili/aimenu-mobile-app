@@ -1,7 +1,11 @@
 import * as React from "react";
 import Svg, { Path } from "react-native-svg";
 
-function ChevronIcon() {
+interface ChevronIconProps {
+  color?: string;
+}
+
+function ChevronIcon({ color = "#fff" }: ChevronIconProps) {
   return (
     <Svg
       width={18}
@@ -12,7 +16,7 @@ function ChevronIcon() {
     >
       <Path
         d="M4.375 6.563l4.375 4.375 4.375-4.376"
-        stroke="#fff"
+        stroke={color}
         strokeWidth={1.45833}
         strokeLinecap="round"
         strokeLinejoin="round"

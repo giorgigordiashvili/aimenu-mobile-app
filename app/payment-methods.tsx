@@ -1,3 +1,3 @@
-import AddCardScreen from "../src/screens/AddCardScreen";
+import PaymentMethodsScreen from "../src/screens/PaymentMethodsScreen";
 
-export default AddCardScreen;
+export default PaymentMethodsScreen;

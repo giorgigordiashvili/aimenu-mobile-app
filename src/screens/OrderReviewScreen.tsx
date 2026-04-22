@@ -21,21 +21,23 @@ import CalendarIcon from "../assets/icons/CalendarIcon";
 import { textColors } from "../theme/colors";
 import EditIcon from "../assets/icons/EditIcon";
 import ShieldIcon from "../assets/icons/ShieldIcon";
-import { GuestCounter } from "../components/reservation/GuestCounterStepper";
-import { DateChip } from "../components/reservation/ReservationDateChip";
-import { TimeSlotChip } from "../components/reservation/ReservationTimeSlotChip";
+import { GuestCounterStepper } from "../components/reservation/GuestCounterStepper";
+import { ReservationDateChip } from "../components/reservation/ReservationDateChip";
+import { ReservationTimeSlotChip } from "../components/reservation/ReservationTimeSlotChip";
 import { DatePickerModal } from "../components/reservation/DatePickerModal";
 import { TimeSlotModal, Slot } from "../components/reservation/TimeSlotModal";
 import { TextInput } from "../components/ui/TextInput";
 import { createReservation, getAvailability } from "../services/reservations";
 import { useAuth } from "../context/AuthContext";
 import { PrimaryCTA } from "../components/reservation/PrimaryCTA";
+import { getDateLocale } from "../i18n";
 
 export default function OrderReviewScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const { restaurantName } = useLocalSearchParams<{ restaurantName: string }>();
   const { items, totalPrice, updateQuantity, restaurantSlug } = useCart();
+  const [editingId, setEditingId] = React.useState<number | null>(null);
   const [guests, setGuests] = React.useState(2);
   const [phone, setPhone] = React.useState("");
   const [reservationError, setReservationError] = React.useState<string | null>(
@@ -175,7 +177,7 @@ export default function OrderReviewScreen() {
   const displayDate = React.useMemo(() => {
     const [y, mo, d] = selectedDate.split("-").map(Number);
     const date = new Date(y, mo - 1, d);
-    return date.toLocaleDateString(i18n.language === "ka" ? "ka-GE" : "en-GB", {
+    return date.toLocaleDateString(getDateLocale(i18n.language), {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -280,13 +282,13 @@ export default function OrderReviewScreen() {
         </View>
 
         <View style={styles.reservationRow}>
-          <DateChip
+          <ReservationDateChip
             label={t("cart.dateLabel")}
             value={displayDate}
             onPress={() => setDatePickerOpen(true)}
           />
 
-          <TimeSlotChip
+          <ReservationTimeSlotChip
             label={t("cart.timeLabel")}
             value={
               loadingSlots
@@ -300,7 +302,7 @@ export default function OrderReviewScreen() {
           />
         </View>
 
-        <GuestCounter
+        <GuestCounterStepper
           value={guests}
           min={1}
           max={20}
@@ -365,9 +367,33 @@ export default function OrderReviewScreen() {
                 <View style={styles.itemRightBlock}>
                   <Text style={styles.price}>{rowTotal.toFixed(2)} ₾</Text>
 
+                  {editingId === item.itemId && (
+                    <View style={styles.stepper}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          updateQuantity(item.itemId, item.quantity - 1)
+                        }
+                        style={styles.stepperBtn}
+                      >
+                        <Text style={styles.stepperText}>−</Text>
+                      </TouchableOpacity>
+                      <Text style={styles.stepperQty}>{item.quantity}</Text>
+                      <TouchableOpacity
+                        onPress={() =>
+                          updateQuantity(item.itemId, item.quantity + 1)
+                        }
+                        style={styles.stepperBtn}
+                      >
+                        <Text style={styles.stepperText}>+</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
                   <TouchableOpacity
                     onPress={() =>
-                      updateQuantity(item.itemId, item.quantity + 1)
+                      setEditingId((prev) =>
+                        prev === item.itemId ? null : item.itemId,
+                      )
                     }
                     style={styles.itemEditButton}
                   >
@@ -656,6 +682,36 @@ const styles = StyleSheet.create({
     borderColor: colors.state100,
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  stepper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.state100,
+    borderRadius: borderRadius.lg,
+    overflow: "hidden",
+  },
+
+  stepperBtn: {
+    width: 30,
+    height: 30,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  stepperText: {
+    ...typography.buttonSm,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.dark,
+  },
+
+  stepperQty: {
+    ...typography.buttonSm,
+    fontWeight: typography.h1.fontWeight,
+    minWidth: 20,
+    textAlign: "center",
+    color: colors.dark,
   },
 
   itemsSummaryRow: {

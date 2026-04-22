@@ -36,8 +36,7 @@ interface RestaurantCategory {
 interface MenuCategory {
   id: string;
   translations: {
-    ka?: { name?: string; description?: string };
-    en?: { name?: string; description?: string };
+    [lang: string]: { name?: string; description?: string } | undefined;
   };
   image: string | null;
   display_order: number;
@@ -99,9 +98,14 @@ export default function RestaurantDetailScreen() {
       const res = await fetch(
         `https://admin.aimenu.ge/api/v1/restaurants/${slug}/`,
       );
+      if (!res.ok) {
+        throw new Error(`Restaurant request failed: ${res.status}`);
+      }
       const data = await res.json();
       setRestaurant(data);
     } catch (e) {
+      console.error("Failed to fetch restaurant:", e);
+      setRestaurant(null);
     } finally {
       setLoading(false);
     }
@@ -135,6 +139,15 @@ export default function RestaurantDetailScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
+        <TouchableOpacity
+          style={[styles.backButton, styles.backButtonFallback]}
+          onPress={() => router.back()}
+          activeOpacity={0.85}
+        >
+          <View style={{ transform: [{ rotate: "180deg" }] }}>
+            <CardArrow color={colors.white} />
+          </View>
+        </TouchableOpacity>
         <Text>{t("common.loading")}</Text>
       </View>
     );
@@ -143,6 +156,15 @@ export default function RestaurantDetailScreen() {
   if (!restaurant) {
     return (
       <View style={styles.center}>
+        <TouchableOpacity
+          style={[styles.backButton, styles.backButtonFallback]}
+          onPress={() => router.back()}
+          activeOpacity={0.85}
+        >
+          <View style={{ transform: [{ rotate: "180deg" }] }}>
+            <CardArrow color={colors.white} />
+          </View>
+        </TouchableOpacity>
         <Text>{t("common.error")}</Text>
       </View>
     );
@@ -158,10 +180,8 @@ export default function RestaurantDetailScreen() {
 
   // Use menu categories from API if available, otherwise show empty state
   const cardItems = menuCategories.map((category) => {
-    // Get category name based on current language
-    const currentLang = i18n.language as "ka" | "en";
     const categoryName =
-      category.translations?.[currentLang]?.name ||
+      category.translations?.[i18n.language]?.name ||
       category.translations?.ka?.name ||
       category.translations?.en?.name ||
       "";
@@ -192,14 +212,16 @@ export default function RestaurantDetailScreen() {
             style={styles.gradient}
           />
 
-          <BlurView intensity={68} style={styles.backButton}>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ transform: [{ rotate: "180deg" }] }}
-            >
+          <TouchableOpacity
+            style={styles.backButton}
+          onPress={() => router.back()}
+            activeOpacity={0.85}
+          >
+            <BlurView intensity={68} style={StyleSheet.absoluteFill} />
+            <View style={{ transform: [{ rotate: "180deg" }] }}>
               <CardArrow color={colors.white} />
-            </TouchableOpacity>
-          </BlurView>
+            </View>
+          </TouchableOpacity>
 
           {/* Overlay content */}
           <View style={styles.heroOverlay}>
@@ -384,6 +406,10 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
+  backButtonFallback: {
+    backgroundColor: colors.dark,
+  },
+
   heroOverlay: {
     position: "absolute",
     bottom: spacing.lg,
@@ -541,7 +567,7 @@ const styles = StyleSheet.create({
 
   emptyStateText: {
     ...typography.body,
-    color: colors.grey,
+    color: colors.dark,
     textAlign: "center",
   },
 });

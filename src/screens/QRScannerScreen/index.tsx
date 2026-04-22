@@ -5,16 +5,42 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ScannerView } from "./ScannerView";
-import { tablesScanCreate } from "../../api";
 import { useTranslation } from "react-i18next";
 import { spacing } from "../../theme";
 import { useRouter } from "expo-router";
+
+function parseRestaurantSlug(qr: string): string | null {
+  const trimmed = qr.trim();
+  if (!trimmed) return null;
+
+  // URL form: try to pull the segment after /restaurant(s)/ or /r/
+  try {
+    if (trimmed.includes("://")) {
+      const url = new URL(trimmed);
+      const segments = url.pathname.split("/").filter(Boolean);
+      const idx = segments.findIndex(
+        (s) => s === "restaurant" || s === "restaurants" || s === "r",
+      );
+      if (idx >= 0 && segments[idx + 1]) return segments[idx + 1];
+      // Fallback: last non-empty segment
+      const last = segments[segments.length - 1];
+      if (last) return last;
+      return null;
+    }
+  } catch {
+    // not a URL, fall through to plain-slug handling
+  }
+
+  // Plain slug form: lowercase letters/digits/hyphens/underscores only
+  if (/^[A-Za-z0-9_-]+$/.test(trimmed)) return trimmed;
+  return null;
+}
 
 function QRScannerScreen() {
   const router = useRouter();
@@ -26,18 +52,25 @@ function QRScannerScreen() {
     setLoading(true);
     setError(null);
     try {
-      const response = await tablesScanCreate({ qr_code: qrCode });
+      const slug = parseRestaurantSlug(qrCode);
+      if (!slug) throw new Error("invalid_qr");
+
+      const res = await fetch(
+        `https://admin.aimenu.ge/api/v1/restaurants/${encodeURIComponent(slug)}/`,
+      );
+      if (!res.ok) throw new Error("not_found");
+
       router.push({
-        pathname: "/postScanOrder",
-        params: {
-          tableSessionId: response.data.session_id,
-          restaurantSlug: response.data.restaurant_slug,
-          tableNumber: response.data.table_id,
-        },
+        pathname: "/restaurant-detail",
+        params: { slug },
       });
-    } catch (err) {
-      setError(t("qr-scanner.error_invalid"));
-      setTimeout(() => setError(null), 2000);
+    } catch (err: any) {
+      const message =
+        err?.message === "not_found"
+          ? t("qr-scanner.notFound")
+          : t("qr-scanner.error_invalid");
+      setError(message);
+      setTimeout(() => setError(null), 2500);
     } finally {
       setLoading(false);
     }
@@ -71,7 +104,7 @@ function QRScannerScreen() {
         </View>
       )}
       <TouchableOpacity
-        onPress={() => handleScan("test-qr-code")}
+        onPress={() => handleScan("gordumlo")}
         style={{ backgroundColor: "red", padding: 10 }}
       >
         <Text style={{ color: "white" }}>TEST SCAN</Text>

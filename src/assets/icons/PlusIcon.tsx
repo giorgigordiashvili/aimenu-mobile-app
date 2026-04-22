@@ -1,7 +1,11 @@
 import * as React from "react";
 import Svg, { Path } from "react-native-svg";
 
-function PlusIcon() {
+interface PlusIconProps {
+  color?: string;
+}
+
+function PlusIcon({ color = "#90A1B9" }: PlusIconProps) {
   return (
     <Svg
       width={16}
@@ -12,7 +16,7 @@ function PlusIcon() {
     >
       <Path
         d="M3.332 7.996h9.329M7.996 3.332v9.329"
-        stroke="#90A1B9"
+        stroke={color}
         strokeWidth={1.33266}
         strokeLinecap="round"
         strokeLinejoin="round"

@@ -32,6 +32,7 @@ import {
   reservationApi,
 } from "../services/reservations";
 import { useAuth } from "../context/AuthContext";
+import { getDateLocale } from "../i18n";
 
 const RESERVATION_DEPOSIT = 10;
 
@@ -152,7 +153,7 @@ export default function ReservationScreen() {
   const displayDate = React.useMemo(() => {
     const [y, mo, d] = selectedDate.split("-").map(Number);
     const date = new Date(y, mo - 1, d);
-    return date.toLocaleDateString(i18n.language === "ka" ? "ka-GE" : "en-GB", {
+    return date.toLocaleDateString(getDateLocale(i18n.language), {
       day: "2-digit",
       month: "short",
       year: "numeric",

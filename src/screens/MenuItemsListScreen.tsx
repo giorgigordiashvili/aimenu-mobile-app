@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { BottomTabBarHeightContext } from "@react-navigation/bottom-tabs";
 import {
   View,
   Text,
@@ -9,22 +10,32 @@ import {
   ActivityIndicator,
   ScrollView,
   Platform,
+  Animated,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors, spacing, typography, borderRadius } from "../theme";
 import { SearchBar } from "../components/ui/SearchBar";
 import PlusIcon from "../assets/icons/PlusIcon";
 import BackArrowIcon from "../assets/icons/BackArrowIcon";
+import ButtonArrowIcon from "../assets/icons/ButtonArrowIcon";
+import DropdownArrowIcon from "../assets/icons/DropdownArrowIcon";
+import CardArrow from "../assets/icons/CardArrow";
+import ChevronIcon from "../assets/icons/ChevronIcon";
+import { useCart } from "../context/CartContext";
+import { Button } from "../components/Button";
+
 
 interface MenuItem {
   id: number;
   image: string | null;
   price: string;
   translations: {
-    ka?: { name?: string; description?: string };
-    en?: { name?: string; description?: string };
+    [lang: string]: { name?: string; description?: string } | undefined;
   };
 }
 
@@ -37,11 +48,102 @@ export default function MenuItemsListScreen() {
 
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const { addItem, updateQuantity, items, totalItems } = useCart();
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useContext(BottomTabBarHeightContext) ?? 0;
 
   const [allItems, setAllItems] = useState<MenuItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (totalItems === 0) {
+      setExpanded(false);
+    }
+  }, [totalItems]);
+
+  const checkoutAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(checkoutAnim, {
+      toValue: totalItems > 0 ? 1 : 0,
+      useNativeDriver: true,
+      tension: 80,
+      friction: 10,
+    }).start();
+  }, [totalItems, checkoutAnim]);
+
+  const arrowRotation = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(arrowRotation, {
+      toValue: expanded ? 1 : 0,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  }, [expanded, arrowRotation]);
+
+  const ctaTranslateY = useRef(new Animated.Value(0)).current;
+  const ctaOpacity = useRef(new Animated.Value(1)).current;
+  const lastScrollY = useRef(0);
+  const isCtaVisible = useRef(true);
+
+  const showCta = React.useCallback(() => {
+    if (isCtaVisible.current) return;
+    isCtaVisible.current = true;
+
+    Animated.parallel([
+      Animated.timing(ctaTranslateY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(ctaOpacity, {
+        toValue: 1,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [ctaOpacity, ctaTranslateY]);
+
+  const hideCta = React.useCallback(() => {
+    if (!isCtaVisible.current) return;
+    isCtaVisible.current = false;
+
+    Animated.parallel([
+      Animated.timing(ctaTranslateY, {
+        toValue: 120,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(ctaOpacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [ctaOpacity, ctaTranslateY]);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentY = event.nativeEvent.contentOffset.y;
+    const delta = currentY - lastScrollY.current;
+
+    if (currentY <= 0) {
+      showCta();
+      lastScrollY.current = currentY;
+      return;
+    }
+
+    if (delta > 6) {
+      hideCta();
+    } else if (delta < -6) {
+      showCta();
+    }
+
+    lastScrollY.current = currentY;
+  };
 
   useEffect(() => {
     fetchItems();
@@ -58,11 +160,11 @@ export default function MenuItemsListScreen() {
       const query = searchQuery.toLowerCase();
       filtered = allItems.filter((item) => {
         const name =
-          item.translations?.[i18n.language as "ka" | "en"]?.name ||
+          item.translations?.[i18n.language]?.name ||
           item.translations?.ka?.name ||
           "";
         const description =
-          item.translations?.[i18n.language as "ka" | "en"]?.description ||
+          item.translations?.[i18n.language]?.description ||
           item.translations?.ka?.description ||
           "";
         return (
@@ -95,15 +197,19 @@ export default function MenuItemsListScreen() {
 
   const renderItem = ({ item }: { item: MenuItem }) => {
     const name =
-      item.translations?.[i18n.language as "ka" | "en"]?.name ||
+      item.translations?.[i18n.language]?.name ||
       item.translations?.ka?.name;
 
     const description =
-      item.translations?.[i18n.language as "ka" | "en"]?.description ||
+      item.translations?.[i18n.language]?.description ||
       item.translations?.ka?.description;
 
+    const cartItem = items.find((i) => i.itemId === item.id);
+    const quantity = cartItem?.quantity ?? 0;
+    const isSelected = quantity > 0;
+
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, isSelected && styles.cardSelected]}>
         <TouchableOpacity
           style={styles.cardContent}
           onPress={() => router.push(`/restaurant/${slug}/item/${item.id}`)}
@@ -125,16 +231,46 @@ export default function MenuItemsListScreen() {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.addButton}>
-          <PlusIcon />
-        </TouchableOpacity>
+        {isSelected ? (
+          <View style={styles.stepper}>
+            <TouchableOpacity
+              style={styles.stepperBtn}
+              onPress={() => updateQuantity(item.id, quantity - 1)}
+            >
+              <Text style={styles.stepperMinus}>−</Text>
+            </TouchableOpacity>
+            <Text style={styles.stepperQty}>{quantity}</Text>
+            <TouchableOpacity
+              style={[styles.stepperBtn, styles.stepperBtnPlus]}
+              onPress={() => updateQuantity(item.id, quantity + 1)}
+            >
+              <PlusIcon color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() =>
+              addItem({
+                itemId: item.id,
+                slug,
+                name: name || "",
+                price: parseFloat(item.price),
+                quantity: 1,
+                image: item.image || undefined,
+                modifiers: [],
+              })
+            }
+          >
+            <PlusIcon />
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
 
-  return (
-    <View style={styles.container}>
-      {/* Header */}
+  const ListHeader = (
+    <>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -146,7 +282,6 @@ export default function MenuItemsListScreen() {
         <Text style={styles.headerTitle}>{categoryName || "Menu"}</Text>
       </View>
 
-      {/* Search Bar */}
       <View style={styles.searchContainer}>
         <SearchBar
           placeholder={t("restaurant.searchPlaceholder")}
@@ -155,7 +290,6 @@ export default function MenuItemsListScreen() {
         />
       </View>
 
-      {/* Filter Tabs */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -173,22 +307,198 @@ export default function MenuItemsListScreen() {
       </ScrollView>
 
       <Text style={styles.subtitle}>{t("restaurant.category2")}</Text>
-      {/* Items list */}
+    </>
+  );
+
+  return (
+    <View style={styles.container}>
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      ) : filteredItems.length > 0 ? (
+        <>
+          {ListHeader}
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        </>
+      ) : (
         <FlatList
           data={filteredItems}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
+          ListHeaderComponent={ListHeader}
           contentContainerStyle={styles.list}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No items found</Text>
+            </View>
+          }
         />
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No items found</Text>
+      )}
+
+      {totalItems > 0 && expanded && (
+        <View
+          style={[
+            styles.summaryPanel,
+            {
+              paddingBottom:
+                tabBarHeight > 0
+                  ? spacing.md
+                  : Math.max(insets.bottom, spacing.md),
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.summaryHandle}
+            activeOpacity={0.7}
+            onPress={() => setExpanded(false)}
+          >
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    rotate: arrowRotation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ["0deg", "180deg"],
+                    }),
+                  },
+                ],
+              }}
+            >
+              <DropdownArrowIcon
+                width={12}
+                height={6}
+                color={colors.black}
+                opacity={1}
+              />
+            </Animated.View>
+          </TouchableOpacity>
+
+          {items.map((cartItem, index) => (
+            <View
+              key={cartItem.itemId}
+              style={[
+                styles.summaryRow,
+                index !== items.length - 1 && styles.summaryRowDivider,
+              ]}
+            >
+              <View style={styles.summaryQtyBadge}>
+                <Text style={styles.summaryQtyText}>{cartItem.quantity}x</Text>
+              </View>
+              <Text
+                style={styles.summaryName}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {cartItem.name}
+              </Text>
+              <Text style={styles.summaryPrice}>
+                {(cartItem.price * cartItem.quantity).toFixed(2)} ₾
+              </Text>
+            </View>
+          ))}
+
+          <View style={styles.summaryButtons}>
+            <Button
+              title={t("restaurant.button1")}
+              onPress={() =>
+                router.push({
+                  pathname: "/reservation",
+                  params: { slug },
+                })
+              }
+              variant="outline"
+              size="md"
+              style={styles.footerButtonOutline}
+              textStyle={styles.footerButtonText}
+            />
+            <Button
+              title={t("restaurant.button2")}
+              variant="primary"
+              size="md"
+              style={styles.footerButtonPrimary}
+              textStyle={styles.footerButtonText}
+              onPress={() => router.push({ pathname: "/order-review" })}
+            />
+          </View>
         </View>
+      )}
+
+      {!(totalItems > 0 && expanded) && (
+        <Animated.View
+          style={[
+            styles.footerActions,
+            totalItems > 0 && styles.footerActionsCheckout,
+            {
+              opacity: ctaOpacity,
+              transform: [{ translateY: ctaTranslateY }],
+            },
+          ]}
+        >
+          {totalItems > 0 ? (
+            <Animated.View
+              style={{
+                flex: 1,
+                opacity: checkoutAnim,
+                transform: [
+                  {
+                    translateY: checkoutAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [80, 0],
+                    }),
+                  },
+                ],
+              }}
+            >
+              <Button
+                title={t("restaurant.button2")}
+                variant="primary"
+                size="md"
+                style={styles.footerButtonPrimary}
+                textStyle={styles.footerButtonText}
+                onPress={() => setExpanded(true)}
+                leftIcon={
+                  <View style={styles.checkoutBadge}>
+                    <Text style={styles.checkoutBadgeText}>x{totalItems}</Text>
+                  </View>
+                }
+                rightIcon={
+                  <View style={styles.checkoutArrow}>
+                    <ButtonArrowIcon />
+                  </View>
+                }
+              />
+            </Animated.View>
+          ) : (
+            <>
+              <Button
+                title={t("restaurant.button1")}
+                onPress={() =>
+                  router.push({
+                    pathname: "/reservation",
+                    params: { slug },
+                  })
+                }
+                variant="outline"
+                size="md"
+                style={styles.footerButtonOutline}
+                textStyle={styles.footerButtonText}
+              />
+              <Button
+                title={t("restaurant.button2")}
+                variant="primary"
+                size="md"
+                style={styles.footerButtonPrimary}
+                textStyle={styles.footerButtonText}
+                onPress={() =>
+                  router.push({
+                    pathname: "/order-review",
+                  })
+                }
+              />
+            </>
+          )}
+        </Animated.View>
       )}
     </View>
   );
@@ -292,14 +602,14 @@ const styles = StyleSheet.create({
   },
 
   list: {
-    padding: spacing.md,
-    paddingTop: 0,
-    flexGrow: 0,
+    paddingBottom: spacing.md,
+    flexGrow: 1,
   },
 
   card: {
     flexDirection: "row",
     marginBottom: spacing.sm,
+    marginHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.light,
@@ -309,9 +619,9 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: "#000000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.16,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: -15 },
+        shadowOpacity: 0.05,
+        shadowRadius: 42.5,
       },
       android: {
         elevation: 6,
@@ -373,6 +683,70 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
 
+  cardSelected: {
+    borderColor: colors.primary,
+    borderWidth: 1,
+    backgroundColor: colors.primaryLightest,
+  },
+
+  stepper: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    marginTop: spacing.md,
+    marginRight: spacing.md,
+    gap: spacing.xs,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.light,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: -15 },
+        shadowOpacity: 0.05,
+        shadowRadius: 42.5,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+
+  stepperBtn: {
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  stepperBtnPlus: {
+    backgroundColor: colors.dangerSoftBackground,
+    borderRadius: borderRadius.md,
+
+  },
+
+  stepperMinus: {
+    ...typography.buttonLg,
+    color: colors.dark,
+    lineHeight: 20,
+  },
+
+  stepperPlus: {
+    ...typography.buttonLg,
+    color: colors.primary,
+    lineHeight: 20,
+  },
+
+  stepperQty: {
+    ...typography.buttonLg,
+    minWidth: 24,
+    textAlign: "center",
+    color: colors.dark,
+  },
+
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -382,5 +756,146 @@ const styles = StyleSheet.create({
   emptyText: {
     ...typography.body,
     color: colors.grey,
+  },
+
+  footerActions: {
+    flexDirection: "row",
+    gap: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: colors.light,
+  },
+
+  footerActionsCheckout: {
+    backgroundColor: "transparent",
+    borderTopWidth: 0,
+    borderTopColor: "transparent",
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginBottom: spacing.xxl,
+  },
+
+  footerButtonOutline: {
+    flex: 1,
+    borderRadius: borderRadius.full,
+    minHeight: 52,
+    height: undefined,
+  },
+
+  footerButtonPrimary: {
+    flex: 1,
+    borderRadius: borderRadius.full,
+    minHeight: 52,
+    height: undefined,
+    justifyContent: "space-between",
+  },
+
+  footerButtonText: {
+    textAlign: "center",
+   ...typography.buttonSm,
+   fontWeight: typography.h1.fontWeight,
+
+  },
+
+  checkoutBadge: {
+    minWidth: 24,
+    height: 24,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  checkoutBadgeText: {
+    ...typography.buttonSm,
+    color: colors.black,
+  },
+
+  checkoutArrow: {
+    width: 24,
+    height: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  summaryPanel: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: -15 },
+        shadowOpacity: 0.05,
+        shadowRadius: 42.5,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+
+  summaryHandle: {
+    position: "absolute",
+    top: -14,
+    alignSelf: "center",
+    width: 55,
+    height: 30,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    ...Platform.select({
+   
+    }),
+  },
+
+  summaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: spacing.sm,
+  },
+
+  summaryRowDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.state100,
+  },
+
+  summaryQtyBadge: {
+    minWidth: 24,
+    height: 24,
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.dangerSoftBackground,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.sm,
+  },
+
+  summaryQtyText: {
+    ...typography.buttonSm,
+    color: colors.primary,
+    fontWeight: typography.h1.fontWeight,
+  },
+
+  summaryName: {
+    flex: 1,
+    ...typography.textXs,
+    color: colors.darkGrey,
+  },
+
+  summaryPrice: {
+    ...typography.textSm,
+    color: colors.dark,
+    fontWeight: typography.h2.fontWeight,
+  },
+
+  summaryButtons: {
+    flexDirection: "row",
+    gap: spacing.md,
+    paddingTop: spacing.md,
   },
 });

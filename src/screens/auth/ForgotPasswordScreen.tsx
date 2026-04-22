@@ -33,7 +33,7 @@ export default function ForgotPasswordScreen() {
     <View style={styles.container}>
       {/* Back */}
       <TouchableOpacity
-        onPress={() => router.push("/login")}
+        onPress={() => router.back()}
         style={styles.backButton}
       >
         <BackArrowIcon />

@@ -1,24 +1,25 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
   Dimensions,
+  Animated,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "../components/ui/Card";
-import { PromoBanner } from "../components/PromoBanner";
 import { colors, spacing, typography, borderRadius } from "../theme";
 import { useTranslation } from "react-i18next";
+import LoadingScreen from "../components/LoadingScreen";
+import { useAuth } from "../context/AuthContext";
 
 const { width } = Dimensions.get("window");
 const BANNER_WIDTH = width - spacing.md * 2;
+const BANNER_HEIGHT = 157;
 
-// Banner data constant - moved outside component to avoid recreation on render
 const BANNER_DATA = [
   { id: 1, image: require("../assets/images/Banner.png") },
   { id: 2, image: require("../assets/images/Banner.png") },
@@ -30,19 +31,12 @@ const BANNER_DATA = [
 const HomeScreen = () => {
   const router = useRouter();
   const { t } = useTranslation();
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
-
-  // Stable reference for viewabilityConfig
-  const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 50,
-  }).current;
-
-  // Stable callback reference using useCallback
-  const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
-    if (viewableItems.length > 0 && viewableItems[0].index != null) {
-      setCurrentBannerIndex(viewableItems[0].index);
-    }
-  }, []);
+  const { user } = useAuth();
+  const greetingName =
+    [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim() ||
+    user?.email ||
+    t("profile.name");
+  const bannerScrollX = useRef(new Animated.Value(0)).current;
 
   const { data: popular, isLoading: popularLoading } = useQuery({
     queryKey: ["popularRestaurants"],
@@ -68,7 +62,7 @@ const HomeScreen = () => {
   const recommendedRestaurants = recommended?.results || [];
 
   if (popularLoading || recommendedLoading) {
-    return <ActivityIndicator style={{ flex: 1 }} />;
+    return <LoadingScreen />;
   }
 
   const renderSectionHeader = (title: string, onPress?: () => void) => (
@@ -109,40 +103,114 @@ const HomeScreen = () => {
           {/* Greeting */}
           <View style={styles.header}>
             <Text style={styles.greeting}>
-              {t("home.greeting", { name: "გაგი" })}
+              {t("home.greeting", { name: greetingName })}
             </Text>
             <Text style={styles.subtitle}>{t("home.subtitle")}</Text>
           </View>
 
-          {/* Promo Banner Carousel */}
-          <View style={styles.bannerWrapper}>
-            <FlatList
-              horizontal
-              data={BANNER_DATA}
-              keyExtractor={(item) => item.id.toString()}
-              showsHorizontalScrollIndicator={false}
-              pagingEnabled
-              snapToInterval={BANNER_WIDTH + spacing.md}
-              decelerationRate="fast"
-              onViewableItemsChanged={onViewableItemsChanged}
-              viewabilityConfig={viewabilityConfig}
-              renderItem={({ item, index }) => (
-                <View style={{ marginRight: spacing.md }}>
-                  <PromoBanner
-                    image={item.image}
-                    title={t("home.bannerTitle")}
-                    currentIndex={currentBannerIndex}
-                    totalCount={BANNER_DATA.length}
+          {/* Promo Banner Carousel — fixed frame, content slides within */}
+          <View style={styles.bannerSection}>
+            <View style={styles.bannerFrame}>
+              <Animated.FlatList
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                decelerationRate="fast"
+                snapToInterval={BANNER_WIDTH}
+                snapToAlignment="start"
+                disableIntervalMomentum
+                data={BANNER_DATA}
+                keyExtractor={(item) => item.id.toString()}
+                scrollEventThrottle={16}
+                removeClippedSubviews
+                onScroll={Animated.event(
+                  [{ nativeEvent: { contentOffset: { x: bannerScrollX } } }],
+                  { useNativeDriver: false },
+                )}
+                renderItem={({ item, index }) => {
+                  const inputRange = [
+                    (index - 1) * BANNER_WIDTH,
+                    (index - 0.5) * BANNER_WIDTH,
+                    index * BANNER_WIDTH,
+                    (index + 0.5) * BANNER_WIDTH,
+                    (index + 1) * BANNER_WIDTH,
+                  ];
+                  const imageScale = bannerScrollX.interpolate({
+                    inputRange,
+                    outputRange: [0.96, 0.99, 1, 0.99, 0.96],
+                    extrapolate: "clamp",
+                  });
+                  const titleOpacity = bannerScrollX.interpolate({
+                    inputRange,
+                    outputRange: [0, 0.35, 1, 0.35, 0],
+                    extrapolate: "clamp",
+                  });
+                  const titleTranslateX = bannerScrollX.interpolate({
+                    inputRange,
+                    outputRange: [20, 6, 0, -6, -20],
+                    extrapolate: "clamp",
+                  });
+                  return (
+                    <View style={styles.bannerSlide}>
+                      <Animated.Image
+                        source={item.image}
+                        style={[
+                          styles.bannerImage,
+                          { transform: [{ scale: imageScale }] },
+                        ]}
+                        resizeMode="cover"
+                      />
+                      <Animated.Text
+                        style={[
+                          styles.bannerTitle,
+                          {
+                            opacity: titleOpacity,
+                            transform: [{ translateX: titleTranslateX }],
+                          },
+                        ]}
+                      >
+                        {t("home.bannerTitle")}
+                      </Animated.Text>
+                    </View>
+                  );
+                }}
+              />
+            </View>
+
+            <View style={styles.dotsContainer}>
+              {BANNER_DATA.map((_, index) => {
+                const inputRange = [
+                  (index - 1) * BANNER_WIDTH,
+                  index * BANNER_WIDTH,
+                  (index + 1) * BANNER_WIDTH,
+                ];
+                const dotWidth = bannerScrollX.interpolate({
+                  inputRange,
+                  outputRange: [8, 24, 8],
+                  extrapolate: "clamp",
+                });
+                const dotColor = bannerScrollX.interpolate({
+                  inputRange,
+                  outputRange: [colors.grey, colors.primary, colors.grey],
+                  extrapolate: "clamp",
+                });
+                return (
+                  <Animated.View
+                    key={index}
+                    style={[
+                      styles.dot,
+                      { width: dotWidth, backgroundColor: dotColor },
+                    ]}
                   />
-                </View>
-              )}
-            />
+                );
+              })}
+            </View>
           </View>
 
           {/* Popular Section */}
           <View style={styles.section}>
             {renderSectionHeader(t("home.popularTitle"), () =>
-              router.push("/restaurants"),
+              router.push("/search"),
             )}
 
             <FlatList
@@ -207,7 +275,49 @@ const styles = StyleSheet.create({
     fontWeight: typography.h1.fontWeight,
   },
 
-  bannerWrapper: {},
+  bannerSection: {
+    alignItems: "center",
+  },
+
+  bannerFrame: {
+    width: BANNER_WIDTH,
+    height: BANNER_HEIGHT,
+    borderRadius: borderRadius.xl,
+    overflow: "hidden",
+  },
+
+  bannerSlide: {
+    width: BANNER_WIDTH,
+    height: BANNER_HEIGHT,
+  },
+
+  bannerImage: {
+    width: BANNER_WIDTH,
+    height: BANNER_HEIGHT,
+  },
+
+  bannerTitle: {
+    ...typography.textBase,
+    color: colors.white,
+    position: "absolute",
+    top: spacing.lg,
+    left: spacing.lg,
+    maxWidth: 156,
+    textTransform: "uppercase",
+  },
+
+  dotsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.xs,
+    marginTop: spacing.md,
+  },
+
+  dot: {
+    height: 8,
+    borderRadius: borderRadius.full,
+  },
 
   section: {
     marginTop: spacing.xl,

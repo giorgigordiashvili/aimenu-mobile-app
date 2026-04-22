@@ -1,0 +1,350 @@
+{
+  "splash": {
+    "welcome": "Magida"
+  },
+
+  "onboarding": {
+    "slide1Title": "Откройте лучшие вкусы",
+    "slide1Description": "Найдите любимые блюда и рестораны в городе.",
+    "slide2Title": "Забронируйте столик",
+    "slide2Description": "Бронируйте столик всего в несколько касаний",
+    "slide3Title": "Насладитесь уютной атмосферой",
+    "slide3Description": "Проведите время с друзьями в лучшей обстановке",
+    "skip": "Пропустить",
+    "next": "Далее",
+    "getStarted": "Начать"
+  },
+
+  "auth": {
+    "login": "Вход",
+    "loginSubtitle": "Введите данные для входа в аккаунт.",
+    "email": "Email или телефон",
+    "emailPlaceholder": "example@email.com",
+    "password": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "forgotPassword": "Забыли пароль?",
+    "loginButton": "Войти",
+    "or": "Или продолжить через",
+    "noAccount": "Нет аккаунта?",
+    "register": "Регистрация",
+    "show": "Показать",
+    "hide": "Скрыть"
+  },
+
+  "common": {
+    "error": "Ошибка",
+    "loading": "Загрузка"
+  },
+
+  "error": {
+    "passwordError": "Неверный пароль"
+  },
+
+  "validation": {
+    "emailRequired": "Email или телефон обязательны",
+    "passwordRequired": "Пароль обязателен",
+    "invalidEmail": "Неверный формат email",
+    "firstNameRequired": "Имя обязательно",
+    "passwordMin": "Пароль должен содержать минимум 8 символов",
+    "confirmPasswordRequired": "Подтверждение пароля обязательно",
+    "passwordsMustMatch": "Пароли должны совпадать"
+  },
+
+  "register": "Создать аккаунт 🚀",
+  "registerSubtitle": "Заполните форму для регистрации",
+  "firstName": "Имя, Фамилия",
+  "firstNamePlaceholder": "Введите имя и фамилию",
+  "registerButton": "Зарегистрироваться",
+  "confirmPassword": "Подтвердите пароль",
+  "confirmPasswordPlaceholder": "Введите пароль ещё раз",
+  "hasAccount": "Уже есть аккаунт?",
+  "loginLink": "Войти",
+
+  "forgot": {
+    "title": "Восстановление пароля",
+    "description": "Введите номер телефона для восстановления пароля",
+    "inputLabel": "Телефон",
+    "button": "Отправить код",
+    "invalidPhone": "Неверный номер телефона"
+  },
+
+  "home": {
+    "greeting": "Привет, {{name}}!",
+    "subtitle": "Где вы поужинаете сегодня?",
+    "searchPlaceholder": "Поиск по названию",
+    "popularTitle": "Популярное",
+    "recommendedTitle": "Рекомендуемое",
+    "invalidPhone": "Неверный номер телефона",
+    "error": "Ошибка",
+    "resetFailed": "Не удалось восстановить пароль. Попробуйте ещё раз.",
+    "seeAll": "Смотреть всё",
+    "bannerTitle": "Отсканируйте\nменю ресторана"
+  },
+
+  "resetPassword": {
+    "description": "Код отправлен на указанный номер телефона ",
+    "passwordDescription": "Введите новый пароль",
+    "password": "Пароль",
+    "confirmNewPassword": "Подтвердите пароль",
+    "invalidCode": "Неверный код. Попробуйте ещё раз.",
+    "changePasswordButton": "Сменить пароль"
+  },
+
+  "otp": {
+    "description": "Код отправлен на указанный номер телефона ",
+    "resend": "Отправить снова",
+    "button": "Подтвердить",
+    "invalidCode": "Неверный код. Попробуйте ещё раз."
+  },
+
+  "restaurant": {
+    "menu": "Меню",
+    "reviews": "Отзывы",
+    "info": "Информация",
+    "address": "Адрес",
+    "phone": "Телефон",
+    "hours": "Часы работы",
+    "back": "Назад",
+    "open": "Открыто",
+    "closed": "Закрыто",
+    "about": "О нас",
+    "location": "Тбилиси",
+    "description": "Уникальная атмосфера в старом Тбилиси, где традиционные вкусы представлены по-новому.",
+    "operatingHours": "Часы работы",
+    "searchPlaceholder": "Поиск блюда по названию",
+    "category": "Категории",
+    "category1": "Вкусные салаты",
+    "category2": "Кислые блюда",
+    "category3": "Традиционные десерты",
+    "category4": "Овощные блюда",
+    "category5": "Рыбные блюда",
+    "category6": "Мясные блюда",
+    "button1": "Только бронирование",
+    "button2": "Оформить заказ",
+    "noCategories": "Нет категорий",
+    "all": "Все"
+  },
+
+  "restaurantList": {
+    "title": "Рестораны",
+    "city": "Город",
+    "date": "Дата",
+    "time": "Время",
+    "guest": "Гости",
+    "search": "Поиск",
+    "selectPlaceholder": "Выбрать",
+    "selectCityTitle": "Выберите город",
+    "selectDateTitle": "Выберите дату",
+    "selectTimeTitle": "Выберите время",
+    "selectGuestsTitle": "Выберите количество гостей",
+    "guestsCount": "{{count}} человек",
+    "empty": "Ничего не найдено",
+    "cities": {
+      "tbilisi": "Тбилиси",
+      "batumi": "Батуми",
+      "kutaisi": "Кутаиси",
+      "rustavi": "Рустави",
+      "gori": "Гори"
+    }
+  },
+
+  "menuItem": {
+    "add": "Добавить",
+    "remove": "Удалить",
+    "update": "Обновить",
+    "addMore": "Добавить ещё с другим составом"
+  },
+
+  "tabs": {
+    "home": "Главная",
+    "search": "Поиск",
+    "scan": "Сканер",
+    "profile": "Профиль"
+  },
+
+  "cart": {
+    "orderReview": "Обзор заказа",
+    "empty": "Ваша корзина пуста",
+    "reservationTitle": "Бронирование столика",
+    "reservationDetails": "Детали бронирования",
+    "dateLabel": "Дата",
+    "timeLabel": "Время",
+    "timePlaceholder": "Выбрать",
+    "guestLabel": "Гости",
+    "guestCount": "{{count}} человек",
+    "browseMenu": "Выбранные блюда",
+    "subtotal": "Сумма за еду",
+    "serviceFee": "Сервисный сбор",
+    "tax": "К оплате",
+    "deposit": "Депозит за бронирование",
+    "total": "Итого",
+    "button": "Продолжить",
+    "safe": "Безопасная защищённая оплата"
+  },
+
+  "payment": {
+    "title": "Оплата",
+    "subtitle": "Контактная информация",
+    "description": "Введите данные для подтверждения бронирования",
+    "namePlaceholder": "Имя и фамилия",
+    "phonePlaceholder": "Номер телефона",
+    "emailPlaceholder": "Email",
+    "textPlaceholder": "Особые пожелания (необязательно)",
+    "method": "Выберите способ оплаты",
+    "addCard": "Добавить новую карту",
+    "cardBrands": "Visa, Mastercard, Amex",
+    "savedCardMasked": "****4488",
+    "savedCardBrand": "Mastercard",
+    "applePay": "Apple Pay",
+    "soon": "Скоро",
+    "button": "Оплатить",
+    "successTitle": "Оплата прошла успешно",
+    "successSubtitle": "Ваше бронирование подтверждено. Мы будем рады вас встретить.",
+    "successCta": "На главную"
+  },
+
+  "paymentMethods": {
+    "title": "Способы оплаты",
+    "empty": "У вас нет сохранённых способов оплаты",
+    "addButton": "Добавить способ оплаты",
+    "deleteTitle": "Удалить карту",
+    "deleteText": "Вы уверены, что хотите удалить эту карту?",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "fetchError": "Не удалось загрузить карты",
+    "deleteError": "Не удалось удалить карту"
+  },
+
+  "reservationSuccess": {
+    "successTitle": "Бронирование подтверждено!",
+    "successSubtitle": "Ваш столик в \"{{restaurantName}}\" успешно забронирован. Подтверждение придёт на указанный номер и email.",
+    "infoTitle": "Код бронирования",
+    "restaurant": "Ресторан",
+    "date": "Дата",
+    "time": "Время",
+    "invite": "Пригласить друзей",
+    "successCta": "На главную",
+    "orders": "Мои заказы"
+  },
+
+  "failedPayment": {
+    "title": "Оплата не прошла",
+    "subtitle": "Убедитесь, что способ оплаты указан верно, или проверьте баланс карты",
+    "cta": "Назад"
+  },
+
+  "profile": {
+    "title": "Мой профиль",
+    "name": "Гаги Мурджикнели",
+    "settings": "Настройки аккаунта",
+    "payment": "Способы оплаты",
+    "orders": "История заказов",
+    "favorites": "Избранное",
+    "language": "Язык",
+    "currency": "Валюта",
+    "logout": "Выйти"
+  },
+
+  "orderHistory": {
+    "title": "История заказов",
+    "cardTitle": "Чёрный лев",
+    "cardBio": "Тбилиси • Грузинский фьюжн",
+    "tag": "2 блюда",
+    "empty": "У вас пока нет заказов",
+    "detailsTitle": "Детали заказа",
+    "selectedDishes": "Выбранные блюда",
+    "paymentSummary": "Сумма к оплате",
+    "help": "Нужна помощь?"
+  },
+
+  "favorites": {
+    "title": "Избранное",
+    "empty": "У вас пока нет избранного",
+    "emptyDescription": "Добавляйте избранное со страницы ресторана или блюда",
+    "dishes": "Блюда",
+    "restaurants": "Рестораны"
+  },
+
+  "accountSettings": {
+    "title": "Настройки аккаунта",
+    "name": "Имя и фамилия",
+    "email": "Email или телефон",
+    "password": "Пароль",
+    "saveButton": "Сохранить изменения",
+    "deleteButton": "Удалить аккаунт",
+    "firstNamePlaceholder": "Введите имя и фамилию",
+    "deleteConfirmTitle": "Удалить аккаунт",
+    "deleteConfirmText": "Вы действительно хотите удалить свой аккаунт?",
+    "cancel": "Отмена",
+    "delete": "Удалить"
+  },
+
+  "qr-scanner": {
+    "title": "Сканировать QR-код",
+    "hint": "Отсканируйте QR-код на столе, выберите блюда и оплатите сразу здесь",
+    "loading": "Проверка...",
+    "error_invalid": "Неверный QR-код. Попробуйте ещё раз.",
+    "notFound": "Ресторан не найден. Отсканируйте корректный QR-код.",
+    "permission_title": "Требуется доступ к камере",
+    "permission_desc": "Для сканирования QR-кода разрешите доступ к камере",
+    "permission_button": "Разрешить камеру"
+  },
+
+  "addCard": {
+    "title": "Добавить новую карту",
+    "cardNumberLabel": "Номер карты",
+    "expiryLabel": "Срок действия",
+    "cvvLabel": "CVV",
+    "holderLabel": "Имя владельца карты",
+    "holderPlaceholder": "КАК НА КАРТЕ",
+    "saveButton": "Сохранить карту",
+    "hint": "Данные вашей карты зашифрованы и хранятся в безопасности.",
+    "error": "Ошибка",
+    "errorCardNumber": "Введите корректный 16-значный номер карты.",
+    "errorExpiry": "Введите корректный срок (ММ/ГГ).",
+    "errorCvv": "Введите корректный CVV.",
+    "errorHolder": "Введите имя владельца карты.",
+    "saveFailed": "Не удалось сохранить карту. Попробуйте ещё раз."
+  },
+
+  "postScanOrder": {
+    "title": "Обзор заказа",
+    "menu": "Меню",
+    "selectedItems": "Выбранные блюда",
+    "items": "Выбранные блюда",
+    "restaurant": "Ресторан",
+    "itemTotal": "Сумма за еду",
+    "continue": "Продолжить",
+    "tax": "К оплате",
+    "total": "Итого",
+    "payButton": "Оплатить",
+    "paymentMethod": "Выберите способ оплаты",
+    "successTitle": "Заказ подтверждён!",
+    "successSubtitle": "Ваш заказ в \"Винной библиотеке\" успешно оформлен. Подтверждение придёт на указанный номер и email.",
+    "successCta": "На главную",
+    "orders": "Мои заказы"
+  },
+
+  "inviteFriends": {
+    "title": "Пригласить друзей",
+    "restaurant": "Ресторан",
+    "date": "Дата",
+    "time": "Время",
+    "payment": "Вариант оплаты",
+    "userPay": "Я оплачу",
+    "userPayBio": "Вся сумма будет на вас",
+    "eachPays": "Каждый платит за себя",
+    "eachPaysBio": "Каждый оплатит свою часть",
+    "addFriend": "Добавить гостя",
+    "namePlaceholder": "Имя и фамилия",
+    "phonePlaceholder": "Номер телефона",
+    "addButton": "Добавить в список",
+    "inviteButton": "Отправить приглашение",
+    "cancel": "Отмена",
+    "copied": "Приглашение скопировано",
+    "inviteFailed": "Не удалось поделиться приглашением",
+    "fillFields": "Пожалуйста, заполните все поля",
+    "added": "Добавлено в список",
+    "copyInvite": "Копировать приглашение"
+  }
+}

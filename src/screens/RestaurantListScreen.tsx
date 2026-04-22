@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -11,19 +11,41 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import debounce from "lodash/debounce";
 import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { Card } from "../components/ui/Card";
 import { SearchBar } from "../components/ui/SearchBar";
+import {
+  OptionPickerModal,
+  PickerOption,
+} from "../components/ui/OptionPickerModal";
+import { DatePickerModal } from "../components/reservation/DatePickerModal";
+import { TimeSlotModal, Slot } from "../components/reservation/TimeSlotModal";
+import { getDateLocale } from "../i18n";
 import { colors, spacing, borderRadius, typography } from "../theme";
 import CalendarIcon from "../assets/icons/CalendarIcon";
 import TimeIcon from "../assets/icons/TimeIcon";
 import PersonIcon from "../assets/icons/PersonIcon";
-import DropdownArrow from "../assets/icons/DropdownArrow";
+import DropdownArrowIcon from "../assets/icons/DropdownArrowIcon";
 import LocationIcon from "../assets/icons/LocationIcon";
 import SearchIcon from "../assets/icons/SearchIcon";
+
+const CITY_VALUES = ["tbilisi", "batumi", "kutaisi", "rustavi", "gori"];
+const GUEST_VALUES = ["1", "2", "3", "4", "5", "6", "7", "8"];
+
+const TIME_SLOTS: Slot[] = (() => {
+  const slots: Slot[] = [];
+  for (let h = 12; h <= 23; h++) {
+    for (const m of [0, 30]) {
+      slots.push({
+        time: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`,
+        available: true,
+      });
+    }
+  }
+  return slots;
+})();
 
 const HeroImage = require("../assets/images/RestaurantListBackground.png");
 
@@ -32,7 +54,7 @@ const HERO_HEIGHT = 351;
 
 const RestaurantListScreen = () => {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,16 +64,81 @@ const RestaurantListScreen = () => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedGuests, setSelectedGuests] = useState<string | null>(null);
 
-  const debouncedSearch = useCallback(
-    debounce((query: string) => {
-      setSearchQuery(query);
-    }, 500),
-    [],
-  );
+  const [openPicker, setOpenPicker] = useState<
+    "city" | "date" | "time" | "guests" | null
+  >(null);
+
+  type AppliedFilters = {
+    city: string | null;
+    date: string | null;
+    time: string | null;
+    guests: string | null;
+  };
+  const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({
+    city: null,
+    date: null,
+    time: null,
+    guests: null,
+  });
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      city: selectedLocation,
+      date: selectedDate,
+      time: selectedTime,
+      guests: selectedGuests,
+    });
+    // Flush any unflushed search-bar input so Search reflects what's typed.
+    if (inputValue !== searchQuery) {
+      setSearchQuery(inputValue);
+    }
+  };
+
+  const placeholder = t("restaurantList.selectPlaceholder");
+
+  const cityOptions: PickerOption[] = CITY_VALUES.map((value) => ({
+    value,
+    label: t(`restaurantList.cities.${value}`),
+  }));
+
+  const guestOptions: PickerOption[] = GUEST_VALUES.map((value) => ({
+    value,
+    label: t("restaurantList.guestsCount", { count: Number(value) }),
+  }));
+
+  const cityLabel = selectedLocation
+    ? t(`restaurantList.cities.${selectedLocation}`)
+    : placeholder;
+
+  const dateLabel = selectedDate
+    ? (() => {
+        const [y, m, d] = selectedDate.split("-").map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString(
+          getDateLocale(i18n.language),
+          { day: "2-digit", month: "short" },
+        );
+      })()
+    : placeholder;
+
+  const timeLabel = selectedTime ?? placeholder;
+
+  const guestsLabel = selectedGuests
+    ? t("restaurantList.guestsCount", { count: Number(selectedGuests) })
+    : placeholder;
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   const handleSearch = (text: string) => {
     setInputValue(text);
-    debouncedSearch(text);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setSearchQuery(text);
+    }, 600);
   };
 
   const { data: categories } = useQuery({
@@ -90,24 +177,26 @@ const RestaurantListScreen = () => {
   });
 
   const fetchRestaurants = async ({ pageParam = 1 }) => {
-    let url = `https://admin.aimenu.ge/api/v1/restaurants/?page=${pageParam}`;
+    const params = new URLSearchParams();
+    params.set("page", String(pageParam));
 
-    if (selectedCategory) {
-      url += `&category=${selectedCategory}`;
-    }
+    if (selectedCategory) params.set("category", String(selectedCategory));
+    if (searchQuery) params.set("search", searchQuery);
+    if (appliedFilters.city) params.set("city", appliedFilters.city);
+    if (appliedFilters.date) params.set("date", appliedFilters.date);
+    if (appliedFilters.time) params.set("time", appliedFilters.time);
+    if (appliedFilters.guests) params.set("guests", appliedFilters.guests);
 
-    if (searchQuery) {
-      url += `&search=${searchQuery}`;
-    }
-
-    const res = await fetch(url);
+    const res = await fetch(
+      `https://admin.aimenu.ge/api/v1/restaurants/?${params.toString()}`,
+    );
     if (!res.ok) throw new Error("Failed to fetch restaurants");
     return res.json();
   };
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: ["restaurants", selectedCategory, searchQuery],
+      queryKey: ["restaurants", selectedCategory, searchQuery, appliedFilters],
       queryFn: fetchRestaurants,
       initialPageParam: 1,
       getNextPageParam: (lastPage) => {
@@ -120,8 +209,8 @@ const RestaurantListScreen = () => {
 
   const restaurants = data?.pages.flatMap((page) => page.results) || [];
 
-  return (
-    <View style={styles.container}>
+  const renderHeader = () => (
+    <>
       {/* Hero Section */}
       <View style={styles.heroContainer}>
         <Image source={HeroImage} style={styles.heroImage} />
@@ -153,14 +242,18 @@ const RestaurantListScreen = () => {
                   </Text>
                   <TouchableOpacity
                     style={styles.filterValueContainer}
-                    onPress={() =>
-                      setSelectedLocation(selectedLocation ? null : "Tbilisi")
-                    }
+                    onPress={() => setOpenPicker("city")}
                   >
-                    <Text style={styles.filterValue}>
-                      {selectedLocation || "სამ..."}
+                    <Text
+                      style={[
+                        styles.filterValue,
+                        !selectedLocation && styles.filterValuePlaceholder,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {cityLabel}
                     </Text>
-                    <DropdownArrow />
+                    <DropdownArrowIcon />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -177,14 +270,18 @@ const RestaurantListScreen = () => {
                   </Text>
                   <TouchableOpacity
                     style={styles.filterValueContainer}
-                    onPress={() =>
-                      setSelectedDate(selectedDate ? null : "22 დეკემბე")
-                    }
+                    onPress={() => setOpenPicker("date")}
                   >
-                    <Text style={styles.filterValue}>
-                      {selectedDate || "22 დე..."}
+                    <Text
+                      style={[
+                        styles.filterValue,
+                        !selectedDate && styles.filterValuePlaceholder,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {dateLabel}
                     </Text>
-                    <DropdownArrow />
+                    <DropdownArrowIcon />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -200,14 +297,18 @@ const RestaurantListScreen = () => {
                   </Text>
                   <TouchableOpacity
                     style={styles.filterValueContainer}
-                    onPress={() =>
-                      setSelectedTime(selectedTime ? null : "13:00PM")
-                    }
+                    onPress={() => setOpenPicker("time")}
                   >
-                    <Text style={styles.filterValue}>
-                      {selectedTime || "13:00"}
+                    <Text
+                      style={[
+                        styles.filterValue,
+                        !selectedTime && styles.filterValuePlaceholder,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {timeLabel}
                     </Text>
-                    <DropdownArrow />
+                    <DropdownArrowIcon />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -223,14 +324,18 @@ const RestaurantListScreen = () => {
                   </Text>
                   <TouchableOpacity
                     style={styles.filterValueContainer}
-                    onPress={() =>
-                      setSelectedGuests(selectedGuests ? null : "2 ადამი")
-                    }
+                    onPress={() => setOpenPicker("guests")}
                   >
-                    <Text style={styles.filterValue}>
-                      {selectedGuests || "2 ად..."}
+                    <Text
+                      style={[
+                        styles.filterValue,
+                        !selectedGuests && styles.filterValuePlaceholder,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {guestsLabel}
                     </Text>
-                    <DropdownArrow />
+                    <DropdownArrowIcon />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -239,11 +344,11 @@ const RestaurantListScreen = () => {
             {/* Search Button */}
             <TouchableOpacity
               style={styles.searchButton}
-              onPress={() => console.log("Filtering restaurants")}
+              onPress={handleApplyFilters}
             >
               <SearchIcon color={colors.white} />
               <Text style={styles.searchButtonText}>
-                {t("restaurantList.search") || "ძებნა"}
+                {t("restaurantList.search")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -289,16 +394,18 @@ const RestaurantListScreen = () => {
           </TouchableOpacity>
         )}
       />
+    </>
+  );
 
-      {/* Restaurants List */}
-      {isLoading ? (
-        <ActivityIndicator size="large" style={{ marginTop: 20 }} />
-      ) : (
-        <FlatList
-          data={restaurants}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.restaurantsListContent}
-          renderItem={({ item }) => (
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={restaurants}
+        keyExtractor={(item) => item.id.toString()}
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={renderHeader()}
+        renderItem={({ item }) => (
+          <View style={styles.restaurantCardWrapper}>
             <Card
               title={item.name}
               imageUrl={item.logo}
@@ -315,16 +422,59 @@ const RestaurantListScreen = () => {
                 })
               }
             />
-          )}
-          onEndReached={() => {
-            if (hasNextPage) fetchNextPage();
-          }}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            isFetchingNextPage ? <ActivityIndicator /> : null
-          }
-        />
-      )}
+          </View>
+        )}
+        onEndReached={() => {
+          if (hasNextPage) fetchNextPage();
+        }}
+        onEndReachedThreshold={0.5}
+        ListEmptyComponent={
+          isLoading ? (
+            <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>{t("restaurantList.empty")}</Text>
+            </View>
+          )
+        }
+        ListFooterComponent={isFetchingNextPage ? <ActivityIndicator /> : null}
+      />
+
+      <OptionPickerModal
+        visible={openPicker === "city"}
+        title={t("restaurantList.selectCityTitle")}
+        options={cityOptions}
+        selectedValue={selectedLocation}
+        onSelect={setSelectedLocation}
+        onClose={() => setOpenPicker(null)}
+      />
+
+      <DatePickerModal
+        visible={openPicker === "date"}
+        selectedDate={selectedDate ?? ""}
+        title={t("restaurantList.selectDateTitle")}
+        onSelect={setSelectedDate}
+        onClose={() => setOpenPicker(null)}
+      />
+
+      <TimeSlotModal
+        visible={openPicker === "time"}
+        title={t("restaurantList.selectTimeTitle")}
+        slots={TIME_SLOTS}
+        selectedTime={selectedTime}
+        loading={false}
+        onSelect={setSelectedTime}
+        onClose={() => setOpenPicker(null)}
+      />
+
+      <OptionPickerModal
+        visible={openPicker === "guests"}
+        title={t("restaurantList.selectGuestsTitle")}
+        options={guestOptions}
+        selectedValue={selectedGuests}
+        onSelect={setSelectedGuests}
+        onClose={() => setOpenPicker(null)}
+      />
     </View>
   );
 };
@@ -339,7 +489,7 @@ const styles = StyleSheet.create({
     position: "relative",
     width: "100%",
     height: HERO_HEIGHT,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   heroImage: {
     width: width,
@@ -431,6 +581,12 @@ const styles = StyleSheet.create({
     lineHeight: typography.textSm.lineHeight,
     fontWeight: typography.h1.fontWeight,
     color: colors.dark,
+    flex: 1,
+    marginRight: spacing.xs,
+  },
+  filterValuePlaceholder: {
+    color: colors.placeholder,
+    fontWeight: "500",
   },
   searchButton: {
     backgroundColor: colors.primary,
@@ -453,7 +609,6 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   searchBar: {
-    marginBottom: spacing.md,
     marginHorizontal: spacing.md,
     marginTop: spacing.xl,
   },
@@ -462,7 +617,7 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.md,
     flexGrow: 0,
   },
-  restaurantsListContent: {
+  restaurantCardWrapper: {
     marginHorizontal: spacing.md,
   },
   header: {},
@@ -478,7 +633,6 @@ const styles = StyleSheet.create({
   },
   chip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
     minHeight: 40,
     borderRadius: borderRadius.full,
     marginRight: spacing.sm,
@@ -503,5 +657,16 @@ const styles = StyleSheet.create({
     lineHeight: typography.textSm.lineHeight,
     fontWeight: typography.buttonSm.fontWeight,
     color: colors.white,
+  },
+  emptyState: {
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    ...typography.button,
+    color: colors.gray500,
+    textAlign: "center",
   },
 });

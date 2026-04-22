@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const API_BASE_URL = "https://admin.aimenu.ge";
 
 const buildAuthHeaders = (token: string) => ({
@@ -5,30 +7,58 @@ const buildAuthHeaders = (token: string) => ({
   Authorization: `Bearer ${token}`,
 });
 
-export const getOrderHistory = async (token: string) => {
-  const response = await fetch(`${API_BASE_URL}/api/orders/`, {
-    method: "GET",
-    headers: buildAuthHeaders(token),
+const refreshAccessToken = async (): Promise<string> => {
+  const refresh = await AsyncStorage.getItem("auth_refresh_token");
+  if (!refresh) throw new Error("Session expired");
+
+  const res = await fetch(`${API_BASE_URL}/api/v1/auth/token/refresh/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh }),
   });
+  if (!res.ok) throw new Error("Session expired");
+
+  const data = await res.json().catch(() => null);
+  const newAccess: string | undefined = data?.access;
+  if (!newAccess) throw new Error("Session expired");
+
+  await AsyncStorage.setItem("auth_token", newAccess);
+  return newAccess;
+};
+
+const authedGet = async (url: string, token: string) => {
+  let res = await fetch(url, { method: "GET", headers: buildAuthHeaders(token) });
+  if (res.status === 401) {
+    const fresh = await refreshAccessToken();
+    res = await fetch(url, { method: "GET", headers: buildAuthHeaders(fresh) });
+  }
+  return res;
+};
+
+export const getOrderHistory = async (token: string) => {
+  const response = await authedGet(`${API_BASE_URL}/api/v1/orders/my/`, token);
 
   if (!response.ok) {
-    throw new Error(`Order history request failed: ${response.status}`);
+    const body = await response.json().catch(() => ({}));
+    throw new Error(
+      body?.detail ?? `Order history request failed: ${response.status}`,
+    );
   }
 
   return response.json();
 };
 
 export const getOrderDetail = async (token: string, orderNumber: string) => {
-  const response = await fetch(
-    `${API_BASE_URL}/api/orders/${encodeURIComponent(orderNumber)}/`,
-    {
-      method: "GET",
-      headers: buildAuthHeaders(token),
-    },
+  const response = await authedGet(
+    `${API_BASE_URL}/api/v1/orders/my/${encodeURIComponent(orderNumber)}/`,
+    token,
   );
 
   if (!response.ok) {
-    throw new Error(`Order detail request failed: ${response.status}`);
+    const body = await response.json().catch(() => ({}));
+    throw new Error(
+      body?.detail ?? `Order detail request failed: ${response.status}`,
+    );
   }
 
   return response.json();
