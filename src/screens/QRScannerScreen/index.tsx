@@ -60,7 +60,7 @@ function QRScannerScreen() {
       );
       if (!res.ok) throw new Error("not_found");
 
-      router.push({
+      router.navigate({
         pathname: "/restaurant-detail",
         params: { slug },
       });

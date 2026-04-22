@@ -89,6 +89,9 @@ export default function RestaurantDetailScreen() {
     debouncedSearch(text);
   };
   useEffect(() => {
+    setRestaurant(null);
+    setMenuCategories([]);
+    setLoading(true);
     fetchRestaurant();
     fetchMenuCategories();
   }, [slug]);
@@ -114,6 +117,7 @@ export default function RestaurantDetailScreen() {
   const fetchMenuCategories = async () => {
     try {
       setMenuLoading(true);
+      setMenuCategories([]);
       const res = await fetch(
         `https://admin.aimenu.ge/api/v1/restaurants/${slug}/menu/categories/`,
       );

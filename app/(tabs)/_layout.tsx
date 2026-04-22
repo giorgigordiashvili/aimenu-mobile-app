@@ -70,8 +70,6 @@ export default function TabLayout() {
             ),
           }}
         />
-        <Tabs.Screen name="restaurant" options={{ href: null }} />
-        <Tabs.Screen name="restaurant-detail" options={{ href: null }} />
       </Tabs>
     </QueryProvider>
   );

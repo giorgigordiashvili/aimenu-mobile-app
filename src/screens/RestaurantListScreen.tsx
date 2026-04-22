@@ -416,7 +416,7 @@ const RestaurantListScreen = () => {
               }
               isOpen={item.is_open_now}
               onPress={() =>
-                router.push({
+                router.navigate({
                   pathname: "/restaurant-detail",
                   params: { slug: item.slug },
                 })
