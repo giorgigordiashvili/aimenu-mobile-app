@@ -12,6 +12,17 @@ import { colors } from "../../theme/colors";
 import ChevronIcon from "../../assets/icons/ChevronIcon";
 import { borderRadius, spacing, typography } from "../../theme";
 
+type LangCode = "ka" | "en" | "ru";
+
+const LANGUAGES: { code: LangCode; label: string }[] = [
+  { code: "ka", label: "GEO" },
+  { code: "en", label: "ENG" },
+  { code: "ru", label: "RUS" },
+];
+
+const labelFor = (code: string) =>
+  LANGUAGES.find((l) => l.code === code)?.label ?? "ENG";
+
 const styles = StyleSheet.create({
   container: {
     paddingVertical: spacing.sm,
@@ -75,7 +86,7 @@ export const LanguageSwitcher = ({
   onOpenChange,
 }: LanguageSwitcherProps) => {
   const { i18n } = useTranslation();
-  const isGeorgian = i18n.language === "ka";
+  const currentLang = i18n.language;
   const [internalOpen, setInternalOpen] = useState(false);
 
   const dropdownOpen = isOpen ?? internalOpen;
@@ -88,7 +99,7 @@ export const LanguageSwitcher = ({
     onOpenChange?.(nextOpen);
   };
 
-  const handleSelect = (lang: "ka" | "en") => {
+  const handleSelect = (lang: LangCode) => {
     setLanguage(lang);
     setDropdownOpen(false);
   };
@@ -101,27 +112,24 @@ export const LanguageSwitcher = ({
         activeOpacity={1}
       >
         <View style={styles.content}>
-          <Text style={styles.text}>{isGeorgian ? "GEO" : "ENG"}</Text>
+          <Text style={styles.text}>{labelFor(currentLang)}</Text>
           <ChevronIcon />
         </View>
       </TouchableOpacity>
       {dropdownOpen && (
         <View style={styles.dropdown}>
-          <Pressable
-            style={[styles.dropdownOption, isGeorgian && styles.selectedOption]}
-            onPress={() => handleSelect("ka")}
-          >
-            <Text style={[styles.dropdownText]}>GEO</Text>
-          </Pressable>
-          <Pressable
-            style={[
-              styles.dropdownOption,
-              !isGeorgian && styles.selectedOption,
-            ]}
-            onPress={() => handleSelect("en")}
-          >
-            <Text style={[styles.dropdownText]}>ENG</Text>
-          </Pressable>
+          {LANGUAGES.map(({ code, label }) => (
+            <Pressable
+              key={code}
+              style={[
+                styles.dropdownOption,
+                currentLang === code && styles.selectedOption,
+              ]}
+              onPress={() => handleSelect(code)}
+            >
+              <Text style={styles.dropdownText}>{label}</Text>
+            </Pressable>
+          ))}
         </View>
       )}
     </View>

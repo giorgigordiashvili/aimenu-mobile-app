@@ -97,7 +97,7 @@ export default function MenuItemDetailScreen() {
       modifiers,
     });
 
-    router.back();
+    router.push("/order-review");
   };
 
   if (loading) {
@@ -384,6 +384,8 @@ const styles = StyleSheet.create({
   },
 
   bottomSection: {
+    height: 100,
+    justifyContent: "center",
     backgroundColor: colors.white,
     shadowColor: colors.black,
     shadowOffset: {
@@ -398,8 +400,8 @@ const styles = StyleSheet.create({
   bottomBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+    paddingHorizontal: spacing.md,
   },
 
   quantityControls: {
@@ -416,16 +418,16 @@ const styles = StyleSheet.create({
   },
 
   qtyButton: {
-    width: 28,
-    height: 28,
+    width: 24,
+    height: 24,
     borderRadius: borderRadius.full,
     justifyContent: "center",
     alignItems: "center",
   },
 
   qtyButtonText: {
-    fontSize: 30,
-    lineHeight: 30,
+    fontSize: 20,
+    lineHeight: 20,
     color: colors.quantityControlIcon,
   },
 
@@ -444,7 +446,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 52,
     backgroundColor: colors.dangerSoftBackground,
-    borderRadius: 25,
+    borderRadius: borderRadius.full,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -455,7 +457,7 @@ const styles = StyleSheet.create({
   },
 
   addMoreText: {
-    marginTop: spacing.lg,
+    marginTop: spacing.sm,
     marginBottom: spacing.lg,
     textAlign: "center",
     color: colors.gray600,

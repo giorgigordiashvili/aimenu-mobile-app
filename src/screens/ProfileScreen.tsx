@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   Alert,
   StyleProp,
   ViewStyle,
@@ -24,13 +23,6 @@ import CurrencyIcon from "../assets/icons/CurrencyIcon";
 import CameraIcon from "../assets/icons/CameraIcon";
 import { borderRadius, spacing, typography } from "../theme";
 import { useAuth } from "../context/AuthContext";
-
-// Temporary user (replace with auth later)
-const user = {
-  name: "გაგი მურჯიკნელი",
-  phone: "+995 577 48 88 96",
-  avatar: "", // if empty → fallback to initials
-};
 
 // Reusable Menu Item
 interface MenuItemProps {
@@ -80,8 +72,15 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const { t } = useTranslation();
-  const profileName = user.name || t("profile.name");
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+
+  const fullName = [user?.first_name, user?.last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  const profileName = fullName || user?.email || t("profile.name");
+  const profilePhone = user?.phone ?? "";
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -104,13 +103,9 @@ export default function ProfileScreen() {
       {/* Header */}
       <View style={styles.headerCard}>
         <View style={styles.avatarContainer}>
-          {user.avatar ? (
-            <Image source={{ uri: user.avatar }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarFallback}>
-              <Text style={styles.avatarText}>{getInitials(profileName)}</Text>
-            </View>
-          )}
+          <View style={styles.avatarFallback}>
+            <Text style={styles.avatarText}>{getInitials(profileName)}</Text>
+          </View>
 
           <TouchableOpacity
             style={styles.editAvatar}
@@ -122,7 +117,9 @@ export default function ProfileScreen() {
 
         <View>
           <Text style={styles.userName}>{profileName}</Text>
-          <Text style={styles.userPhone}>{user.phone}</Text>
+          {profilePhone ? (
+            <Text style={styles.userPhone}>{profilePhone}</Text>
+          ) : null}
         </View>
       </View>
 
@@ -136,7 +133,7 @@ export default function ProfileScreen() {
         <ProfileMenuItem
           label={t("profile.payment")}
           leftElement={<BillingIcon />}
-          onPress={() => router.push("/payments")}
+          onPress={() => router.push("/payment-methods")}
         />
         <ProfileMenuItem
           label={t("profile.orders")}
@@ -220,12 +217,6 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: "relative",
     marginRight: spacing.md,
-  },
-
-  avatar: {
-    width: 55,
-    height: 55,
-    borderRadius: borderRadius.full,
   },
 
   avatarFallback: {

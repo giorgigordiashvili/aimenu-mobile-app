@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { colors, spacing, borderRadius, typography } from "../../theme";
 import { textColors } from "../../theme/colors";
-import DropdownArrow from "../../assets/icons/DropdownArrow";
+import DropdownArrowIcon from "../../assets/icons/DropdownArrowIcon";
 
 type Props = {
   label: string;
@@ -35,7 +35,7 @@ export const ReservationTimeSlotChip: React.FC<Props> = ({
       </View>
       <View style={styles.valueRow}>
         <Text style={styles.value}>{value}</Text>
-        <DropdownArrow />
+        <DropdownArrowIcon />
       </View>
     </TouchableOpacity>
   );

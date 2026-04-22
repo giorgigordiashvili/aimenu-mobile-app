@@ -19,6 +19,7 @@ import AppleIcon from "../../assets/icons/AppleIcon";
 import { LanguageSwitcher } from "../../components/ui/LanguageSwitcher";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
+import LoadingScreen from "../../components/LoadingScreen";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -53,6 +55,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     if (!validate()) return;
 
+    setIsLoggingIn(true);
     try {
       const response = await fetch(
         "https://admin.aimenu.ge/api/v1/auth/login/",
@@ -67,6 +70,7 @@ export default function LoginScreen() {
 
       if (!response.ok) {
         setErrors({ email: data.detail || "Invalid credentials" });
+        setIsLoggingIn(false);
         return;
       }
 
@@ -82,8 +86,13 @@ export default function LoginScreen() {
     } catch (e) {
       console.log("LOGIN ERROR:", e);
       setErrors({ email: "Network error. Please try again." });
+      setIsLoggingIn(false);
     }
   };
+
+  if (isLoggingIn) {
+    return <LoadingScreen />;
+  }
 
   return (
     <KeyboardAvoidingView

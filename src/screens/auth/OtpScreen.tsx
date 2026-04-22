@@ -39,7 +39,7 @@ export default function OtpScreen() {
     <View style={styles.container}>
       {/* Back */}
       <TouchableOpacity
-        onPress={() => router.push("/forgot")}
+        onPress={() => router.back()}
         style={styles.backButton}
       >
         <BackArrowIcon />

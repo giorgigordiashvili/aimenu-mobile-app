@@ -105,14 +105,24 @@ export default function FavoritesScreen() {
               <Card
                 restaurant={item}
                 isFavorite
-                onPress={() => router.push(`/restaurant/${item.id}`)}
+                onPress={() =>
+                  router.navigate({
+                    pathname: "/restaurant-detail",
+                    params: { slug: item.slug },
+                  })
+                }
                 onToggleFavorite={() => toggleRestaurant.mutate(item.id)}
               />
             ) : (
               <FavoriteDishCard
                 dish={item}
                 onToggleFavorite={() => toggleDish.mutate(item.id)}
-                onPress={() => router.push(`/menu-item/${item.id}`)}
+                onPress={() => {
+                  const dishSlug =
+                    item.restaurant_slug || item.restaurant?.slug;
+                  if (!dishSlug) return;
+                  router.push(`/restaurant/${dishSlug}/item/${item.id}`);
+                }}
               />
             )
           }

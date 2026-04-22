@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   TextInput as RNTextInput,
@@ -7,6 +7,7 @@ import {
   TextInputProps as RNTextInputProps,
   StyleProp,
   ViewStyle,
+  Pressable,
 } from "react-native";
 import { colors, typography, spacing, borderRadius } from "../../theme";
 import { textColors } from "../../theme/colors";
@@ -35,6 +36,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<RNTextInput>(null);
 
   const getBorderColor = () => {
     if (error) return colors.error;
@@ -48,7 +50,9 @@ export const TextInput: React.FC<TextInputProps> = ({
         <Text style={[styles.label, error && styles.labelError]}>{label}</Text>
       )}
 
-      <View
+      <Pressable
+        onPress={() => inputRef.current?.focus()}
+        disabled={disabled}
         style={[
           styles.inputWrapper,
           { borderColor: getBorderColor() },
@@ -59,6 +63,7 @@ export const TextInput: React.FC<TextInputProps> = ({
         {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
 
         <RNTextInput
+          ref={inputRef}
           style={[styles.input, style]}
           editable={!disabled}
           placeholderTextColor={textColors.placeholder}
@@ -68,7 +73,7 @@ export const TextInput: React.FC<TextInputProps> = ({
         />
 
         {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
-      </View>
+      </Pressable>
 
       {error && <Text style={styles.errorText}>{error}</Text>}
       {hint && !error && <Text style={styles.hintText}>{hint}</Text>}

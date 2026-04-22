@@ -9,6 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { colors, spacing, borderRadius, typography } from "../../theme";
 import { textColors } from "../../theme/colors";
+import { getDateLocale } from "../../i18n";
 
 interface Props {
   label: string;
@@ -31,7 +32,7 @@ export const ReservationDatePicker: React.FC<Props> = ({
   daysAhead = 30,
 }) => {
   const { i18n } = useTranslation();
-  const locale = i18n.language === "ka" ? "ka-GE" : "en-GB";
+  const locale = getDateLocale(i18n.language);
 
   const dates = React.useMemo(() => {
     const result: Date[] = [];

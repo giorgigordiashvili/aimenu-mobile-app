@@ -40,7 +40,7 @@ export default function ResetEmailSentScreen() {
     <View style={styles.container}>
       {/* Back */}
       <TouchableOpacity
-        onPress={() => router.push("/otp")}
+        onPress={() => router.back()}
         style={styles.backButton}
       >
         <BackArrowIcon />

@@ -38,7 +38,6 @@ export default function AddCardScreen() {
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   const [cardHolder, setCardHolder] = useState("");
-  const [paymentMethodId, setPaymentMethodId] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleCardNumberChange = (text: string) => {
@@ -50,8 +49,6 @@ export default function AddCardScreen() {
   };
 
   const getValidToken = async (): Promise<string> => {
-    const access = await AsyncStorage.getItem("auth_token");
-    // Try to refresh using the refresh token
     const refresh = await AsyncStorage.getItem("auth_refresh_token");
     if (!refresh) throw new Error(t("addCard.saveFailed"));
     const refreshRes = await fetch(
@@ -63,8 +60,9 @@ export default function AddCardScreen() {
       },
     );
     if (!refreshRes.ok) throw new Error(t("addCard.saveFailed"));
-    const refreshData = await refreshRes.json();
-    const newAccess = refreshData.access;
+    const refreshData = await refreshRes.json().catch(() => null);
+    const newAccess: string | undefined = refreshData?.access;
+    if (!newAccess) throw new Error(t("addCard.saveFailed"));
     await AsyncStorage.setItem("auth_token", newAccess);
     return newAccess;
   };
@@ -94,9 +92,6 @@ export default function AddCardScreen() {
     if (!cardHolder.trim()) {
       return Alert.alert(t("addCard.error"), t("addCard.errorHolder"));
     }
-    if (!paymentMethodId.trim()) {
-      return Alert.alert(t("addCard.error"), t("addCard.errorPaymentMethodId"));
-    }
 
     const [month, year] = expiry.split("/");
     const payload = {
@@ -106,13 +101,15 @@ export default function AddCardScreen() {
         year.length === 2 ? 2000 + parseInt(year, 10) : parseInt(year, 10),
       cvv,
       card_holder: cardHolder.trim(),
-      payment_method_id: paymentMethodId.trim(),
     };
 
     setLoading(true);
     try {
       let token = await AsyncStorage.getItem("auth_token");
-      let res = await postAddCard(token!, payload);
+      if (!token) {
+        token = await getValidToken();
+      }
+      let res = await postAddCard(token, payload);
 
       // Token expired — refresh and retry once
       if (res.status === 401) {
@@ -205,13 +202,6 @@ export default function AddCardScreen() {
           onChangeText={setCardHolder}
           placeholder={t("addCard.holderPlaceholder")}
           autoCapitalize="characters"
-        />
-
-        <TextInput
-          label={t("addCard.paymentMethodIdLabel")}
-          value={paymentMethodId}
-          onChangeText={setPaymentMethodId}
-          placeholder={t("addCard.paymentMethodIdPlaceholder")}
         />
 
         <Text style={styles.hint}>{t("addCard.hint")}</Text>

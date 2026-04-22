@@ -12,6 +12,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { colors, spacing, borderRadius, typography } from "../../theme";
 import { textColors } from "../../theme/colors";
+import { getDateLocale } from "../../i18n";
 
 interface Props {
   visible: boolean;
@@ -42,9 +43,14 @@ export const DatePickerModal: React.FC<Props> = ({
   daysAhead = 30,
 }) => {
   const { i18n } = useTranslation();
-  const locale = i18n.language === "ka" ? "ka-GE" : "en-GB";
+  const todayLabelMap: Record<string, string> = {
+    ka: "დღეს",
+    ru: "Сегодня",
+    en: "Today",
+  };
+  const locale = getDateLocale(i18n.language);
   const todayKey = toIsoDate(new Date());
-  const todayLabel = i18n.language === "ka" ? "დღეს" : "Today";
+  const todayLabel = todayLabelMap[i18n.language] ?? "Today";
 
   const dates = React.useMemo(() => {
     if (availableDates) {

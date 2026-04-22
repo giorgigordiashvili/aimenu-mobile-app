@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { View, StyleSheet } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { PermissionView } from "./PermissionView";
 import { QROverlay } from "./QROverlay";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -12,6 +13,13 @@ type ScannerViewProps = {
 export function ScannerView({ onScan }: ScannerViewProps) {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+
+  // Re-arm scanning every time the screen regains focus.
+  useFocusEffect(
+    useCallback(() => {
+      setScanned(false);
+    }, []),
+  );
 
   if (!permission?.granted) {
     return <PermissionView onRequest={requestPermission} />;
@@ -31,9 +39,10 @@ export function ScannerView({ onScan }: ScannerViewProps) {
                 onScan(data);
               }
         }
-      >
+      />
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
         <QROverlay />
-      </CameraView>
+      </View>
     </View>
   );
 }
