@@ -33,7 +33,9 @@
 
   "common": {
     "error": "Error",
-    "loading": "Loading"
+    "loading": "Loading",
+    "itemNotFound": "Item not found",
+    "noItemsFound": "No items found"
   },
 
   "error": {
@@ -211,6 +213,133 @@
     "fetchError": "Failed to load cards",
     "deleteError": "Failed to delete card"
   },
+  "reviews": {
+    "myReviewsTitle": "My reviews",
+    "myReviewsEmpty": "You haven't written any reviews yet.",
+    "pendingTitle": "Awaiting review",
+    "pendingSubtitle": "Recent visits you can review.",
+    "writeCta": "Write",
+    "writeTitle": "Write a review",
+    "editTitle": "Edit review",
+    "ratingLabel": "Rating",
+    "titleLabel": "Headline",
+    "titlePlaceholder": "Sum it up in a few words",
+    "bodyLabel": "Tell us more",
+    "bodyPlaceholder": "What did you like? What could be better?",
+    "submit": "Submit",
+    "save": "Save changes",
+    "submitting": "Submitting…",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "editedBadge": "Edited",
+    "deleteConfirmTitle": "Delete review",
+    "deleteConfirmText": "Are you sure you want to delete this review?",
+    "errors": {
+      "ratingRequired": "Please pick a rating.",
+      "submitFailed": "Couldn't submit your review. Please try again.",
+      "mediaPermission": "Please allow photo access to add images.",
+      "imageTooLarge": "Some images were skipped because they exceed 5 MB."
+    },
+    "mediaLabel": "Photos",
+    "uploadingProgress": "Uploading {{done}}/{{total}}…",
+    "reportCta": "Report",
+    "restaurantSectionTitle": "Reviews",
+    "restaurantSectionEmpty": "No reviews yet — be the first.",
+    "report": {
+      "title": "Report review",
+      "subtitle": "Tell us what's wrong with this review.",
+      "reason": "Reason",
+      "reasons": {
+        "spam": "Spam or advertising",
+        "offensive": "Offensive language",
+        "not_a_customer": "Not a real customer",
+        "off_topic": "Off-topic",
+        "other": "Other"
+      },
+      "notes": "Additional notes (optional)",
+      "notesPlaceholder": "Anything else we should know?",
+      "submit": "Submit report",
+      "submitting": "Submitting…",
+      "submitted": "Thanks — we'll review it shortly.",
+      "errors": {
+        "reasonRequired": "Please pick a reason.",
+        "submitFailed": "Couldn't submit. Please try again."
+      }
+    }
+  },
+
+  "static": {
+    "about": {
+      "title": "About AImenu",
+      "intro": "AImenu connects diners with great restaurants across Georgia — from QR-scan ordering at the table to advance reservations and rewards.",
+      "missionTitle": "Our mission",
+      "missionBody": "Make eating out effortless: discover places, order, pay, and earn rewards from one app.",
+      "howTitle": "How we work",
+      "howBody": "We partner with restaurants to bring their menus, loyalty programs and reservations into a single, fast experience.",
+      "teamTitle": "The team",
+      "teamBody": "Built in Tbilisi by a small team of engineers and designers who love eating out as much as you do."
+    },
+    "contact": {
+      "title": "Contact",
+      "intro": "We're here to help with anything related to your account, orders or reservations.",
+      "email": "Email",
+      "phone": "Phone",
+      "hours": "Support is available 7 days a week, 09:00–22:00 (GE)."
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "intro": "By using AImenu you agree to the following terms. Please read them carefully.",
+      "s1Title": "1. Using the service",
+      "s1Body": "You must be 16 or older to use AImenu. You're responsible for keeping your account credentials safe.",
+      "s2Title": "2. Orders & reservations",
+      "s2Body": "Orders and reservations placed through AImenu are confirmed by participating restaurants. Cancellations follow each restaurant's policy.",
+      "s3Title": "3. Payments & refunds",
+      "s3Body": "Payments are processed by our partner payment provider. Refunds, where applicable, are issued back to the original method.",
+      "s4Title": "4. Loyalty & wallet",
+      "s4Body": "Rewards, points and wallet credit have no cash value and may expire. We may adjust program rules with advance notice.",
+      "s5Title": "5. Changes",
+      "s5Body": "We may update these terms from time to time. Continued use after an update means you accept the new version."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "intro": "This policy explains what data we collect, how we use it, and the choices you have.",
+      "s1Title": "1. Data we collect",
+      "s1Body": "Account details (name, email, phone), order and reservation history, device information, and — with your permission — camera access for QR scanning.",
+      "s2Title": "2. How we use it",
+      "s2Body": "To run your account, process orders and reservations, support loyalty and referral rewards, prevent fraud, and improve the app.",
+      "s3Title": "3. Sharing",
+      "s3Body": "We share necessary information with the restaurants you transact with and with our payment provider. We never sell your data.",
+      "s4Title": "4. Your rights",
+      "s4Body": "You can update or delete your account from Settings, or contact us to request a copy of your data.",
+      "s5Title": "5. Contact",
+      "s5Body": "Questions about privacy? Reach us via the Contact screen."
+    }
+  },
+
+  "myReservations": {
+    "title": "My reservations",
+    "activeReservations": "Upcoming",
+    "history": "History",
+    "noActiveReservations": "You don't have any upcoming reservations.",
+    "noHistory": "No past reservations yet.",
+    "date": "Date",
+    "time": "Time",
+    "guests": "Guests",
+    "confirmationCode": "Code",
+    "specialRequests": "Special requests",
+    "cancelReservation": "Cancel reservation",
+    "confirmCancelation": "Are you sure you want to cancel this reservation?",
+    "cancelSuccess": "Reservation cancelled.",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No-show"
+    }
+  },
+
   "reservationSuccess": {
     "successTitle": "Reservation Confirmed!",
     "successSubtitle": "Your table at \"{{restaurantName}}\" has been successfully reserved. You will receive a confirmation on the provided phone number and email.",
@@ -236,7 +365,29 @@
     "favorites": "My Favorites",
     "language": "Language",
     "currency": "Currency",
-    "logout": "Logout"
+    "logout": "Logout",
+    "editAvatar": "Edit avatar"
+  },
+
+  "reservation": {
+    "noDates": "No available dates",
+    "noSlots": "No available time slots"
+  },
+
+  "orderDetail": {
+    "notFound": "Order not found",
+    "orderNumber": "Order #{{number}}",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "confirmed": "Confirmed",
+      "in_progress": "In progress",
+      "ready": "Ready",
+      "completed": "Completed",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "failed": "Failed"
+    }
   },
   "orderHistory": {
     "title": "Order History",
@@ -259,11 +410,37 @@
   "accountSettings": {
     "title": "Account Settings",
     "name": "Full Name",
-    "email": "Email or Phone",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phone": "Phone",
+    "email": "Email",
+    "emailReadonly": "Email cannot be changed.",
     "password": "Password",
     "saveButton": "Save Changes",
+    "saveSuccess": "Saved successfully.",
     "deleteButton": "Delete Account",
-    "firstNamePlaceholder": "Enter your full name"
+    "firstNamePlaceholder": "Enter your first name",
+    "lastNamePlaceholder": "Enter your last name",
+    "phonePlaceholder": "+995 5XX XX XX XX",
+    "changePasswordTitle": "Change password",
+    "oldPassword": "Current password",
+    "oldPasswordPlaceholder": "Enter current password",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "At least 8 characters",
+    "confirmPassword": "Confirm new password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "deleteConfirmTitle": "Delete Account",
+    "deleteConfirmText": "Are you sure you want to delete your account? This cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "errors": {
+      "passwordMin": "New password must be at least 8 characters.",
+      "passwordMismatch": "Passwords don't match.",
+      "oldPasswordRequired": "Enter your current password to set a new one.",
+      "oldPasswordWrong": "Current password is incorrect.",
+      "saveFailed": "Couldn't save changes. Please try again.",
+      "deleteFailed": "Couldn't delete account. Please try again."
+    }
   },
   "qr-scanner": {
     "title": "Scan QR Code",
@@ -329,5 +506,125 @@
     "fillFields": "Please fill all fields",
     "added": "Added to list",
     "copyInvite": "Copy invite"
+  },
+
+  "sort": {
+    "button": "Sort",
+    "title": "Sort by",
+    "default": "Default",
+    "nameAsc": "A → Z",
+    "priceAsc": "Price low → high",
+    "priceDesc": "Price high → low"
+  },
+
+  "loyalty": {
+    "title": "Loyalty",
+    "rules": {
+      "title": "How loyalty works",
+      "learnMore": "Learn more about loyalty →",
+      "heroTitle": "Earn rewards every time you order",
+      "heroLead": "Buy your favorites at participating restaurants and unlock free items, discounts, and tier perks.",
+      "howItWorksTitle": "How it works",
+      "step1": "Place orders or scan in-restaurant to earn punches and points.",
+      "step2": "Watch your tier and your free-item progress fill up automatically.",
+      "step3": "Claim your reward in the app — show the QR code at the counter.",
+      "tiersTitle": "Platform tiers",
+      "tier": {
+        "gourmand": {
+          "name": "Gourmand",
+          "meta": "Starter tier",
+          "discount": "0%"
+        },
+        "silver": {
+          "name": "Silver",
+          "meta": "From 500 pts",
+          "discount": "3%"
+        },
+        "gold": {
+          "name": "Gold",
+          "meta": "From 2,000 pts",
+          "discount": "5%"
+        },
+        "platinum": {
+          "name": "Platinum",
+          "meta": "From 5,000 pts",
+          "discount": "8%"
+        }
+      },
+      "earningRulesTitle": "How you earn",
+      "earningRule1": "Each completed order adds points based on the order total.",
+      "earningRule2": "Punch-card programs reward repeat purchases of specific items.",
+      "earningRule3": "Tier discounts apply automatically at checkout once unlocked.",
+      "optInNote": "Programs vary by restaurant. Each venue chooses which items count and how rewards are claimed.",
+      "myLoyaltyCta": "View my loyalty",
+      "findRestaurantsCta": "Find restaurants"
+    },
+    "empty": "You don't have any loyalty programs yet.",
+    "buy": "Buy",
+    "get": "Get",
+    "claim": "Claim",
+    "close": "Close",
+    "retry": "Retry",
+    "redeemTitle": "Show this code at the counter",
+    "progress": "{{punches}}/{{threshold}}",
+    "trigger": "{{threshold}} × {{name}}",
+    "reward": "{{quantity}} × {{name}}",
+    "expiresAt": "Expires {{date}}",
+    "tier": {
+      "current": "Current tier",
+      "none": "No tier yet",
+      "points": "{{points}} pts",
+      "toNext": "{{remaining}} pts to {{tier}}"
+    },
+    "errors": {
+      "default": "Something went wrong. Please try again.",
+      "not_enough_punches": "You don't have enough punches yet.",
+      "already_redeemed": "This reward has already been redeemed.",
+      "program_inactive": "This program is no longer active."
+    }
+  },
+
+  "referral": {
+    "tabLabel": "Referral",
+    "pageTitle": "Referrals & wallet",
+    "pageLead": "Invite friends to AImenu and earn wallet credit on every order they make.",
+    "balanceLabel": "Wallet balance",
+    "totalEarnedLabel": "Total earned",
+    "totalSpentLabel": "Total spent",
+    "effectivePercentLabel": "Effective rate",
+    "referralCodeLabel": "Your referral code",
+    "referralLinkLabel": "Your referral link",
+    "copyCode": "Copy",
+    "copyLink": "Copy",
+    "copied": "Copied!",
+    "share": "Share",
+    "shareTitle": "Join me on AImenu",
+    "shareText": "Use my code {{code}} to sign up and we'll both get rewards.",
+    "howItWorksTitle": "How it works",
+    "howItWorks1": "Share your code or link with friends.",
+    "howItWorks2": "They sign up using your code and place an order.",
+    "howItWorks3": "You earn wallet credit you can spend on any order.",
+    "recentActivityTitle": "Recent activity",
+    "referredUsersTitle": "Referred friends",
+    "joinedAt": "Joined",
+    "emptyActivity": "No activity yet.",
+    "emptyReferred": "You haven't referred anyone yet.",
+    "txKind": {
+      "referral_credit": "Referral credit",
+      "order_spend": "Order spend",
+      "refund_credit": "Refund credit",
+      "referral_clawback": "Referral reversal",
+      "manual_adjustment": "Adjustment"
+    },
+    "signupCodeLabel": "Referral code (optional)",
+    "signupCodeHelp": "Got a friend's code? Enter it to claim your bonus.",
+    "signupCodeInvalid": "This referral code is invalid.",
+    "walletCheckoutTitle": "Use wallet credit",
+    "walletCheckoutHint": "Spend your referral wallet on this order.",
+    "walletAvailable": "Available: ₾{{amount}}",
+    "walletApplyLabel": "Amount to apply",
+    "walletApplyAll": "Apply all",
+    "walletApplied": "Wallet applied",
+    "walletAfterApply": "Total after wallet"
   }
 }

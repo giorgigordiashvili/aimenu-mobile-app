@@ -78,6 +78,7 @@ export interface CreateOrderPayload {
   phone: string;
   email: string;
   special_request?: string;
+  wallet_amount?: string;
 }
 
 export const createOrder = async (

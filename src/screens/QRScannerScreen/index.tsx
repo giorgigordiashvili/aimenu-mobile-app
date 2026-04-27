@@ -2,24 +2,26 @@ import { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ScannerView } from "./ScannerView";
 import { useTranslation } from "react-i18next";
 import { spacing } from "../../theme";
 import { useRouter } from "expo-router";
 
+const { width } = Dimensions.get("window");
+const FRAME_SIZE = Math.min(width * 0.62, 260);
+const FRAME_RADIUS = 40;
+
 function parseRestaurantSlug(qr: string): string | null {
   const trimmed = qr.trim();
   if (!trimmed) return null;
 
-  // URL form: try to pull the segment after /restaurant(s)/ or /r/
   try {
     if (trimmed.includes("://")) {
       const url = new URL(trimmed);
@@ -28,16 +30,14 @@ function parseRestaurantSlug(qr: string): string | null {
         (s) => s === "restaurant" || s === "restaurants" || s === "r",
       );
       if (idx >= 0 && segments[idx + 1]) return segments[idx + 1];
-      // Fallback: last non-empty segment
       const last = segments[segments.length - 1];
       if (last) return last;
       return null;
     }
   } catch {
-    // not a URL, fall through to plain-slug handling
+    // not a URL, fall through
   }
 
-  // Plain slug form: lowercase letters/digits/hyphens/underscores only
   if (/^[A-Za-z0-9_-]+$/.test(trimmed)) return trimmed;
   return null;
 }
@@ -77,19 +77,21 @@ function QRScannerScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.dark }}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <MaterialCommunityIcons
-            name="arrow-left"
-            color={colors.white}
-            size={24}
-          />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t("qr-scanner.title")}</Text>
+    <SafeAreaView style={styles.root}>
+      <Text style={styles.title}>{t("qr-scanner.title")}</Text>
+
+      <View style={styles.frameWrap}>
+        <View
+          style={[
+            styles.frame,
+            { width: FRAME_SIZE, height: FRAME_SIZE, borderRadius: FRAME_RADIUS },
+          ]}
+        >
+          <ScannerView onScan={handleScan} borderRadius={FRAME_RADIUS} />
+        </View>
       </View>
 
-      <ScannerView onScan={handleScan} />
+      <Text style={styles.hint}>{t("qr-scanner.hint")}</Text>
 
       {loading && (
         <View style={styles.loadingOverlay}>
@@ -103,12 +105,6 @@ function QRScannerScreen() {
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
-      <TouchableOpacity
-        onPress={() => handleScan("gordumlo")}
-        style={{ backgroundColor: "red", padding: 10 }}
-      >
-        <Text style={{ color: "white" }}>TEST SCAN</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -116,16 +112,31 @@ function QRScannerScreen() {
 export default QRScannerScreen;
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: spacing.md,
+  root: {
+    flex: 1,
+    backgroundColor: colors.dark,
   },
   title: {
+    ...typography.h3,
     color: colors.white,
-    ...typography.h2,
-    fontWeight: typography.h2.fontWeight || "700",
-    marginLeft: spacing.md,
+    textAlign: "center",
+    marginTop: spacing.lg,
+  },
+  frameWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  frame: {
+    backgroundColor: colors.darkGrey,
+    overflow: "hidden",
+  },
+  hint: {
+    ...typography.textXs,
+    color: colors.gray500,
+    textAlign: "center",
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
   },
   loadingOverlay: {
     position: "absolute",
@@ -135,7 +146,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.darkGrey,
+    backgroundColor: "rgba(15,23,43,0.85)",
   },
   loadingText: {
     color: colors.white,

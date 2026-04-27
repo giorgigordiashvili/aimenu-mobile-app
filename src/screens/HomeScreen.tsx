@@ -80,6 +80,7 @@ const HomeScreen = () => {
   return (
     <FlatList
       style={styles.container}
+      contentContainerStyle={styles.content}
       data={recommendedRestaurants}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
@@ -210,7 +211,7 @@ const HomeScreen = () => {
           {/* Popular Section */}
           <View style={styles.section}>
             {renderSectionHeader(t("home.popularTitle"), () =>
-              router.push("/restaurants"),
+              router.push("/search"),
             )}
 
             <FlatList
@@ -254,13 +255,17 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.state50,
     padding: spacing.md,
   },
 
+  content: {
+    paddingBottom: spacing.md,
+  },
+
   header: {
-    paddingTop: spacing.xxxl,
-    marginBottom: spacing.xl,
+    paddingTop: spacing.xxl,
+    marginBottom: spacing.lg,
   },
 
   greeting: {
@@ -311,7 +316,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: spacing.xs,
-    marginTop: spacing.md,
+    marginTop: spacing.xmd,
   },
 
   dot: {
@@ -320,14 +325,14 @@ const styles = StyleSheet.create({
   },
 
   section: {
-    marginTop: spacing.xl,
+    marginTop: spacing.lg,
   },
 
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xmd,
   },
 
   sectionTitle: {

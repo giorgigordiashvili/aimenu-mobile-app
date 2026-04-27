@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     alignContent: "center",
   },
   tagIcon: {
-    fontSize: 12,
+    fontSize: typography.textXs.fontSize,
     color: colors.primary,
   },
   tagText: {

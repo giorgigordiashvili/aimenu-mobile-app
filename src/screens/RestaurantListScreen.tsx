@@ -484,6 +484,7 @@ export default RestaurantListScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.state50,
   },
   heroContainer: {
     position: "relative",
@@ -492,9 +493,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   heroImage: {
-    width: width,
+    width: "100%",
     height: HERO_HEIGHT,
-    resizeMode: "contain",
+    resizeMode: "cover",
   },
   gradient: {
     position: "absolute",
@@ -517,8 +518,8 @@ const styles = StyleSheet.create({
     fontSize: typography.h1.fontSize,
     fontWeight: typography.h1.fontWeight,
     color: colors.white,
-    marginBottom: spacing.lg,
-    marginTop: spacing.xl,
+    marginBottom: spacing.md,
+    marginTop: spacing.lg,
   },
   filterCard: {
     borderRadius: borderRadius.lg,
@@ -610,12 +611,13 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     marginHorizontal: spacing.md,
-    marginTop: spacing.xl,
+    marginTop: spacing.lg,
   },
   categoriesSection: {
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xmd,
     marginHorizontal: spacing.md,
     flexGrow: 0,
+    marginTop: spacing.xmd,
   },
   restaurantCardWrapper: {
     marginHorizontal: spacing.md,

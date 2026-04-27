@@ -1,84 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const API_BASE_URL = "https://admin.aimenu.ge";
-
-// ==============================
-// 🔐 TOKEN HELPERS
-// ==============================
-
-const buildAuthHeaders = (token: string) => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${token}`,
-});
-
-async function refreshAccessToken() {
-  const refresh = await AsyncStorage.getItem("auth_refresh_token");
-
-  if (!refresh) {
-    throw new Error("SESSION_EXPIRED");
-  }
-
-  const res = await fetch(`${API_BASE_URL}/api/v1/auth/token/refresh/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh }),
-  });
-
-  if (!res.ok) {
-    // ❗ clear broken session
-    await AsyncStorage.multiRemove([
-      "auth_token",
-      "auth_refresh_token",
-      "auth_user",
-    ]);
-    throw new Error("SESSION_EXPIRED");
-  }
-
-  const data = await res.json();
-
-  await AsyncStorage.setItem("auth_token", data.access);
-
-  return data.access as string;
-}
-
-// ==============================
-// 🌐 AUTH FETCH (AUTO-REFRESH)
-// ==============================
-
-async function authFetch(
-  url: string,
-  options: RequestInit = {},
-): Promise<Response> {
-  let token = await AsyncStorage.getItem("auth_token");
-
-  if (!token) {
-    throw new Error("SESSION_EXPIRED");
-  }
-
-  const doRequest = (t: string) =>
-    fetch(url, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-        Authorization: `Bearer ${t}`,
-      },
-    });
-
-  let response = await doRequest(token);
-
-  // 🔁 retry once if token expired
-  if (response.status === 401) {
-    try {
-      token = await refreshAccessToken();
-      response = await doRequest(token);
-    } catch {
-      throw new Error("SESSION_EXPIRED");
-    }
-  }
-
-  return response;
-}
+import { API_BASE_URL, api, authFetch } from "./http";
+import type { Reservation } from "../types/reservation";
 
 // ==============================
 // 📦 TYPES
@@ -171,17 +92,14 @@ export const createReservation = async (
   payload: any,
   restaurantSlug: string,
 ) => {
-  const res = await authFetch(
-    "https://admin.aimenu.ge/api/v1/reservations/create/",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Restaurant": restaurantSlug,
-      },
-      body: JSON.stringify(payload),
+  const res = await authFetch(`${API_BASE_URL}/api/v1/reservations/create/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Restaurant": restaurantSlug,
     },
-  );
+    body: JSON.stringify(payload),
+  });
 
   if (!res.ok) {
     const text = await res.text();
@@ -189,40 +107,6 @@ export const createReservation = async (
   }
 
   return res.json();
-};
-
-// ==============================
-// 🔧 INTERNAL API CLIENT
-// ==============================
-
-const api = {
-  get: async (
-    path: string,
-    options?: { params?: Record<string, string | number> },
-  ): Promise<any> => {
-    const url = new URL(`${API_BASE_URL}/api/v1${path}`);
-    if (options?.params) {
-      Object.entries(options.params).forEach(([k, v]) => {
-        if (v !== undefined && v !== null)
-          url.searchParams.append(k, String(v));
-      });
-    }
-    const res = await authFetch(url.toString(), { method: "GET" });
-    if (!res.ok) throw new Error(String(res.status));
-    return res.json();
-  },
-
-  post: async (path: string, body?: unknown): Promise<any> => {
-    const res = await authFetch(`${API_BASE_URL}/api/v1${path}`, {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`${res.status} - ${text}`);
-    }
-    return res.json();
-  },
 };
 
 // ==============================
@@ -262,4 +146,18 @@ export const reservationApi = {
       party_size: payload.guests,
       special_requests: payload.note,
     }),
+
+  listMyReservations: async (
+    page: number = 1,
+    pageSize: number = 50,
+  ): Promise<Reservation[]> => {
+    const data = await api.get("/reservations/my/", {
+      params: { page, page_size: pageSize, ordering: "-reservation_date" },
+    });
+    if (Array.isArray(data)) return data as Reservation[];
+    return (data?.results ?? []) as Reservation[];
+  },
+
+  cancelReservation: (id: string): Promise<Reservation> =>
+    api.post(`/reservations/my/${encodeURIComponent(id)}/cancel/`),
 };

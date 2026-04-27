@@ -1,18 +1,23 @@
 import * as React from "react";
 import Svg, { G, Path, Defs, ClipPath } from "react-native-svg";
 
-function CalendarIcon() {
+interface Props {
+  size?: number;
+  color?: string;
+}
+
+function CalendarIcon({ size = 16, color = "#90A1B9" }: Props) {
   return (
     <Svg
-      width={16}
-      height={16}
+      width={size}
+      height={size}
       viewBox="0 0 16 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <G
         clipPath="url(#clip0_213_4721)"
-        stroke="#90A1B9"
+        stroke={color}
         strokeWidth={1.33333}
         strokeLinecap="round"
         strokeLinejoin="round"

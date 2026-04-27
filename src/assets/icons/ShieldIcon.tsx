@@ -1,18 +1,23 @@
 import * as React from "react";
 import Svg, { G, Path, Defs, ClipPath } from "react-native-svg";
 
-function ShieldIcon() {
+interface Props {
+  size?: number;
+  color?: string;
+}
+
+function ShieldIcon({ size = 16, color = "#3C6300" }: Props) {
   return (
     <Svg
-      width={16}
-      height={16}
+      width={size}
+      height={size}
       viewBox="0 0 16 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <G
         clipPath="url(#clip0_213_2469)"
-        stroke="#3C6300"
+        stroke={color}
         strokeWidth={1.33266}
         strokeLinecap="round"
         strokeLinejoin="round"

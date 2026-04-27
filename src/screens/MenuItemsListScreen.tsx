@@ -20,14 +20,19 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors, spacing, typography, borderRadius } from "../theme";
 import { SearchBar } from "../components/ui/SearchBar";
+import {
+  OptionPickerModal,
+  PickerOption,
+} from "../components/ui/OptionPickerModal";
 import PlusIcon from "../assets/icons/PlusIcon";
 import BackArrowIcon from "../assets/icons/BackArrowIcon";
 import ButtonArrowIcon from "../assets/icons/ButtonArrowIcon";
 import DropdownArrowIcon from "../assets/icons/DropdownArrowIcon";
-import CardArrow from "../assets/icons/CardArrow";
-import ChevronIcon from "../assets/icons/ChevronIcon";
+import FilterIcon from "../assets/icons/FilterIcon";
 import { useCart } from "../context/CartContext";
 import { Button } from "../components/Button";
+
+type ItemSort = "default" | "nameAsc" | "priceAsc" | "priceDesc";
 
 
 interface MenuItem {
@@ -56,6 +61,8 @@ export default function MenuItemsListScreen() {
   const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sort, setSort] = useState<ItemSort>("default");
+  const [sortOpen, setSortOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
@@ -151,7 +158,13 @@ export default function MenuItemsListScreen() {
 
   useEffect(() => {
     filterItems();
-  }, [searchQuery, allItems]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, sort, allItems, i18n.language]);
+
+  const getItemName = (item: MenuItem) =>
+    item.translations?.[i18n.language]?.name ||
+    item.translations?.ka?.name ||
+    "";
 
   const filterItems = () => {
     let filtered = allItems;
@@ -159,10 +172,7 @@ export default function MenuItemsListScreen() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = allItems.filter((item) => {
-        const name =
-          item.translations?.[i18n.language]?.name ||
-          item.translations?.ka?.name ||
-          "";
+        const name = getItemName(item);
         const description =
           item.translations?.[i18n.language]?.description ||
           item.translations?.ka?.description ||
@@ -174,8 +184,26 @@ export default function MenuItemsListScreen() {
       });
     }
 
+    if (sort !== "default") {
+      filtered = [...filtered].sort((a, b) => {
+        if (sort === "nameAsc") {
+          return getItemName(a).localeCompare(getItemName(b), i18n.language);
+        }
+        const pa = parseFloat(a.price);
+        const pb = parseFloat(b.price);
+        return sort === "priceAsc" ? pa - pb : pb - pa;
+      });
+    }
+
     setFilteredItems(filtered);
   };
+
+  const sortOptions: PickerOption[] = [
+    { value: "default", label: t("sort.default") },
+    { value: "nameAsc", label: t("sort.nameAsc") },
+    { value: "priceAsc", label: t("sort.priceAsc") },
+    { value: "priceDesc", label: t("sort.priceDesc") },
+  ];
 
   const fetchItems = async () => {
     try {
@@ -283,11 +311,23 @@ export default function MenuItemsListScreen() {
       </View>
 
       <View style={styles.searchContainer}>
-        <SearchBar
-          placeholder={t("restaurant.searchPlaceholder")}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+        <View style={styles.searchRow}>
+          <View style={styles.searchFlex}>
+            <SearchBar
+              placeholder={t("restaurant.searchPlaceholder")}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+          <TouchableOpacity
+            style={styles.sortButton}
+            onPress={() => setSortOpen(true)}
+            activeOpacity={0.8}
+            accessibilityLabel={t("sort.button")}
+          >
+            <FilterIcon color={colors.dark} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -330,7 +370,7 @@ export default function MenuItemsListScreen() {
           scrollEventThrottle={16}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No items found</Text>
+              <Text style={styles.emptyText}>{t("common.noItemsFound")}</Text>
             </View>
           }
         />
@@ -423,6 +463,15 @@ export default function MenuItemsListScreen() {
           </View>
         </View>
       )}
+
+      <OptionPickerModal
+        visible={sortOpen}
+        title={t("sort.title")}
+        options={sortOptions}
+        selectedValue={sort}
+        onSelect={(v) => setSort(v as ItemSort)}
+        onClose={() => setSortOpen(false)}
+      />
 
       {!(totalItems > 0 && expanded) && (
         <Animated.View
@@ -548,6 +597,27 @@ const styles = StyleSheet.create({
 
   searchContainer: {
     paddingHorizontal: spacing.md,
+  },
+
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.sm,
+  },
+
+  searchFlex: {
+    flex: 1,
+  },
+
+  sortButton: {
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.light,
+    backgroundColor: colors.white,
   },
 
   tabsContainer: {

@@ -255,7 +255,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.state50,
   },
   languageSwitcherContainer: {
     position: "absolute",

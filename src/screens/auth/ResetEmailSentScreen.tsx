@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: spacing.lg,
-    backgroundColor: colors.white,
+    backgroundColor: colors.state50,
     textAlign: "center",
   },
   backButton: {

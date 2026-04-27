@@ -21,6 +21,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, refreshToken: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (patch: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -81,8 +82,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateUser = async (patch: Partial<User>) => {
+    setUser((prev) => {
+      const next = prev ? { ...prev, ...patch } : prev;
+      if (next) {
+        AsyncStorage.setItem("auth_user", JSON.stringify(next)).catch((e) =>
+          console.error("updateUser persist error:", e),
+        );
+      }
+      return next;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, isLoading, login, logout, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

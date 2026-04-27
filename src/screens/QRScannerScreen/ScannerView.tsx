@@ -2,15 +2,15 @@ import { useCallback, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { PermissionView } from "./PermissionView";
-import { QROverlay } from "./QROverlay";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { colors } from "../../theme";
 
 type ScannerViewProps = {
   onScan: (code: string) => void;
+  borderRadius?: number;
 };
 
-export function ScannerView({ onScan }: ScannerViewProps) {
+export function ScannerView({ onScan, borderRadius = 0 }: ScannerViewProps) {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
 
@@ -26,7 +26,12 @@ export function ScannerView({ onScan }: ScannerViewProps) {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.darkGrey }}>
+    <View
+      style={[
+        styles.container,
+        { borderRadius, backgroundColor: colors.darkGrey },
+      ]}
+    >
       <CameraView
         style={StyleSheet.absoluteFill}
         facing="back"
@@ -40,9 +45,13 @@ export function ScannerView({ onScan }: ScannerViewProps) {
               }
         }
       />
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <QROverlay />
-      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    overflow: "hidden",
+  },
+});

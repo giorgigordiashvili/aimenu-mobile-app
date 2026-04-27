@@ -27,6 +27,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function RegisterScreen() {
     email?: string;
     password?: string;
     confirmPassword?: string;
+    referralCode?: string;
   }>({});
 
   const validate = () => {
@@ -67,6 +69,17 @@ export default function RegisterScreen() {
     setLoading(true);
 
     try {
+      const cleanedReferralCode = referralCode.trim().toUpperCase();
+      const body: Record<string, string> = {
+        first_name: firstName,
+        email: email,
+        password: password,
+        password_confirm: confirmPassword,
+      };
+      if (cleanedReferralCode) {
+        body.referral_code = cleanedReferralCode;
+      }
+
       const response = await fetch(
         "https://admin.aimenu.ge/api/v1/auth/register/",
         {
@@ -74,12 +87,7 @@ export default function RegisterScreen() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            first_name: firstName,
-            email: email,
-            password: password,
-            password_confirm: confirmPassword,
-          }),
+          body: JSON.stringify(body),
         },
       );
 
@@ -87,6 +95,13 @@ export default function RegisterScreen() {
       console.log("REGISTER RAW RESPONSE:", data);
 
       if (!response.ok || data.success === false) {
+        if (data?.referral_code) {
+          setErrors((prev) => ({
+            ...prev,
+            referralCode: t("referral.signupCodeInvalid"),
+          }));
+          return;
+        }
         Alert.alert(
           "Error",
           data?.error?.message ||
@@ -168,6 +183,24 @@ export default function RegisterScreen() {
           error={errors.confirmPassword}
         />
 
+        {/* Referral Code (optional) */}
+        <TextInput
+          label={t("referral.signupCodeLabel")}
+          placeholder="XXXXXXXX"
+          value={referralCode}
+          onChangeText={(text) => {
+            setReferralCode(text.toUpperCase());
+            if (errors.referralCode) {
+              setErrors((prev) => ({ ...prev, referralCode: undefined }));
+            }
+          }}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          maxLength={8}
+          hint={t("referral.signupCodeHelp")}
+          error={errors.referralCode}
+        />
+
         {/* Register Button */}
         <Button
           variant="primary"
@@ -228,7 +261,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
     justifyContent: "center",
-    backgroundColor: colors.white,
+    backgroundColor: colors.state50,
   },
   languageWrapper: {
     alignItems: "flex-end",

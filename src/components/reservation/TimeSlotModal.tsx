@@ -8,6 +8,7 @@ import {
   TouchableWithoutFeedback,
   ScrollView,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import { colors, spacing, borderRadius, typography } from "../../theme";
 import { textColors } from "../../theme/colors";
 
@@ -37,6 +38,7 @@ export const TimeSlotModal: React.FC<Props> = ({
   onSelect,
   onClose,
 }) => {
+  const { t } = useTranslation();
   return (
     <Modal
       visible={visible}
@@ -66,7 +68,7 @@ export const TimeSlotModal: React.FC<Props> = ({
               </View>
             ) : slots.length === 0 ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyText}>No available time slots</Text>
+                <Text style={styles.emptyText}>{t("reservation.noSlots")}</Text>
               </View>
             ) : (
               <View style={styles.grid}>
