@@ -1,36 +1,92 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import { borderRadius, colors, spacing, typography } from "../../theme";
 
-export default function FavoriteDishCard({ dish, onToggleFavorite, onPress }) {
+interface Dish {
+  id?: number | string;
+  name: string;
+  image: string;
+  restaurant_name?: string;
+  price: string | number;
+}
+
+interface Props {
+  dish: Dish;
+  onToggleFavorite?: () => void;
+  onPress?: () => void;
+}
+
+export default function FavoriteDishCard({
+  dish,
+  onToggleFavorite,
+  onPress,
+}: Props) {
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{
-        flexDirection: "row",
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        marginBottom: 12,
-        overflow: "hidden",
-      }}
-    >
-      {/* Image */}
-      <Image source={{ uri: dish.image }} style={{ width: 100, height: 100 }} />
+    <TouchableOpacity onPress={onPress} style={styles.card}>
+      <Image source={{ uri: dish.image }} style={styles.image} />
 
-      {/* Info */}
-      <View style={{ flex: 1, padding: 10 }}>
-        <Text style={{ fontWeight: "600", fontSize: 14 }}>{dish.name}</Text>
+      <View style={styles.info}>
+        <Text style={styles.name}>{dish.name}</Text>
 
-        <Text style={{ color: "#777", marginTop: 4 }}>
-          {dish.restaurant_name}
-        </Text>
+        {dish.restaurant_name ? (
+          <Text style={styles.restaurant}>{dish.restaurant_name}</Text>
+        ) : null}
 
-        <Text style={{ marginTop: 6, fontWeight: "600" }}>{dish.price} ₾</Text>
+        <Text style={styles.price}>{dish.price} ₾</Text>
       </View>
 
-      {/* Heart */}
-      <TouchableOpacity onPress={onToggleFavorite} style={{ padding: 10 }}>
-        <Text style={{ fontSize: 18 }}>❤️</Text>
+      <TouchableOpacity
+        onPress={onToggleFavorite}
+        style={styles.heartButton}
+      >
+        <Text style={styles.heart}>❤️</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    flexDirection: "row",
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.xl,
+    marginBottom: spacing.xmd,
+    overflow: "hidden",
+  },
+  image: {
+    width: 100,
+    height: 100,
+  },
+  info: {
+    flex: 1,
+    padding: spacing.sm,
+  },
+  name: {
+    ...typography.button,
+    fontWeight: "600",
+    color: colors.dark,
+  },
+  restaurant: {
+    ...typography.textXs,
+    color: colors.gray500,
+    marginTop: spacing.xs,
+  },
+  price: {
+    ...typography.textBase,
+    fontWeight: "600",
+    color: colors.dark,
+    marginTop: spacing.xs,
+  },
+  heartButton: {
+    padding: spacing.sm,
+  },
+  heart: {
+    fontSize: typography.textLg.fontSize,
+  },
+});

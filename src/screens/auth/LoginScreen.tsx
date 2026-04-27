@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
     justifyContent: "center",
-    backgroundColor: colors.white,
+    backgroundColor: colors.state50,
   },
   languageWrapper: {
     alignItems: "flex-end",

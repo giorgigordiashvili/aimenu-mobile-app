@@ -28,12 +28,17 @@ import PhoneIcon from "../assets/icons/PhoneIcon";
 import ShieldIcon from "../assets/icons/ShieldIcon";
 import MailIcon from "../assets/icons/MailIcon";
 import { payWithCard, payWithCash } from "../api";
+import { WalletApplySection } from "../components/referral/WalletApplySection";
+import { referralKeys } from "../hooks/useReferral";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function PaymentScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { totalPrice, items, restaurantSlug } = useCart();
   const [token, setToken] = useState<string | null>(null);
+  const [walletApplied, setWalletApplied] = useState(0);
 
   useEffect(() => {
     AsyncStorage.getItem("auth_token").then(setToken);
@@ -61,6 +66,7 @@ export default function PaymentScreen() {
 
   const reservationDeposit = 10;
   const finalTotal = totalPrice + reservationDeposit;
+  const payableTotal = Math.max(0, finalTotal - walletApplied);
 
   // 🔄 Post-scan mode
   const params = useLocalSearchParams<{ orderNumber?: string }>();
@@ -158,7 +164,14 @@ export default function PaymentScreen() {
           phone,
           email,
           special_request: specialRequest || undefined,
+          wallet_amount:
+            walletApplied > 0 ? walletApplied.toFixed(2) : undefined,
         });
+
+        if (walletApplied > 0) {
+          queryClient.invalidateQueries({ queryKey: referralKeys.summary });
+          queryClient.invalidateQueries({ queryKey: ["loyalty"] });
+        }
 
         router.replace({
           pathname: "/payment/success",
@@ -321,6 +334,16 @@ export default function PaymentScreen() {
           ))}
         </View>
 
+        {/* WALLET APPLY (menu checkout only) */}
+        {!postScanMode ? (
+          <View style={styles.section}>
+            <WalletApplySection
+              total={finalTotal}
+              onChange={setWalletApplied}
+            />
+          </View>
+        ) : null}
+
         {/* TOTAL */}
         <View style={styles.totalSection}>
           <View style={styles.summaryRow}>
@@ -330,11 +353,26 @@ export default function PaymentScreen() {
             </Text>
           </View>
 
+          {walletApplied > 0 ? (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>
+                {t("referral.walletApplied")}
+              </Text>
+              <Text style={[styles.summaryValue, { color: colors.primary }]}>
+                −{walletApplied.toFixed(2)} ₾
+              </Text>
+            </View>
+          ) : null}
+
           <View style={styles.summaryDivider} />
 
           <View style={styles.summaryRow}>
-            <Text style={styles.totalLabel}>{t("cart.total")}</Text>
-            <Text style={styles.totalValue}>{finalTotal.toFixed(2)} ₾</Text>
+            <Text style={styles.totalLabel}>
+              {walletApplied > 0
+                ? t("referral.walletAfterApply")
+                : t("cart.total")}
+            </Text>
+            <Text style={styles.totalValue}>{payableTotal.toFixed(2)} ₾</Text>
           </View>
 
           <View style={styles.safeRow}>

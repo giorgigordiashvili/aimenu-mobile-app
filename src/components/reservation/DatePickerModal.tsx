@@ -42,7 +42,7 @@ export const DatePickerModal: React.FC<Props> = ({
   loadingDates = false,
   daysAhead = 30,
 }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const todayLabelMap: Record<string, string> = {
     ka: "დღეს",
     ru: "Сегодня",
@@ -95,7 +95,7 @@ export const DatePickerModal: React.FC<Props> = ({
             </View>
           ) : dates.length === 0 ? (
             <View style={styles.loadingContainer}>
-              <Text style={styles.emptyText}>No available dates</Text>
+              <Text style={styles.emptyText}>{t("reservation.noDates")}</Text>
             </View>
           ) : (
             <FlatList

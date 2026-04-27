@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   checkmark: {
-    color: "#FFFFFF",
+    color: colors.white,
     fontSize: 14,
     fontWeight: "bold",
   },

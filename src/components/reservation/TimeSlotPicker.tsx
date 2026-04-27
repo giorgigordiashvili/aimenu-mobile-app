@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 import { colors, spacing, borderRadius, typography } from "../../theme";
 import { textColors } from "../../theme/colors";
 
@@ -25,6 +26,7 @@ export const TimeSlotPicker: React.FC<Props> = ({
   onSelect,
   loading,
 }) => {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
@@ -37,7 +39,7 @@ export const TimeSlotPicker: React.FC<Props> = ({
         </View>
       ) : slots.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>No available time slots</Text>
+          <Text style={styles.emptyText}>{t("reservation.noSlots")}</Text>
         </View>
       ) : (
         <View style={styles.grid}>

@@ -16,11 +16,19 @@ import { LinearGradient } from "expo-linear-gradient";
 import { borderRadius, colors, spacing, typography } from "../theme";
 import { SearchBar } from "../components/ui/SearchBar";
 import { Button } from "../components/Button";
+import {
+  OptionPickerModal,
+  PickerOption,
+} from "../components/ui/OptionPickerModal";
 import { debounce } from "lodash";
 import LocationIcon from "../assets/icons/LocationIcon";
 import ChefIcon from "../assets/icons/ChefIcon";
 import StarIcon from "../assets/icons/StarIcon";
 import CardArrow from "../assets/icons/CardArrow";
+import FilterIcon from "../assets/icons/FilterIcon";
+import { RestaurantReviewsSection } from "../components/review/RestaurantReviewsSection";
+
+type CategorySort = "default" | "nameAsc";
 
 const { width } = Dimensions.get("window");
 const HEADER_IMAGE_HEIGHT = 363;
@@ -76,6 +84,8 @@ export default function RestaurantDetailScreen() {
   );
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
   const [menuLoading, setMenuLoading] = useState(false);
+  const [sort, setSort] = useState<CategorySort>("default");
+  const [sortOpen, setSortOpen] = useState(false);
 
   const debouncedSearch = useCallback(
     debounce((query: string) => {
@@ -183,20 +193,39 @@ export default function RestaurantDetailScreen() {
         "";
 
   // Use menu categories from API if available, otherwise show empty state
-  const cardItems = menuCategories.map((category) => {
-    const categoryName =
-      category.translations?.[i18n.language]?.name ||
-      category.translations?.ka?.name ||
-      category.translations?.en?.name ||
-      "";
+  const cardItems = (() => {
+    const mapped = menuCategories.map((category) => {
+      const categoryName =
+        category.translations?.[i18n.language]?.name ||
+        category.translations?.ka?.name ||
+        category.translations?.en?.name ||
+        "";
 
-    return {
-      id: category.id,
-      title: categoryName,
-      image: category.image || restaurant.cover_image,
-      itemsCount: category.items_count,
-    };
-  });
+      return {
+        id: category.id,
+        title: categoryName,
+        image: category.image || restaurant.cover_image,
+        itemsCount: category.items_count,
+      };
+    });
+
+    const query = searchQuery.trim().toLowerCase();
+    const filtered = query
+      ? mapped.filter((c) => c.title.toLowerCase().includes(query))
+      : mapped;
+
+    if (sort === "nameAsc") {
+      return [...filtered].sort((a, b) =>
+        a.title.localeCompare(b.title, i18n.language),
+      );
+    }
+    return filtered;
+  })();
+
+  const sortOptions: PickerOption[] = [
+    { value: "default", label: t("sort.default") },
+    { value: "nameAsc", label: t("sort.nameAsc") },
+  ];
 
   return (
     <View style={styles.container}>
@@ -286,11 +315,23 @@ export default function RestaurantDetailScreen() {
         {/* Restaurant Info */}
         <View style={styles.infoContainer}>
           <View style={styles.searchBar}>
-            <SearchBar
-              placeholder={t("restaurant.searchPlaceholder")}
-              value={inputValue}
-              onChangeText={handleSearch}
-            />
+            <View style={styles.searchRow}>
+              <View style={styles.searchFlex}>
+                <SearchBar
+                  placeholder={t("restaurant.searchPlaceholder")}
+                  value={inputValue}
+                  onChangeText={handleSearch}
+                />
+              </View>
+              <TouchableOpacity
+                style={styles.sortButton}
+                onPress={() => setSortOpen(true)}
+                activeOpacity={0.8}
+                accessibilityLabel={t("sort.button")}
+              >
+                <FilterIcon color={colors.dark} />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {menuLoading ? (
@@ -332,6 +373,8 @@ export default function RestaurantDetailScreen() {
             </View>
           )}
         </View>
+
+        <RestaurantReviewsSection slug={slug} language={i18n.language} />
       </ScrollView>
 
       <View style={styles.footerActions}>
@@ -368,6 +411,15 @@ export default function RestaurantDetailScreen() {
           }
         />
       </View>
+
+      <OptionPickerModal
+        visible={sortOpen}
+        title={t("sort.title")}
+        options={sortOptions}
+        selectedValue={sort}
+        onSelect={(v) => setSort(v as CategorySort)}
+        onClose={() => setSortOpen(false)}
+      />
     </View>
   );
 }
@@ -496,6 +548,27 @@ const styles = StyleSheet.create({
   },
 
   searchBar: {},
+
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.sm,
+  },
+
+  searchFlex: {
+    flex: 1,
+  },
+
+  sortButton: {
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.light,
+    backgroundColor: colors.white,
+  },
 
   cardsContainer: {
     marginTop: spacing.xs,

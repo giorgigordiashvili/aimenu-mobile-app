@@ -12,7 +12,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
-import { colors, spacing, borderRadius } from "../theme";
+import { colors, spacing, borderRadius, typography } from "../theme";
 import BackArrowIcon from "../assets/icons/BackArrowIcon";
 import { useCart } from "../context/CartContext";
 
@@ -111,7 +111,7 @@ export default function MenuItemDetailScreen() {
   if (!item) {
     return (
       <View style={styles.center}>
-        <Text>Item not found</Text>
+        <Text>{t("common.itemNotFound")}</Text>
       </View>
     );
   }
@@ -268,7 +268,7 @@ export default function MenuItemDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.state50,
   },
 
   center: {
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   },
 
   itemDescription: {
-    fontSize: 14,
+    ...typography.textSm,
     color: colors.gray600,
   },
 
@@ -325,8 +325,7 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    ...typography.buttonLg,
     marginBottom: spacing.sm,
   },
 
@@ -342,7 +341,7 @@ const styles = StyleSheet.create({
   },
 
   modifierPrice: {
-    fontSize: 14,
+    ...typography.textSm,
     color: colors.gray800,
   },
 
@@ -378,9 +377,8 @@ const styles = StyleSheet.create({
   },
 
   addButtonText: {
+    ...typography.buttonLg,
     color: colors.white,
-    fontSize: 16,
-    fontWeight: "600",
   },
 
   bottomSection: {
@@ -426,7 +424,7 @@ const styles = StyleSheet.create({
   },
 
   qtyButtonText: {
-    fontSize: 20,
+    fontSize: typography.textXl.fontSize,
     lineHeight: 20,
     color: colors.quantityControlIcon,
   },
@@ -436,9 +434,8 @@ const styles = StyleSheet.create({
   },
 
   qtyNumber: {
+    ...typography.buttonLg,
     marginHorizontal: spacing.xs,
-    fontSize: 16,
-    fontWeight: "600",
     color: colors.dark,
   },
 
@@ -457,13 +454,12 @@ const styles = StyleSheet.create({
   },
 
   addMoreText: {
+    ...typography.button,
+    fontWeight: "600",
+    color: colors.gray600,
+    textAlign: "center",
     marginTop: spacing.sm,
     marginBottom: spacing.lg,
-    textAlign: "center",
-    color: colors.gray600,
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
     letterSpacing: -0.15,
   },
 });

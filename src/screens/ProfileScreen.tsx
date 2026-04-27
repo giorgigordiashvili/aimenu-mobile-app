@@ -7,6 +7,7 @@ import {
   Alert,
   StyleProp,
   ViewStyle,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -21,8 +22,15 @@ import LanguageIcon from "../assets/icons/LanguageIcon";
 import LogoutIcon from "../assets/icons/LogoutIcon";
 import CurrencyIcon from "../assets/icons/CurrencyIcon";
 import CameraIcon from "../assets/icons/CameraIcon";
+import StarIcon from "../assets/icons/StarIcon";
+import InviteIcon from "../assets/icons/InviteIcon";
+import CalendarIcon from "../assets/icons/CalendarIcon";
+import DocumentIcon from "../assets/icons/DocumentIcon";
+import ShieldIcon from "../assets/icons/ShieldIcon";
+import MailIcon from "../assets/icons/MailIcon";
 import { borderRadius, spacing, typography } from "../theme";
 import { useAuth } from "../context/AuthContext";
+import { PlatformStatusCard } from "../components/loyalty/PlatformStatusCard";
 
 // Reusable Menu Item
 interface MenuItemProps {
@@ -96,7 +104,11 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Title */}
       <Text style={styles.title}>{t("profile.title")}</Text>
 
@@ -109,7 +121,7 @@ export default function ProfileScreen() {
 
           <TouchableOpacity
             style={styles.editAvatar}
-            onPress={() => Alert.alert("Edit avatar")}
+            onPress={() => Alert.alert(t("profile.editAvatar"))}
           >
             <CameraIcon />
           </TouchableOpacity>
@@ -122,6 +134,8 @@ export default function ProfileScreen() {
           ) : null}
         </View>
       </View>
+
+      <PlatformStatusCard />
 
       {/* Section 1 */}
       <View style={styles.section}>
@@ -139,6 +153,26 @@ export default function ProfileScreen() {
           label={t("profile.orders")}
           leftElement={<OrdersIcon />}
           onPress={() => router.push("/order-history")}
+        />
+        <ProfileMenuItem
+          label={t("myReservations.title")}
+          leftElement={<CalendarIcon size={15} color="#232D61" />}
+          onPress={() => router.push("/my-reservations")}
+        />
+        <ProfileMenuItem
+          label={t("reviews.myReviewsTitle")}
+          leftElement={<StarIcon size={15} color="#232D61" filled={false} />}
+          onPress={() => router.push("/my-reviews")}
+        />
+        <ProfileMenuItem
+          label={t("loyalty.title")}
+          leftElement={<StarIcon size={15} color="#232D61" filled={false} />}
+          onPress={() => router.push("/loyalty")}
+        />
+        <ProfileMenuItem
+          label={t("referral.tabLabel")}
+          leftElement={<InviteIcon size={15} color="#232D61" />}
+          onPress={() => router.push("/referral")}
         />
         <ProfileMenuItem
           label={t("profile.favorites")}
@@ -174,7 +208,32 @@ export default function ProfileScreen() {
         />
       </View>
 
-      {/* Section 3 */}
+      {/* Section 3 — Support / Legal */}
+      <View style={styles.section}>
+        <ProfileMenuItem
+          label={t("static.about.title")}
+          leftElement={<DocumentIcon size={15} color="#232D61" />}
+          onPress={() => router.push("/about")}
+        />
+        <ProfileMenuItem
+          label={t("static.contact.title")}
+          leftElement={<MailIcon size={15} color="#232D61" />}
+          onPress={() => router.push("/contact")}
+        />
+        <ProfileMenuItem
+          label={t("static.terms.title")}
+          leftElement={<DocumentIcon size={15} color="#232D61" />}
+          onPress={() => router.push("/terms")}
+        />
+        <ProfileMenuItem
+          label={t("static.privacy.title")}
+          leftElement={<ShieldIcon size={15} color="#232D61" />}
+          hideBottomBorder
+          onPress={() => router.push("/privacy")}
+        />
+      </View>
+
+      {/* Section 4 — Logout */}
       <View style={styles.section}>
         <ProfileMenuItem
           label={t("profile.logout")}
@@ -184,7 +243,7 @@ export default function ProfileScreen() {
           onPress={handleLogout}
         />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -192,6 +251,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.state50,
+  },
+
+  content: {
     paddingVertical: spacing.xxxl,
     paddingHorizontal: spacing.md,
   },
